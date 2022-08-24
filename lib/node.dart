@@ -5,8 +5,13 @@ import 'package:backbone/trait.dart';
 import 'package:backbone/world.dart';
 import 'package:flame/components.dart';
 
+/// Nodes are a collection of game objects. Nodes can
+/// have traits. Nodes are processed by systems.
 abstract class ANode extends Component with HasGameRef {
+  /// World of the node, if not a root node it might be null
   World? world;
+
+  /// ????
   Archetype? bucket;
   final List<ATrait> _traits = [];
 
@@ -28,7 +33,10 @@ abstract class ANode extends Component with HasGameRef {
   }
 
   // Methods
+  /// Get all registered traits of a node
   List<ATrait> get traits => _traits.toList();
+
+  /// Get traites sorted by the comparer
   List<ATrait> get sortedTraits {
     final List<ATrait> sorted = _traits.toList();
     sorted.sort((a, b) => a.toString().compareTo(b.toString()));
@@ -36,6 +44,8 @@ abstract class ANode extends Component with HasGameRef {
   }
 
   // Tree searching
+
+  /// Get the parent of the node, it might return null
   ANode? findNodeParent() {
     var componentToCheck = parent;
     ANode? parentNode;
@@ -49,6 +59,7 @@ abstract class ANode extends Component with HasGameRef {
     return parentNode;
   }
 
+  /// Get all child nodes of the current node
   List<ANode> findNodeChildren() {
     var children = <ANode>[];
     var childrenToCheck = Queue<Component>();
@@ -65,6 +76,7 @@ abstract class ANode extends Component with HasGameRef {
     return children;
   }
 
+  /// Get the world of the parent
   World? findWorldParent() {
     var componentToCheck = parent;
     World? parentWorld;
@@ -78,6 +90,7 @@ abstract class ANode extends Component with HasGameRef {
     return parentWorld;
   }
 
+  /// Get all child components of the node
   List<C> findChildren<C extends Component>() {
     var children = <C>[];
     var childrenToCheck = Queue<Component>();
@@ -98,11 +111,13 @@ abstract class ANode extends Component with HasGameRef {
   }
 
   // Traits
+  /// Add a trait to this node
   void addTrait(ATrait trait) {
     _traits.add(trait);
     world?.addTraitToNode(trait, this);
   }
 
+  /// Remove a trait from a node
   void removeTrait<T extends ATrait>() {
     final trait =
         _traits.cast<ATrait?>().firstWhere((c) => c is T, orElse: () => null);
@@ -112,6 +127,7 @@ abstract class ANode extends Component with HasGameRef {
     }
   }
 
+  /// Try get a trait from the node
   T? tryGet<T extends ATrait>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
@@ -123,6 +139,7 @@ abstract class ANode extends Component with HasGameRef {
     return null;
   }
 
+  /// Get an existing trait otherwise throws
   T get<T extends ATrait>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
@@ -134,6 +151,8 @@ abstract class ANode extends Component with HasGameRef {
     throw Exception('Trait ${T.toString()} not found');
   }
 
+  /// Gets an existing trait or adds the one returned
+  /// by orElse to the trait list.
   T getOrElse<T extends ATrait>(T Function() orElse) {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
@@ -147,6 +166,7 @@ abstract class ANode extends Component with HasGameRef {
     return elseTrait;
   }
 
+  /// Checks if a trait exists in this node
   bool hasTrait<T extends ATrait>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
