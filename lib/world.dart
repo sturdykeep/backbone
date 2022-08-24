@@ -10,77 +10,109 @@ import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 
+/// World is the main entry point for all backbone systems
+/// You can have multiple worlds in your game
 class World extends Component with HasGameRef {
-  int nextUniqueId = 0;
-  int getNextUniqueId() => nextUniqueId++;
+  int _nextUniqueId = 0;
+
+  /// Get a unique id for this wolrd instance
+  /// ID's are only unqiue by world
+  int getNextUniqueId() => _nextUniqueId++;
+
+  /// All type of trais registered in this world
   late final HashSet<Type> registeredTraits;
+
+  /// ???
   late final HashMap<Archetype, List<ANode>> archetypeBuckets;
+
+  /// List of all registered systems
   late final List<System> systems;
+
+  /// List of all messages systems
   late final List<MessageSystem> messageSystems;
+
+  /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
+
+  /// ???
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
 
+  /// Create a new world and provide the traids, ???, systems, messages and resources
   World(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
     addResource(Time());
   }
 
   // Message system
-  bool messageSystemPaused = false;
-  final Queue<AMessage> messageQueue = Queue();
+  bool _messageSystemPaused = false;
+  final Queue<AMessage> _messageQueue = Queue();
+
+  /// Push a new message to the end of the queue
   void pushMessage(AMessage message) {
-    messageQueue.add(message);
+    _messageQueue.add(message);
   }
 
+  /// Push a message to the first pposition in the queue
   void pushMessageToFront(AMessage message) {
-    messageQueue.addFirst(message);
+    _messageQueue.addFirst(message);
   }
 
+  /// Push multiple messages to the queue
   void pushMessagesToFrontInOrder(Iterable<AMessage> messages) {
     // messages: [a, b, c]
     // messageQueue: [c, b, a] (reverse, but execute in order)
     var messagesReverse = messages.toList().reversed;
     for (var message in messagesReverse) {
-      messageQueue.addFirst(message);
+      _messageQueue.addFirst(message);
     }
   }
 
+  /// Get the first message in the queue without removing it
   AMessage peekMessage() {
-    return messageQueue.first;
+    return _messageQueue.first;
   }
 
+  /// Get the first message in the queue and remove it
   AMessage popMessage() {
-    return messageQueue.removeFirst();
+    return _messageQueue.removeFirst();
   }
 
-  bool get hasMessage => messageQueue.isNotEmpty;
+  /// Is there any message in the queue
+  bool get hasMessage => _messageQueue.isNotEmpty;
 
+  /// Pause the message system
   void pauseMessageSystem() {
-    messageSystemPaused = true;
+    _messageSystemPaused = true;
   }
 
+  /// Resum the message system
   void resumeMessageSystem() {
-    messageSystemPaused = false;
+    _messageSystemPaused = false;
   }
 
-  // Resources
+  // Add a new resource to the world
   void addResource<R extends dynamic>(R resource) {
     resources[R] = resource;
   }
 
+  // Return a resource or null
   R? tryGetResource<R extends dynamic>() {
     return resources[R] as R?;
   }
 
+  // Return a resource that must exists
   R getResource<R extends dynamic>() {
     return resources[R]! as R;
   }
 
+  /// Try to remove a resource and return it, might be null
   R? removeResource<R extends dynamic>() {
     return resources.remove(R) as R?;
   }
 
   // Traits and nodes
+
+  /// Remove a node from a bucket
   void removeNodeFromBuckets(ANode node) {
     // Remove the trait from the existing archetype storage
     final currentBucket = node.bucket;
@@ -91,6 +123,7 @@ class World extends Component with HasGameRef {
     }
   }
 
+  /// Push a node into an existing archetype
   void putNodeIntoBucket(ANode node) {
     // Add the trait to the new archetype storage
     final archetype = node.archetype;
@@ -103,6 +136,7 @@ class World extends Component with HasGameRef {
     }
   }
 
+  /// Add a node to a world
   void addNode<N extends ANode>(N node) {
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
@@ -114,6 +148,7 @@ class World extends Component with HasGameRef {
     putNodeIntoBucket(node);
   }
 
+  /// Remove an existing node from the world
   void removeNode<N extends ANode>(N node) {
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
@@ -125,6 +160,7 @@ class World extends Component with HasGameRef {
     removeNodeFromBuckets(node);
   }
 
+  /// Addd a trait to an existing node
   void addTraitToNode<C extends ATrait, N extends ANode>(C trait, N node) {
     if (node.world != this) {
       throw Exception(
@@ -135,6 +171,7 @@ class World extends Component with HasGameRef {
     putNodeIntoBucket(node);
   }
 
+  /// Remove a trait from an existing node
   void removeTraitFromNode<C extends ATrait, N extends ANode>(C trait, N node) {
     if (node.world != this) {
       throw Exception(
@@ -146,6 +183,8 @@ class World extends Component with HasGameRef {
   }
 
   // Query
+
+  /// Querry the world for a list of nodes
   List<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<ANode> result = [];
@@ -163,6 +202,8 @@ class World extends Component with HasGameRef {
   }
 
   // The update loop
+
+  /// Update all details of the world, called by Flame
   @override
   void update(double dt) {
     getResource<Time>().delta = dt;
@@ -175,8 +216,8 @@ class World extends Component with HasGameRef {
     // Proccess the message queue
     // ...and try to keep at least 60 fps
     final messagesProcessStartTime = DateTime.now();
-    while (messageSystemPaused == false) {
-      if (messageQueue.isEmpty) break;
+    while (_messageSystemPaused == false) {
+      if (_messageQueue.isEmpty) break;
       if (DateTime.now().difference(messagesProcessStartTime).inMilliseconds >
           8) break;
 
