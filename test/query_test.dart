@@ -2,7 +2,6 @@ import 'package:backbone/builders.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
-import 'package:backbone/world.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class TestNode extends ANode {
