@@ -2,7 +2,6 @@ import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/node.dart';
-import 'package:backbone/world.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class IntComponent extends ATrait {
