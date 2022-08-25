@@ -3,6 +3,7 @@ import 'package:backbone/filter.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/world.dart';
 import 'package:flame/components.dart';
+import 'package:flame/extensions.dart';
 
 /// TODO add docu
 
@@ -17,6 +18,9 @@ class TransformTrait extends ATrait {
   Vector2 size = Vector2.zero();
   double rotation = 0.0;
   Anchor anchor = Anchor.topLeft;
+
+  Rect get rect => Rect.fromLTWH(position.x - anchor.x * size.x,
+      position.y - anchor.y * size.y, size.x, size.y);
 }
 
 void transformSystem(World world) {

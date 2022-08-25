@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
+import 'package:backbone/prelude/input.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
@@ -9,7 +10,10 @@ import 'package:backbone/message.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// World is the main entry point for all backbone systems
 /// You can have multiple worlds in your game
@@ -42,6 +46,7 @@ class World extends Component with HasGameRef {
   World(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
     addResource(Time());
+    addResource(Input());
   }
 
   // Message system
@@ -184,7 +189,6 @@ class World extends Component with HasGameRef {
   }
 
   // Query
-
   /// Querry the world for a list of nodes
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
@@ -202,17 +206,68 @@ class World extends Component with HasGameRef {
     return MultiIterableView(result);
   }
 
-  // The update loop
+  // Input System
+  /// Should be called by the game in the `onKeyEvent` for the world's input system
+  /// to become aware of keyboard events.
+  void onKeyEvent(
+    RawKeyEvent event,
+    Set<LogicalKeyboardKey> keysPressed,
+  ) {
+    final input = getResource<Input>();
+    input.keysPressed = keysPressed;
+  }
 
+  /// Should be called by the game in the `onMouseMove` for the world's input system
+  /// to become aware of mouse movement.
+  void onMouseMove(PointerHoverInfo info) {
+    final input = getResource<Input>();
+    input.pointerMove = info;
+    input.mousePosition = info.eventPosition.game;
+  }
+
+  /// Should be called by the game in the `onTapDown` for the world's input system
+  /// to become aware of taps and clicks.
+  void onTapDown(int pointerId, TapDownInfo info) {
+    final input = getResource<Input>();
+    input.taps.putIfAbsent(pointerId, () => info);
+    input.taps[pointerId] = info;
+  }
+
+  /// Should be called by the game in the `onTapUp` for the world's input system
+  /// to become aware of taps and clicks.
+  void onTapUp(int pointerId, _) {
+    final input = getResource<Input>();
+    input.tapUps.add(pointerId);
+  }
+
+  /// Should be called by the game in the `onTapCancel` for the world's input system
+  /// to become aware of taps and clicks.
+  void onTapCancel(int pointerId) {
+    final input = getResource<Input>();
+    input.tapCancels.add(pointerId);
+  }
+
+  // Update Loop
   /// Update all details of the world, called by Flame
   @override
   void update(double dt) {
+    // Update the time
     getResource<Time>().delta = dt;
 
     // Update all the systems
     for (final system in systems) {
       system(this);
     }
+
+    // Update the input system
+    final input = getResource<Input>();
+    input.keysPressed = {};
+    input.pointerMove = null;
+    input.taps = input.taps
+      ..removeWhere((pointerId, _) => input.tapUps.contains(pointerId))
+      ..removeWhere((pointerId, _) => input.tapCancels.contains(pointerId));
+    input.tapUps = HashSet();
+    input.tapCancels = HashSet();
 
     // Proccess the message queue
     // ...and try to keep at least 60 fps
