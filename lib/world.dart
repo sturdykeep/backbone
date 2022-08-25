@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
+import 'package:backbone/iterable.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
@@ -185,20 +186,20 @@ class World extends Component with HasGameRef {
   // Query
 
   /// Querry the world for a list of nodes
-  List<ANode> query<N extends ANode, F extends AFilter>(F filter,
+  MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
-    List<ANode> result = [];
+    List<List<ANode>> result = [];
     for (final archetype in archetypeBuckets.keys) {
       final nodes = archetypeBuckets[archetype]!;
       if (filter.matches(archetype)) {
-        result.addAll(nodes);
+        if (onlyLoaded) {
+          result.add(nodes.where((node) => node.isLoaded).toList());
+        } else {
+          result.add(nodes);
+        }
       }
     }
-
-    if (onlyLoaded) {
-      result.retainWhere((node) => node.isLoaded);
-    }
-    return result;
+    return MultiIterableView(result);
   }
 
   // The update loop
