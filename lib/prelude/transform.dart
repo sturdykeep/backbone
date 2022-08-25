@@ -4,6 +4,8 @@ import 'package:backbone/trait.dart';
 import 'package:backbone/world.dart';
 import 'package:flame/components.dart';
 
+/// TODO add docu
+
 void transformPlugin(WorldBuilder builder) {
   builder.withTrait(TransformTrait);
   builder.withSystem(transformSystem);
