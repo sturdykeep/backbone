@@ -23,7 +23,7 @@ void transformSystem(World world) {
   final worldQuery = world.query(Has([TransformTrait]));
   final queryLength = worldQuery.length;
   for (var i = 0; i < queryLength; i++) {
-    final node = worldQuery[i];
+    final node = worldQuery.elementAt(i);
     final transform = node.get<TransformTrait>();
 
     // Check if the node has PositionComponent children
