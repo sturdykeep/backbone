@@ -234,9 +234,10 @@ class World extends Component with HasGameRef {
 
   /// Should be called by the game in the `onTapUp` for the world's input system
   /// to become aware of taps and clicks.
-  void onTapUp(int pointerId, _) {
+  void onTapUp(int pointerId, TapUpInfo info) {
     final input = getResource<Input>();
     input.tapUps.add(pointerId);
+    input.taps[pointerId]!.handled = info.handled;
   }
 
   /// Should be called by the game in the `onTapCancel` for the world's input system

@@ -4,31 +4,32 @@ import 'package:backbone/builders.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/world.dart';
 import 'package:example/bouncer.dart';
+import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-class MainGame extends FlameGame with HasTappables, MultiTouchTapDetector {
+class MainGame extends FlameGame with HasTappables {
   late final World world;
   MainGame();
 
   @override
   void onTapDown(int pointerId, TapDownInfo info) {
-    world.onTapDown(pointerId, info);
     super.onTapDown(pointerId, info);
+    world.onTapDown(pointerId, info);
   }
 
   @override
   void onTapUp(int pointerId, TapUpInfo info) {
-    world.onTapUp(pointerId, info);
     super.onTapUp(pointerId, info);
+    world.onTapUp(pointerId, info);
   }
 
   @override
   void onTapCancel(int pointerId) {
-    world.onTapCancel(pointerId);
     super.onTapCancel(pointerId);
+    world.onTapCancel(pointerId);
   }
 
   @override
@@ -38,6 +39,7 @@ class MainGame extends FlameGame with HasTappables, MultiTouchTapDetector {
         .withTrait(BouncerTrait)
         .withSystem(bounceSystem)
         .withSystem(tapSpawnSystem)
+        .withMessageSystem(removeBounceMessageSystem)
         .build();
     add(world);
 
