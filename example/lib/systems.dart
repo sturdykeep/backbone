@@ -6,7 +6,6 @@ import 'package:backbone/prelude/time.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/world.dart';
 import 'package:example/bouncer.dart';
-import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 
 // System that bounces boxes off screen edges
@@ -41,7 +40,7 @@ void bounceSystem(World world) {
 
 // System that spawns new boxes on click
 void tapSpawnSystem(World world) {
-  var rng = Random();
+  final rng = Random();
   final input = world.getResource<Input>();
   final ups = input.tapUps;
   for (var i = 0; i < ups.length; i++) {

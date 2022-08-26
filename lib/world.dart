@@ -12,7 +12,6 @@ import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// World is the main entry point for all backbone systems

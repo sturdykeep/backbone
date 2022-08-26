@@ -9,27 +9,9 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-class GameScreen extends StatefulWidget {
-  const GameScreen({Key? key}) : super(key: key);
-
-  @override
-  State<GameScreen> createState() => _GameScreenState();
-}
-
-class _GameScreenState extends State<GameScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return GameWidget(
-      game: MainGame(context)..debugMode = false,
-    );
-  }
-}
-
 class MainGame extends FlameGame with HasTappables, MultiTouchTapDetector {
-  /// Flutter build context of the parent widget, required for assets
-  final BuildContext context;
   late final World world;
-  MainGame(this.context);
+  MainGame();
 
   @override
   void onTapDown(int pointerId, TapDownInfo info) {
@@ -38,9 +20,9 @@ class MainGame extends FlameGame with HasTappables, MultiTouchTapDetector {
   }
 
   @override
-  void onTapUp(int pointerId, _) {
-    world.onTapUp(pointerId, _);
-    super.onTapUp(pointerId, _);
+  void onTapUp(int pointerId, TapUpInfo info) {
+    world.onTapUp(pointerId, info);
+    super.onTapUp(pointerId, info);
   }
 
   @override
@@ -60,7 +42,7 @@ class MainGame extends FlameGame with HasTappables, MultiTouchTapDetector {
     add(world);
 
     // Generate some bouncers
-    var rng = Random();
+    final rng = Random();
     for (var i = 0; i < 5; i++) {
       final bouncer = BouncerNode(
           Vector2.all(50.0 + 50.0 * rng.nextDouble()),
