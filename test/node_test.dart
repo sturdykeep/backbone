@@ -1,8 +1,13 @@
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/filter.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/node.dart';
+import 'package:backbone/world.dart';
+import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'testGame.dart';
 
 class IntComponent extends ATrait {
   final int value;
@@ -64,6 +69,38 @@ void main() {
       expect(node.traits.any((comp) => comp is IntComponent), true);
       expect(world.nodesByType[TestNode]!.length, 0);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+    });
+
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    final gameTester = FlameTester(() => TestGame());
+    gameTester.testGameWidget('node with child nodes add and remove',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(
+        find.byGame<TestGame>(),
+        findsOneWidget,
+      );
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
+      var node = TestNode();
+      node.addTrait(IntComponent(1));
+      //TODO Calling addNode breaks later expects, seems it never adds the component to Flame?
+      world.add(node);
+      game.update(0);
+      final nodesInWorld = world.query(Has([IntComponent]));
+      expect(nodesInWorld.iterables.length, 1);
+      expect(node.findNodeChildren().length, 0);
+      final childNode = TestNode();
+      node.add(childNode);
+      game.update(0);
+      expect(node.findNodeChildren().length, 1);
+      childNode.removeFromParent();
+      game.update(0);
+      expect(node.findNodeChildren().length, 0);
     });
   });
 }
