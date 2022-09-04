@@ -146,7 +146,7 @@ class World extends Component with HasGameRef {
     assert(node.isBackboneMounted == true,
         'Add the node to the world via add or addAll. Do not call registerNode');
     final type = node.runtimeType;
-    if (!nodesByType.containsKey(type)) {
+    if (nodesByType.containsKey(type) == false) {
       nodesByType[type] = HashSet();
     }
     nodesByType[type]!.add(node);
@@ -188,7 +188,7 @@ class World extends Component with HasGameRef {
   }
 
   // Query
-  /// Querry the world for a list of nodes
+  /// Query the world for a list of nodes
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];

@@ -13,6 +13,9 @@ class MultiIterableViewIterator<I> implements Iterator<I> {
   final List<Iterable<I>> iterables;
 
   MultiIterableViewIterator(this.iterables) {
+    if (iterables.isEmpty) {
+      iterables.add([]);
+    }
     _iterators = iterables.map((iterable) => iterable.iterator).toList();
     _currentIterator = _iterators.first;
   }

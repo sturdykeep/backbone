@@ -21,6 +21,8 @@ void main() {
     test('register [a] query [a] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentA]));
@@ -31,6 +33,8 @@ void main() {
     test('register [a] query [b] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentB]));
@@ -39,6 +43,8 @@ void main() {
     test('register [a] query [a,b] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentA, TestComponentB]));
@@ -51,6 +57,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
@@ -68,6 +76,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
@@ -88,6 +98,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
@@ -110,6 +122,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentC());
@@ -129,6 +143,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
@@ -148,6 +164,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
@@ -165,6 +183,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
@@ -183,6 +203,8 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
+      node.isBackboneMounted = true;
+      node.world = world;
       world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());

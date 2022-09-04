@@ -20,30 +20,67 @@ class TestNode extends ANode {
 
 void main() {
   group('Node', () {
-    test('basic empty node', () {
-      var world = WorldBuilder().withTrait(IntComponent).build();
+    // Setup
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final gameTester = FlameTester(() => TestGame());
+
+    gameTester.testGameWidget('basic empty node', setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(
+        find.byGame<TestGame>(),
+        findsOneWidget,
+      );
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
       var node = TestNode();
       world.add(node);
+      game.update(0);
 
       expect(node.traits.length, 0);
       expect(node.traits.any((comp) => comp is IntComponent), false);
       expect(world.nodesByType[TestNode]!.length, 1);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
-    test('basic node with component', () {
-      var world = WorldBuilder().withTrait(IntComponent).build();
+    gameTester.testGameWidget('basic node with component',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(
+        find.byGame<TestGame>(),
+        findsOneWidget,
+      );
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
       var node = TestNode();
       world.add(node);
+      game.update(0);
+
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
       expect(world.nodesByType[TestNode]!.length, 1);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
     });
-    test('basic node with component and remove', () {
-      var world = WorldBuilder().withTrait(IntComponent).build();
+    gameTester.testGameWidget('basic node with component and remove',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(
+        find.byGame<TestGame>(),
+        findsOneWidget,
+      );
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
       var node = TestNode();
       world.add(node);
+      game.update(0);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
@@ -55,10 +92,21 @@ void main() {
       expect(world.nodesByType[TestNode]!.length, 1);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
-    test('basic node add and remove', () {
-      var world = WorldBuilder().withTrait(IntComponent).build();
+    gameTester.testGameWidget('basic node add and remove',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(
+        find.byGame<TestGame>(),
+        findsOneWidget,
+      );
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
       var node = TestNode();
       world.add(node);
+      game.update(0);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
@@ -70,10 +118,6 @@ void main() {
       expect(world.nodesByType[TestNode]!.length, 0);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
-
-    TestWidgetsFlutterBinding.ensureInitialized();
-
-    final gameTester = FlameTester(() => TestGame());
     gameTester.testGameWidget('node with child nodes add and remove',
         setUp: (game, _) async {
       await game.ready();
@@ -111,6 +155,9 @@ void main() {
       final world = game.children.first as World;
       var node = TestNode();
       world.add(node);
+      game.update(0);
+      expect(world.nodesByType[TestNode]!.length, 1);
+      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
 
     gameTester.testGameWidget('wrongly add a node to the world',
