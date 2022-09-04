@@ -8,6 +8,7 @@ class MultiIterableView<I> extends Iterable<I> {
   Iterator<I> get iterator => MultiIterableViewIterator<I>(iterables);
 }
 
+/// TODO Document me
 class MultiIterableViewIterator<I> implements Iterator<I> {
   final List<Iterable<I>> iterables;
 

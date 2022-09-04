@@ -46,7 +46,7 @@ void tapSpawnSystem(World world) {
   for (var i = 0; i < ups.length; i++) {
     final id = ups.elementAt(i);
     final info = input.taps[id];
-    if (info != null) {
+    if (info != null && info.handled == false) {
       final bouncer = BouncerNode(
           Vector2.all(50.0 + 50.0 * rng.nextDouble()),
           Color.fromARGB(
