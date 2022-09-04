@@ -10,6 +10,7 @@ import 'package:flame/components.dart';
 abstract class ANode extends Component with HasGameRef {
   /// World of the node, if not a root node it might be null
   World? world;
+  bool isBackboneMounted = false;
 
   /// ????
   Archetype? bucket;
@@ -23,13 +24,15 @@ abstract class ANode extends Component with HasGameRef {
   void onMount() {
     super.onMount();
     world = findWorldParent();
-    world?.addNode(this);
+    assert(world != null, 'Nodes must be added to a world');
+    isBackboneMounted = true;
+    world!.registerNode(this);
   }
 
   @override
   void onRemove() {
     super.onRemove();
-    world?.removeNode(this);
+    world!.removeNode(this);
   }
 
   // Methods

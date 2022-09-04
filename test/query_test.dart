@@ -21,7 +21,7 @@ void main() {
     test('register [a] query [a] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentA]));
       expect(result.length, 1);
@@ -31,7 +31,7 @@ void main() {
     test('register [a] query [b] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentB]));
       expect(result.length, 0);
@@ -39,7 +39,7 @@ void main() {
     test('register [a] query [a,b] from [a]', () {
       var world = WorldBuilder().withTrait(TestComponentA).build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       var result = world.query(Has([TestComponentA, TestComponentB]));
       expect(result.length, 0);
@@ -51,7 +51,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
@@ -68,7 +68,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
@@ -88,7 +88,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       var result = world.query(And([
@@ -110,7 +110,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentC());
       var result = world.query(And([
@@ -129,7 +129,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
       var result = world.query(And([
@@ -148,7 +148,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
@@ -165,7 +165,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
@@ -183,7 +183,7 @@ void main() {
           .withTrait(TestComponentC)
           .build();
       var node = TestNode();
-      world.addNode(node);
+      world.registerNode(node);
       node.addTrait(TestComponentA());
       node.addTrait(TestComponentB());
       node.addTrait(TestComponentC());
