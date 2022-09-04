@@ -61,19 +61,19 @@ abstract class ANode extends Component with HasGameRef {
 
   /// Get all child nodes of the current node
   List<ANode> findNodeChildren() {
-    var children = <ANode>[];
+    var result = <ANode>[];
     var childrenToCheck = Queue<Component>();
     childrenToCheck.addAll(children);
 
     while (childrenToCheck.isNotEmpty) {
       final component = childrenToCheck.removeFirst();
       if (component is ANode) {
-        children.add(component);
+        result.add(component);
       }
       childrenToCheck.addAll(component.children);
     }
 
-    return children;
+    return result;
   }
 
   /// Get the world of the parent
@@ -92,14 +92,14 @@ abstract class ANode extends Component with HasGameRef {
 
   /// Get all child components of the node
   List<C> findChildren<C extends Component>() {
-    var children = <C>[];
+    var result = <C>[];
     var childrenToCheck = Queue<Component>();
-    childrenToCheck.addAll(this.children);
+    childrenToCheck.addAll(children);
 
     while (childrenToCheck.isNotEmpty) {
       final component = childrenToCheck.removeFirst();
       if (component is C) {
-        children.add(component);
+        result.add(component);
       }
       if (component is ANode) {
         continue;
@@ -107,7 +107,7 @@ abstract class ANode extends Component with HasGameRef {
       childrenToCheck.addAll(component.children);
     }
 
-    return children;
+    return result;
   }
 
   // Traits
