@@ -23,7 +23,7 @@ void main() {
     test('basic empty node', () {
       var world = WorldBuilder().withTrait(IntComponent).build();
       var node = TestNode();
-      world.addNode(node);
+      world.add(node);
 
       expect(node.traits.length, 0);
       expect(node.traits.any((comp) => comp is IntComponent), false);
@@ -33,7 +33,7 @@ void main() {
     test('basic node with component', () {
       var world = WorldBuilder().withTrait(IntComponent).build();
       var node = TestNode();
-      world.addNode(node);
+      world.add(node);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
@@ -43,7 +43,7 @@ void main() {
     test('basic node with component and remove', () {
       var world = WorldBuilder().withTrait(IntComponent).build();
       var node = TestNode();
-      world.addNode(node);
+      world.add(node);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
@@ -58,7 +58,7 @@ void main() {
     test('basic node add and remove', () {
       var world = WorldBuilder().withTrait(IntComponent).build();
       var node = TestNode();
-      world.addNode(node);
+      world.add(node);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
@@ -88,7 +88,6 @@ void main() {
       final world = game.children.first as World;
       var node = TestNode();
       node.addTrait(IntComponent(1));
-      //TODO Calling addNode breaks later expects, seems it never adds the component to Flame?
       world.add(node);
       game.update(0);
       final nodesInWorld = world.query(Has([IntComponent]));
@@ -101,6 +100,29 @@ void main() {
       childNode.removeFromParent();
       game.update(0);
       expect(node.findNodeChildren().length, 0);
+    });
+    gameTester.testGameWidget('add a node to the world',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
+      var node = TestNode();
+      world.add(node);
+    });
+
+    gameTester.testGameWidget('wrongly add a node to the world',
+        setUp: (game, _) async {
+      await game.ready();
+      await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+    }, verify: (game, tester) async {
+      expect(game.children.length, 1);
+      expect(game.children.first, isA<World>());
+      final world = game.children.first as World;
+      var node = TestNode();
+      expect(() => world.registerNode(node), throwsA(isA<AssertionError>()));
     });
   });
 }

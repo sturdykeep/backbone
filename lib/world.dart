@@ -142,14 +142,14 @@ class World extends Component with HasGameRef {
   }
 
   /// Add a node to a world
-  void addNode<N extends ANode>(N node) {
+  void registerNode<N extends ANode>(N node) {
+    assert(node.isBackboneMounted == true,
+        'Add the node to the world via add or addAll. Do not call registerNode');
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
       nodesByType[type] = HashSet();
     }
     nodesByType[type]!.add(node);
-    node.world = this;
-
     putNodeIntoBucket(node);
   }
 
