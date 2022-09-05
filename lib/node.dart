@@ -57,7 +57,7 @@ abstract class ANode extends Component with HasGameRef {
         parentNode = componentToCheck;
         break;
       }
-      componentToCheck = componentToCheck.parent!;
+      componentToCheck = componentToCheck.parent;
     }
     return parentNode;
   }
