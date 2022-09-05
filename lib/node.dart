@@ -117,7 +117,13 @@ abstract class ANode extends Component with HasGameRef {
   /// Add a trait to this node
   void addTrait(ATrait trait) {
     _traits.add(trait);
-    world?.addTraitToNode(trait, this);
+    try {
+      world?.addTraitToNode(trait, this);
+    } catch (e) {
+      _traits.remove(trait);
+      world?.addTraitToNode(trait, this);
+      rethrow;
+    }
   }
 
   /// Remove a trait from a node

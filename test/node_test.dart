@@ -279,6 +279,9 @@ void main() {
       game.update(0);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
+      expect(() => node.addTrait(StringTrait('SturdyKeep rocks')),
+          throwsA(isA<Exception>()));
+      expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
       expect(world.nodesByType[TestNode]!.length, 1);
       expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
