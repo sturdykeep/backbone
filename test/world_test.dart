@@ -8,10 +8,22 @@ class WorldTestMessage extends AMessage {
   final int value;
 }
 
+class ExampleResource {}
+
+class ExampleResource2 {}
+
 void main() {
   group('World', () {
     test('simple builder', () {
-      var world = WorldBuilder().withTrait(String).withTrait(int).build();
+      var world = WorldBuilder()
+          .withTrait(String)
+          .withTrait(int)
+          .withMessageSystem((world, message) => false)
+          .withResource(ExampleResource, ExampleResource())
+          .withSystem((world) {})
+          .withPlugin((builder) {
+        builder.withResource(ExampleResource2, ExampleResource2());
+      }).build();
       expect(world.registeredTraits.length, 2);
       expect(world.registeredTraits.contains(String), true);
       expect(world.registeredTraits.contains(int), true);
@@ -25,12 +37,22 @@ void main() {
               .toList()
               .contains(Archetype([String, int])),
           true);
+      expect(world.messageSystems.length, 1);
+      expect(world.resources.length, 4); //2 are added by default
+      expect(world.systems.length, 1);
     });
     test('simple system', () {
       var success = false;
       var world = WorldBuilder().withSystem((world) => success = true).build();
       world.update(0.0);
       expect(success, true);
+    });
+
+    test('get unique ids', () {
+      var world = WorldBuilder().build();
+      var a = world.getNextUniqueId();
+      var b = world.getNextUniqueId();
+      expect(a != b, true);
     });
     test('simple message system', () {
       var resultValue = 0;
@@ -44,6 +66,27 @@ void main() {
       world.pushMessage(WorldTestMessage(1));
       world.update(0.0);
       expect(resultValue, 1);
+      world.pushMessage(WorldTestMessage(1));
+      expect(world.hasMessage, true);
+      var topMessage = world.peekMessage();
+      expect(topMessage, isA<WorldTestMessage>());
+      expect((topMessage as WorldTestMessage).value, 1);
+      world.pushMessageToFront(WorldTestMessage(2));
+      topMessage = world.peekMessage();
+      expect((topMessage as WorldTestMessage).value, 2);
+      world.pushMessagesToFrontInOrder(
+          [WorldTestMessage(4), WorldTestMessage(3)]);
+      topMessage = world.peekMessage();
+      expect((topMessage as WorldTestMessage).value, 4);
+      world.update(0.0);
+      expect(world.hasMessage, false);
+      world.pauseMessageSystem();
+      world.pushMessage(WorldTestMessage(1));
+      world.update(0.0);
+      expect(world.hasMessage, true);
+      world.resumeMessageSystem();
+      world.update(0.0);
+      expect(world.hasMessage, false);
     });
     test('two message systems one matches', () {
       var resultValueOne = 0;

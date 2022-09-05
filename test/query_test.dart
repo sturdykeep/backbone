@@ -1,4 +1,5 @@
 import 'package:backbone/builders.dart';
+import 'package:backbone/iterable.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
@@ -216,6 +217,11 @@ void main() {
       expect(result.length, 0);
       node.addTrait(TestComponentA());
       result = world.query(Has([TestComponentA]));
+      expect(result.length, 1);
+      final multiIterator =
+          (result.iterator as MultiIterableViewIterator<ANode>);
+      expect(multiIterator.totalLength, 1);
+      result = world.query(HasAny([TestComponentA, TestComponentC]));
       expect(result.length, 1);
     });
   });
