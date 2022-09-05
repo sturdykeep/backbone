@@ -38,6 +38,8 @@ BenchmarkFunction backbonePureMillion() {
   // Setup 100000 nodes
   for (var i = 0; i < 100000; i++) {
     final node = TestNode();
+    node.world = world;
+    node.isBackboneMounted = true;
     world.registerNode(node);
     node.addTrait(TestTraitA(10));
   }
