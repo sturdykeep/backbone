@@ -1,7 +1,10 @@
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
 import 'package:backbone/message.dart';
+import 'package:backbone/node.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'node_test.dart';
 
 class WorldTestMessage extends AMessage {
   WorldTestMessage(this.value);
@@ -11,6 +14,8 @@ class WorldTestMessage extends AMessage {
 class ExampleResource {}
 
 class ExampleResource2 {}
+
+class SecondTestNode extends ANode {}
 
 void main() {
   group('World', () {
@@ -54,6 +59,20 @@ void main() {
       var b = world.getNextUniqueId();
       expect(a != b, true);
     });
+
+    test('remove nodes from world', () {
+      var world = WorldBuilder().build();
+      final node = TestNode();
+      node.world = world;
+      node.isBackboneMounted = true;
+      world.registerNode(node);
+      expect(world.nodesByType.length, 1);
+      expect(() => world.removeNode<TestNode>(node),
+          isNot(throwsA(isA<Exception>())));
+      expect(() => world.removeNode<SecondTestNode>(SecondTestNode()),
+          throwsA(isA<Exception>()));
+    });
+
     test('simple message system', () {
       var resultValue = 0;
       var world = WorldBuilder().withMessageSystem((world, message) {

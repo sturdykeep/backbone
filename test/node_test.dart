@@ -51,6 +51,8 @@ void main() {
       expect(node.hasTrait<IntComponent>(), false);
       node.addTrait(IntComponent(5));
       expect(node.hasTrait<IntComponent>(), true);
+      final result = world.query(Has([IntComponent]), onlyLoaded: true);
+      expect(result.length, 1);
       node.addTrait(StringTrait('SturdyKeep rocks'));
       expect(node.hasTrait<IntComponent>(), true);
       expect(node.hasTrait<StringTrait>(), true);
