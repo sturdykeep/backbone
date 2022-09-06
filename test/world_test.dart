@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
 import 'package:backbone/message.dart';
@@ -152,8 +154,14 @@ void main() {
       var resultValue = 0;
       var world = WorldBuilder().withMessageSystem((world, message) {
         if (message is WorldTestMessage) {
-          resultValue += message.value;
-          return true;
+          if (message.value == 1) {
+            resultValue += message.value;
+            return true;
+          } else if (message.value == 5) {
+            //This will tirgger a slow message warning
+            sleep(const Duration(milliseconds: 5));
+            return true;
+          }
         }
         return false;
       }).build();
@@ -161,6 +169,14 @@ void main() {
       world.update(0.0);
       world.update(0.0);
       expect(resultValue, 1);
+      var slowMessageFound = false;
+      world.slowMessageDebugCallback = ((slowMessage) {
+        slowMessageFound = true;
+      });
+      world.pushMessage(WorldTestMessage(5));
+      world.update(0.0);
+      expect(resultValue, 1);
+      expect(slowMessageFound, true);
     });
   });
 }

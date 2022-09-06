@@ -14,6 +14,8 @@ import 'package:flame/events.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
+
 /// World is the main entry point for all backbone systems
 /// You can have multiple worlds in your game
 class World extends Component with HasGameRef {
@@ -47,6 +49,9 @@ class World extends Component with HasGameRef {
     addResource(Time());
     addResource(Input());
   }
+
+  /// Used for debugging
+  SlowMessageDebugCallback? slowMessageDebugCallback;
 
   // Message system
   bool _messageSystemPaused = false;
@@ -291,6 +296,7 @@ class World extends Component with HasGameRef {
         if (messageExecutionTime.inMilliseconds > 2) {
           debugPrint(
               '(Warning) Message ${currentMessage.runtimeType} took too long (${messageExecutionTime.inMilliseconds} ms) to process');
+          slowMessageDebugCallback?.call(currentMessage);
         }
       }
     }

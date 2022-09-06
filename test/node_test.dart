@@ -142,6 +142,22 @@ void main() {
       var node = TestNode();
       world.add(node);
       game.update(0);
+      var anotherWorldsNode = TestNode();
+      final anotherWorld =
+          WorldBuilder().withTrait(IntComponent).withTrait(StringTrait).build();
+      await game.add(anotherWorld);
+      anotherWorld.add(anotherWorldsNode);
+      game.update(0);
+      final anotherWorldsNodeTrait = StringTrait('SturdyKeep rocks!');
+      anotherWorldsNode.addTrait(anotherWorldsNodeTrait);
+      expect(
+          () => world.addTraitToNode<IntComponent, TestNode>(
+              IntComponent(5), anotherWorldsNode),
+          throwsA(isA<Exception>()));
+      expect(
+          () => world.removeTraitFromNode<StringTrait, TestNode>(
+              anotherWorldsNodeTrait, anotherWorldsNode),
+          throwsA(isA<Exception>()));
       expect(node.traits.isEmpty, true);
       expect(node.sortedTraits.isEmpty, true);
       node.addTrait(IntComponent(5));
@@ -151,7 +167,7 @@ void main() {
       expect(node.traits.isEmpty, true);
       expect(node.sortedTraits.isEmpty, true);
       node.addTrait(IntComponent(5));
-      node.addTrait(StringTrait('Sturdy keep rulze'));
+      node.addTrait(StringTrait('SturdyKeep rulze'));
       expect(node.traits.length, 2);
       expect(node.sortedTraits.length, 2);
       node.removeTrait<IntComponent>();
