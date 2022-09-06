@@ -289,7 +289,7 @@ class World extends Component with HasGameRef {
         final messageExecutionTime =
             DateTime.now().difference(messageProcessTimeStart);
         if (messageExecutionTime.inMilliseconds > 2) {
-          print(
+          debugPrint(
               '(Warning) Message ${currentMessage.runtimeType} took too long (${messageExecutionTime.inMilliseconds} ms) to process');
         }
       }
