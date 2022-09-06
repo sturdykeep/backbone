@@ -11,6 +11,7 @@ import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+import 'package:flame/experimental.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -225,32 +226,23 @@ class World extends Component with HasGameRef {
   /// to become aware of mouse movement.
   void onMouseMove(PointerHoverInfo info) {
     final input = getResource<Input>();
-    input.pointerMove = info;
-    input.mousePosition = info.eventPosition.game;
+    input.pointerHover = info;
+    input.pointerPosition = info.eventPosition.viewport;
   }
 
-  /// Should be called by the game in the `onTapDown` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapDown(int pointerId, TapDownInfo info) {
-    final input = getResource<Input>();
-    input.taps.putIfAbsent(pointerId, () => info);
-    input.taps[pointerId] = info;
-  }
-
-  /// Should be called by the game in the `onTapUp` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapUp(int pointerId, TapUpInfo info) {
-    final input = getResource<Input>();
-    input.tapUps.add(pointerId);
-    input.taps[pointerId]!.handled = info.handled;
-  }
-
-  /// Should be called by the game in the `onTapCancel` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapCancel(int pointerId) {
-    final input = getResource<Input>();
-    input.tapCancels.add(pointerId);
-  }
+  // Input hooks
+  void onTapDown(TapDownEvent event) => getResource<Input>().taps.add(event);
+  void onLongTapDown(TapDownEvent event) =>
+      getResource<Input>().longTaps.add(event);
+  void onTapUp(TapUpEvent event) => getResource<Input>().tapUps.add(event);
+  void onTapCancel(TapCancelEvent event) =>
+      getResource<Input>().tapCancels.add(event);
+  void onDragStart(DragStartEvent event) =>
+      getResource<Input>().dragStarts.add(event);
+  void onDragUpdate(DragUpdateEvent event) =>
+      getResource<Input>().dragUpdates.add(event);
+  void onDragEnd(DragEndEvent event) =>
+      getResource<Input>().dragEnds.add(event);
 
   // Update Loop
   /// Update all details of the world, called by Flame
@@ -258,21 +250,14 @@ class World extends Component with HasGameRef {
   void update(double dt) {
     // Update the time
     getResource<Time>().delta = dt;
+    // Update the inputs
+    final input = getResource<Input>();
+    input.process(dt);
 
     // Update all the systems
     for (final system in systems) {
       system(this);
     }
-
-    // Update the input system
-    final input = getResource<Input>();
-    input.keysPressed = {};
-    input.pointerMove = null;
-    input.taps = input.taps
-      ..removeWhere((pointerId, _) => input.tapUps.contains(pointerId))
-      ..removeWhere((pointerId, _) => input.tapCancels.contains(pointerId));
-    input.tapUps = HashSet();
-    input.tapCancels = HashSet();
 
     // Proccess the message queue
     // ...and try to keep at least 60 fps
@@ -300,5 +285,8 @@ class World extends Component with HasGameRef {
         }
       }
     }
+
+    // Clear the inputs
+    input.clear();
   }
 }
