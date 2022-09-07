@@ -42,11 +42,10 @@ void bounceSystem(World world) {
 void tapSpawnSystem(World world) {
   final rng = Random();
   final input = world.getResource<Input>();
-  final ups = input.tapUps;
+  final ups = input.newTapUps();
   for (var i = 0; i < ups.length; i++) {
-    final id = ups.elementAt(i);
-    final info = input.taps[id];
-    if (info != null && info.handled == false) {
+    final interaction = ups[i].tapUp!;
+    if (interaction.handled == false) {
       final bouncer = BouncerNode(
           Vector2.all(50.0 + 50.0 * rng.nextDouble()),
           Color.fromARGB(
@@ -56,7 +55,7 @@ void tapSpawnSystem(World world) {
               (rng.nextDouble() * 255.0).toInt()),
           (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
           200.0 + 200.0 * rng.nextDouble());
-      bouncer.transform.position = info.eventPosition.game;
+      bouncer.transform.position = interaction.canvasPosition;
       world.add(bouncer);
     }
   }

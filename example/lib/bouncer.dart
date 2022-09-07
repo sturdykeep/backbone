@@ -3,14 +3,14 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:example/messages.dart';
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
+import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/painting.dart';
 
 /// Marker trait for entities that can be bounced.
 class BouncerTrait extends ATrait {}
 
-class BouncerNode extends ANode with Tappable {
+class BouncerNode extends ANode with TapCallbacks {
   final Vector2 size;
   final Color color;
   final Vector2 direction;
@@ -45,9 +45,8 @@ class BouncerNode extends ANode with Tappable {
   }
 
   @override
-  bool onTapUp(TapUpInfo info) {
+  void onTapUp(TapUpEvent event) {
     world!.pushMessage(RemoveBouncerMessage(this));
-    info.handled = true;
-    return false;
+    event.handled = true;
   }
 }
