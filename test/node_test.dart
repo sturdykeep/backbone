@@ -8,7 +8,7 @@ import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'testGame.dart';
+import 'test_game.dart';
 
 class IntComponent extends ATrait {
   final int value;
