@@ -5,24 +5,24 @@ import 'package:flutter/services.dart';
 
 /// Resource which contains all the input data for the current frame.
 class Input {
-  Set<LogicalKeyboardKey> keysPressed = {};
+  final Set<LogicalKeyboardKey> keysPressed = {};
   PointerHoverInfo? pointerHover;
   Vector2 pointerPosition = Vector2.zero();
 
   // Taps
-  List<experimental.TapDownEvent> taps = [];
-  List<experimental.TapDownEvent> longTaps = [];
-  List<experimental.TapUpEvent> tapUps = [];
-  List<experimental.TapCancelEvent> tapCancels = [];
+  final List<experimental.TapDownEvent> taps = [];
+  final List<experimental.TapDownEvent> longTaps = [];
+  final List<experimental.TapUpEvent> tapUps = [];
+  final List<experimental.TapCancelEvent> tapCancels = [];
 
   // Drag
-  List<experimental.DragStartEvent> dragStarts = [];
-  List<experimental.DragUpdateEvent> dragUpdates = [];
-  List<experimental.DragEndEvent> dragEnds = [];
+  final List<experimental.DragStartEvent> dragStarts = [];
+  final List<experimental.DragUpdateEvent> dragUpdates = [];
+  final List<experimental.DragEndEvent> dragEnds = [];
 
   // Representations
-  Map<int, TapInteraction> tapInteractions = {};
-  Map<int, DragInteraction> dragInteractions = {};
+  final Map<int, TapInteraction> tapInteractions = {};
+  final Map<int, DragInteraction> dragInteractions = {};
 
   /// Get the taps and long taps which started this frame
   List<TapInteraction> newTaps() {
@@ -96,14 +96,14 @@ class Input {
   }
 
   void clear() {
-    keysPressed = {};
-    taps = [];
-    longTaps = [];
-    tapUps = [];
-    tapCancels = [];
-    dragStarts = [];
-    dragUpdates = [];
-    dragEnds = [];
+    keysPressed.clear();
+    taps.clear();
+    longTaps.clear();
+    tapUps.clear();
+    tapCancels.clear();
+    dragStarts.clear();
+    dragUpdates.clear();
+    dragEnds.clear();
   }
 
   void process(double dt) {
