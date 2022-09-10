@@ -1,6 +1,6 @@
 import 'package:backbone/archetype.dart';
 
-/// Base class for any filter in worlds
+/// Base class for any filter in realms
 abstract class AFilter {
   bool matches(Archetype archetype);
 }

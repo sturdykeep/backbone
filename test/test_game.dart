@@ -1,61 +1,61 @@
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
-import 'package:backbone/world.dart' as world;
+import 'package:backbone/realm.dart' as realm;
 
 class TestGame extends FlameGame
     with HasTappableComponents, HasDraggableComponents {
   TestGame();
 
-  world.World getWorld() {
-    return children.first as world.World;
+  realm.Realm getrealm() {
+    return children.first as realm.Realm;
   }
 
   @override
   void onTapDown(TapDownEvent event) {
-    final world = getWorld();
-    world.onTapDown(event);
+    final realm = getrealm();
+    realm.onTapDown(event);
     super.onTapDown(event);
   }
 
   @override
   void onLongTapDown(TapDownEvent event) {
-    final world = getWorld();
-    world.onLongTapDown(event);
+    final realm = getrealm();
+    realm.onLongTapDown(event);
     super.onLongTapDown(event);
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    final world = getWorld();
-    world.onTapUp(event);
+    final realm = getrealm();
+    realm.onTapUp(event);
     super.onTapUp(event);
   }
 
   @override
   void onTapCancel(TapCancelEvent event) {
-    final world = getWorld();
-    world.onTapCancel(event);
+    final realm = getrealm();
+    realm.onTapCancel(event);
     super.onTapCancel(event);
   }
 
   @override
   void onDragStart(DragStartEvent event) {
-    final world = getWorld();
-    world.onDragStart(event);
+    final realm = getrealm();
+    realm.onDragStart(event);
     super.onDragStart(event);
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    final world = getWorld();
-    world.onDragUpdate(event);
+    final realm = getrealm();
+    realm.onDragUpdate(event);
     super.onDragUpdate(event);
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
-    final world = getWorld();
-    world.onDragEnd(event);
+    final realm = getrealm();
+    realm.onDragEnd(event);
     super.onDragEnd(event);
   }
 }

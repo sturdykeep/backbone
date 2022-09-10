@@ -29,7 +29,7 @@ class TestNode extends ANode {
 }
 
 BenchmarkFunction backbonePureMillion() {
-  final world = WorldBuilder()
+  final realm = RealmBuilder()
       .withTrait(TestTraitA)
       .withTrait(TestTraitB)
       .withTrait(TestTraitC)
@@ -38,15 +38,15 @@ BenchmarkFunction backbonePureMillion() {
   // Setup 100000 nodes
   for (var i = 0; i < 100000; i++) {
     final node = TestNode();
-    node.world = world;
+    node.realm = realm;
     node.isBackboneMounted = true;
-    world.registerNode(node);
+    realm.registerNode(node);
     node.addTrait(TestTraitA(10));
   }
 
   return () {
     var result = 0;
-    final fromQuery = world.query(Has([TestTraitA]));
+    final fromQuery = realm.query(Has([TestTraitA]));
     for (var node in fromQuery) {
       final component = node.tryGet<TestTraitA>();
       result += component?.value ?? 0;

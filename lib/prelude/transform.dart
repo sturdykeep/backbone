@@ -1,13 +1,13 @@
 import 'package:backbone/builders.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/trait.dart';
-import 'package:backbone/world.dart';
+import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 
 /// TODO add docu
 
-void transformPlugin(WorldBuilder builder) {
+void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
   builder.withSystem(transformSystem);
 }
@@ -23,11 +23,11 @@ class TransformTrait extends ATrait {
       position.y - anchor.y * size.y, size.x, size.y);
 }
 
-void transformSystem(World world) {
-  final worldQuery = world.query(Has([TransformTrait]));
-  final queryLength = worldQuery.length;
+void transformSystem(Realm realm) {
+  final realmQuery = realm.query(Has([TransformTrait]));
+  final queryLength = realmQuery.length;
   for (var i = 0; i < queryLength; i++) {
-    final node = worldQuery.elementAt(i);
+    final node = realmQuery.elementAt(i);
     final transform = node.get<TransformTrait>();
 
     // Check if the node has PositionComponent children

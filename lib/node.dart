@@ -2,14 +2,14 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/trait.dart';
-import 'package:backbone/world.dart';
+import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 
 /// Nodes are a collection of game objects. Nodes can
 /// have traits. Nodes are processed by systems.
 abstract class ANode extends Component with HasGameRef {
-  /// World of the node, if not a root node it might be null
-  World? world;
+  /// Realm of the node, if not a root node it might be null
+  Realm? realm;
   bool isBackboneMounted = false;
 
   /// ????
@@ -23,16 +23,16 @@ abstract class ANode extends Component with HasGameRef {
   @override
   void onMount() {
     super.onMount();
-    world = findWorldParent();
-    assert(world != null, 'Nodes must be added to a world');
+    realm = findRealmParent();
+    assert(realm != null, 'Nodes must be added to a Realm');
     isBackboneMounted = true;
-    world!.registerNode(this);
+    realm!.registerNode(this);
   }
 
   @override
   void onRemove() {
     super.onRemove();
-    world!.removeNode(this);
+    realm!.removeNode(this);
   }
 
   // Methods
@@ -79,18 +79,18 @@ abstract class ANode extends Component with HasGameRef {
     return result;
   }
 
-  /// Get the world of the parent
-  World? findWorldParent() {
+  /// Get the Realm of the parent
+  Realm? findRealmParent() {
     var componentToCheck = parent;
-    World? parentWorld;
+    Realm? parentRealm;
     while (componentToCheck != null) {
-      if (componentToCheck is World) {
-        parentWorld = componentToCheck;
+      if (componentToCheck is Realm) {
+        parentRealm = componentToCheck;
         break;
       }
       componentToCheck = componentToCheck.parent!;
     }
-    return parentWorld;
+    return parentRealm;
   }
 
   /// Get all child components of the node
@@ -118,10 +118,10 @@ abstract class ANode extends Component with HasGameRef {
   void addTrait(ATrait trait) {
     _traits.add(trait);
     try {
-      world?.addTraitToNode(trait, this);
+      realm?.addTraitToNode(trait, this);
     } catch (e) {
       _traits.remove(trait);
-      world?.addTraitToNode(trait, this);
+      realm?.addTraitToNode(trait, this);
       rethrow;
     }
   }
@@ -132,7 +132,7 @@ abstract class ANode extends Component with HasGameRef {
         _traits.cast<ATrait?>().firstWhere((c) => c is T, orElse: () => null);
     if (trait != null) {
       _traits.remove(trait);
-      world?.removeTraitFromNode(trait, this);
+      realm?.removeTraitFromNode(trait, this);
     }
   }
 

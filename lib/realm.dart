@@ -17,16 +17,16 @@ import 'package:flutter/services.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
-/// World is the main entry point for all backbone systems
-/// You can have multiple worlds in your game
-class World extends Component with HasGameRef {
+/// Realm is the main entry point for all backbone systems
+/// You can have multiple realm in your game
+class Realm extends Component with HasGameRef {
   int _nextUniqueId = 0;
 
   /// Get a unique id for this wolrd instance
-  /// ID's are only unqiue by world
+  /// ID's are only unqiue by realm
   int getNextUniqueId() => _nextUniqueId++;
 
-  /// All type of trais registered in this world
+  /// All type of trais registered in this Realm
   late final HashSet<Type> registeredTraits;
 
   /// ???
@@ -44,8 +44,8 @@ class World extends Component with HasGameRef {
   /// ???
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
 
-  /// Create a new world and provide the traids, ???, systems, messages and resources
-  World(this.registeredTraits, this.archetypeBuckets, this.systems,
+  /// Create a new Realm and provide the traids, ???, systems, messages and resources
+  Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
     addResource(Time());
     addResource(Input());
@@ -101,7 +101,7 @@ class World extends Component with HasGameRef {
     _messageSystemPaused = false;
   }
 
-  // Add a new resource to the world
+  // Add a new resource to the Realm
   void addResource<R extends dynamic>(R resource) {
     resources[R] = resource;
   }
@@ -147,10 +147,10 @@ class World extends Component with HasGameRef {
     }
   }
 
-  /// Add a node to a world
+  /// Add a node to a Realm
   void registerNode<N extends ANode>(N node) {
     assert(node.isBackboneMounted == true,
-        'Add the node to the world via add or addAll. Do not call registerNode');
+        'Add the node to the realm via add or addAll. Do not call registerNode');
     final type = node.runtimeType;
     if (nodesByType.containsKey(type) == false) {
       nodesByType[type] = HashSet();
@@ -159,23 +159,23 @@ class World extends Component with HasGameRef {
     putNodeIntoBucket(node);
   }
 
-  /// Remove an existing node from the world
+  /// Remove an existing node from the realm
   void removeNode<N extends ANode>(N node) {
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
       throw Exception('No nodes of type $type were ever added');
     }
     nodesByType[type]!.remove(node);
-    node.world = this;
+    node.realm = this;
 
     removeNodeFromBuckets(node);
   }
 
   /// Addd a trait to an existing node
   void addTraitToNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.world != this) {
+    if (node.realm != this) {
       throw Exception(
-          'Node $node is not in this world. It was added to another world');
+          'Node $node is not in this realm. It was added to another realm');
     }
 
     removeNodeFromBuckets(node);
@@ -184,9 +184,9 @@ class World extends Component with HasGameRef {
 
   /// Remove a trait from an existing node
   void removeTraitFromNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.world != this) {
+    if (node.realm != this) {
       throw Exception(
-          'Node $node is not in this world. It was added to another world');
+          'Node $node is not in this realm. It was added to another realm');
     }
 
     removeNodeFromBuckets(node);
@@ -194,7 +194,7 @@ class World extends Component with HasGameRef {
   }
 
   // Query
-  /// Query the world for a list of nodes
+  /// Query the realm for a list of nodes
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
@@ -212,7 +212,7 @@ class World extends Component with HasGameRef {
   }
 
   // Input System
-  /// Should be called by the game in the `onKeyEvent` for the world's input system
+  /// Should be called by the game in the `onKeyEvent` for the realm's input system
   /// to become aware of keyboard events.
   void onKeyEvent(
     RawKeyEvent event,
@@ -222,7 +222,7 @@ class World extends Component with HasGameRef {
     input.keysPressed = keysPressed;
   }
 
-  /// Should be called by the game in the `onMouseMove` for the world's input system
+  /// Should be called by the game in the `onMouseMove` for the realm's input system
   /// to become aware of mouse movement.
   void onMouseMove(PointerHoverInfo info) {
     final input = getResource<Input>();
@@ -245,7 +245,7 @@ class World extends Component with HasGameRef {
       getResource<Input>().dragEnds.add(event);
 
   // Update Loop
-  /// Update all details of the world, called by Flame
+  /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
     // Update the time

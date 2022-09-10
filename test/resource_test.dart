@@ -9,37 +9,37 @@ class TestResource {
 void main() {
   group('Resource', () {
     test('can get resource', () {
-      var world = WorldBuilder().build();
+      var realm = RealmBuilder().build();
       var resource = TestResource(1);
-      world.addResource(resource);
-      expect(world.tryGetResource<TestResource>(), resource);
+      realm.addResource(resource);
+      expect(realm.tryGetResource<TestResource>(), resource);
     });
     test('cannot get resource if not added', () {
-      var world = WorldBuilder().build();
-      expect(world.tryGetResource<TestResource>(), null);
+      var realm = RealmBuilder().build();
+      expect(realm.tryGetResource<TestResource>(), null);
     });
     test('doesn\' get resource of wrong type', () {
-      var world = WorldBuilder().build();
+      var realm = RealmBuilder().build();
       var resource = TestResource(1);
-      world.addResource(resource);
-      expect(world.tryGetResource<int>(), null);
+      realm.addResource(resource);
+      expect(realm.tryGetResource<int>(), null);
     });
     test('resources is removed', () {
-      var world = WorldBuilder().build();
+      var realm = RealmBuilder().build();
       var resource = TestResource(1);
-      world.addResource(resource);
-      var removedResource = world.removeResource<TestResource>();
-      expect(world.tryGetResource<TestResource>(), null);
+      realm.addResource(resource);
+      var removedResource = realm.removeResource<TestResource>();
+      expect(realm.tryGetResource<TestResource>(), null);
       expect(removedResource, resource);
     });
     test('can access resource from a system', () {
       var resultValue = 0;
-      var world = WorldBuilder().withSystem((world) {
-        resultValue = world.getResource<TestResource>().value;
+      var realm = RealmBuilder().withSystem((realm) {
+        resultValue = realm.getResource<TestResource>().value;
       }).build();
       var resource = TestResource(1);
-      world.addResource(resource);
-      world.update(0.0);
+      realm.addResource(resource);
+      realm.update(0.0);
       expect(resultValue, 1);
     });
   });

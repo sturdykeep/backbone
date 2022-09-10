@@ -46,7 +46,7 @@ class BouncerNode extends ANode with TapCallbacks {
 
   @override
   void onTapUp(TapUpEvent event) {
-    world!.pushMessage(RemoveBouncerMessage(this));
+    realm!.pushMessage(RemoveBouncerMessage(this));
     event.handled = true;
   }
 }
