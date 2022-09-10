@@ -219,7 +219,7 @@ class Realm extends Component with HasGameRef {
     Set<LogicalKeyboardKey> keysPressed,
   ) {
     final input = getResource<Input>();
-    input.keysPressed = keysPressed;
+    input.keysPressed.addAll(keysPressed);
   }
 
   /// Should be called by the game in the `onMouseMove` for the realm's input system
