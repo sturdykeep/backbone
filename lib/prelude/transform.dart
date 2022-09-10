@@ -5,8 +5,13 @@ import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 
-/// TODO add docu
-
+/// Plugin to register the TransformTrait and transformSystem in your realm
+/// Both are used to handle PositionComponent basics setter for:
+/// - position
+/// - scale
+/// - angle
+/// - size
+/// - anchor
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
   builder.withSystem(transformSystem);

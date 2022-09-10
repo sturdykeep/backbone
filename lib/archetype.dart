@@ -1,5 +1,4 @@
-/// TODO add docu
-
+/// Used in the Realm to speed up queries for nodes
 class Archetype {
   static List<Archetype> allCombinations(Iterable<Type> types) {
     // Creates archetypes from all possible combinations of sorted by name types
