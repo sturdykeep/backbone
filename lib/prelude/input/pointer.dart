@@ -11,6 +11,7 @@ class Pointer {
   final PointerDeviceKind kind;
   PointerState state;
   final List<PointerState> history = [];
+  dynamic payload;
 
   Pointer(this.id, this.startPosition, this.kind, this.state);
 

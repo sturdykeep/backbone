@@ -1,4 +1,8 @@
+import 'package:backbone/builders.dart';
+import 'package:backbone/prelude/input/plugins/drag.dart';
 import 'package:backbone/prelude/input/key.dart';
+import 'package:backbone/prelude/input/plugins/hoverable.dart';
+import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart' as ex;
@@ -9,6 +13,25 @@ import 'package:collection/collection.dart';
 // References
 // https://docs.rs/bevy/latest/bevy/input/struct.Input.html
 // https://bevy-cheatbook.github.io/input.html
+
+void inputPlugin(RealmBuilder builder) {
+  // Taps
+  builder
+    ..withTrait(TappableTrait)
+    ..withSystem(tappableSystem);
+
+  // Hover
+  builder
+    ..withTrait(HoverableTrait)
+    ..withSystem(hoverableSystem);
+
+  // Drag
+  builder
+    ..withTrait(DraggableTrait)
+    ..withTrait(DragReceiverTrait)
+    ..withSystem(draggableSystem)
+    ..withSystem(dragReceiverSystem);
+}
 
 /// Resource which contains all the input data for the current frame.
 class Input {
@@ -408,7 +431,7 @@ class Input {
   Iterable<Pointer> justDragStartPointers() {
     final dragStarts = _dragStarts;
     return _pointers.where((pointer) =>
-        pointer.isDragStart &&
+        (pointer.isDragStart || pointer.wasDragStart) &&
         dragStarts.any((dragStart) => dragStart.pointerId == pointer.device));
   }
 
