@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:backbone/filter.dart';
-import 'package:backbone/prelude/input.dart';
+import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -42,10 +42,9 @@ void bounceSystem(Realm realm) {
 void tapSpawnSystem(Realm realm) {
   final rng = Random();
   final input = realm.getResource<Input>();
-  final ups = input.newTapUps();
-  for (var i = 0; i < ups.length; i++) {
-    final interaction = ups[i].tapUp!;
-    if (interaction.handled == false) {
+  final pointers = input.justReleasedPointers();
+  for (var pointer in pointers) {
+    if (pointer.handled == false) {
       final bouncer = BouncerNode(
           Vector2.all(50.0 + 50.0 * rng.nextDouble()),
           Color.fromARGB(
@@ -55,7 +54,7 @@ void tapSpawnSystem(Realm realm) {
               (rng.nextDouble() * 255.0).toInt()),
           (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
           200.0 + 200.0 * rng.nextDouble());
-      bouncer.transform.position = interaction.canvasPosition;
+      bouncer.transform.position = pointer.position;
       realm.add(bouncer);
     }
   }

@@ -10,7 +10,7 @@ import 'package:flutter/painting.dart';
 /// Marker trait for entities that can be bounced.
 class BouncerTrait extends ATrait {}
 
-class BouncerNode extends ANode with TapCallbacks {
+class BouncerNode extends ANode with TapCallbacks, DragCallbacks {
   final Vector2 size;
   final Color color;
   final Vector2 direction;
@@ -28,6 +28,7 @@ class BouncerNode extends ANode with TapCallbacks {
     addTrait(transformTrait);
     addTrait(BouncerTrait());
   }
+
   @override
   bool containsLocalPoint(Vector2 point) {
     return get<TransformTrait>().rect.containsPoint(point);
@@ -46,6 +47,12 @@ class BouncerNode extends ANode with TapCallbacks {
 
   @override
   void onTapUp(TapUpEvent event) {
+    realm!.pushMessage(RemoveBouncerMessage(this));
+    event.handled = true;
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
     realm!.pushMessage(RemoveBouncerMessage(this));
     event.handled = true;
   }

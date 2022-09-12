@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
-import 'package:backbone/prelude/input.dart';
+import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
@@ -12,10 +12,94 @@ import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
+
+// Notes about the Flame input system:
+// * TapDown is always first before LongTapDown
+// * TapDown and TapCancel are always before DragStart
+// * TapDown and DragStart have different pointerIds, but same positions
+// * While drag is happening, hover events are not sent
+// * Hover events use a device identifier, that can be reused
+
+// So, how do we track things?
+// 1. When tap down happens, we search for a hover with the same position and update it as a tapdown, otherwise create a new one
+// 2. LongTapDown just updates the state of the pointer with the same pointerId
+// 3. DragStart searches for pointer with cancelled state and exact same position, then updates it
+
+// Longest lifecycle of a pointer looks like this:
+// Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
+
+/// A mixin that allows you to add a [Realm] to your [FlameGame].
+/// It automatically hooks up the input events to the [Realm].
+mixin HasRealm
+    on
+        HasTappableComponents,
+        HasDraggableComponents,
+        KeyboardEvents,
+        HasHoverables {
+  late Realm realm;
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    realm.getResource<Input>().onTapDown(event);
+    super.onTapDown(event);
+  }
+
+  @override
+  void onLongTapDown(TapDownEvent event) {
+    realm.getResource<Input>().onLongTapDown(event);
+    super.onLongTapDown(event);
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    realm.getResource<Input>().onTapUp(event);
+    super.onTapUp(event);
+  }
+
+  @override
+  void onTapCancel(TapCancelEvent event) {
+    realm.getResource<Input>().onTapCancel(event);
+    super.onTapCancel(event);
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    realm.getResource<Input>().onDragStart(event);
+    super.onDragStart(event);
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    realm.getResource<Input>().onDragUpdate(event);
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    realm.getResource<Input>().onDragEnd(event);
+    super.onDragEnd(event);
+  }
+
+  @override
+  KeyEventResult onKeyEvent(
+      RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    realm.getResource<Input>().onKeyEvent(event, keysPressed);
+    super.onKeyEvent(event, keysPressed);
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  void onMouseMove(PointerHoverInfo info) {
+    realm.getResource<Input>().onHover(info);
+    super.onMouseMove(info);
+  }
+}
 
 /// Realm is the main entry point for all backbone systems
 /// You can have multiple realm in your game
@@ -211,48 +295,12 @@ class Realm extends Component with HasGameRef {
     return MultiIterableView(result);
   }
 
-  // Input System
-  /// Should be called by the game in the `onKeyEvent` for the realm's input system
-  /// to become aware of keyboard events.
-  void onKeyEvent(
-    RawKeyEvent event,
-    Set<LogicalKeyboardKey> keysPressed,
-  ) {
-    final input = getResource<Input>();
-    input.keysPressed.addAll(keysPressed);
-  }
-
-  /// Should be called by the game in the `onMouseMove` for the realm's input system
-  /// to become aware of mouse movement.
-  void onMouseMove(PointerHoverInfo info) {
-    final input = getResource<Input>();
-    input.pointerHover = info;
-    input.pointerPosition = info.eventPosition.viewport;
-  }
-
-  // Input hooks
-  void onTapDown(TapDownEvent event) => getResource<Input>().taps.add(event);
-  void onLongTapDown(TapDownEvent event) =>
-      getResource<Input>().longTaps.add(event);
-  void onTapUp(TapUpEvent event) => getResource<Input>().tapUps.add(event);
-  void onTapCancel(TapCancelEvent event) =>
-      getResource<Input>().tapCancels.add(event);
-  void onDragStart(DragStartEvent event) =>
-      getResource<Input>().dragStarts.add(event);
-  void onDragUpdate(DragUpdateEvent event) =>
-      getResource<Input>().dragUpdates.add(event);
-  void onDragEnd(DragEndEvent event) =>
-      getResource<Input>().dragEnds.add(event);
-
   // Update Loop
   /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
     // Update the time
     getResource<Time>().delta = dt;
-    // Update the inputs
-    final input = getResource<Input>();
-    input.process(dt);
 
     // Update all the systems
     for (final system in systems) {
@@ -287,6 +335,7 @@ class Realm extends Component with HasGameRef {
     }
 
     // Clear the inputs
+    final input = getResource<Input>();
     input.clear();
   }
 }

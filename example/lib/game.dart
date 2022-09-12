@@ -6,56 +6,18 @@ import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
+import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 class MainGame extends FlameGame
-    with HasTappableComponents, HasDraggableComponents {
-  late final Realm realm;
-
-  @override
-  void onTapDown(TapDownEvent event) {
-    realm.onTapDown(event);
-    super.onTapDown(event);
-  }
-
-  @override
-  void onLongTapDown(TapDownEvent event) {
-    realm.onLongTapDown(event);
-    super.onLongTapDown(event);
-  }
-
-  @override
-  void onTapUp(TapUpEvent event) {
-    realm.onTapUp(event);
-    super.onTapUp(event);
-  }
-
-  @override
-  void onTapCancel(TapCancelEvent event) {
-    realm.onTapCancel(event);
-    super.onTapCancel(event);
-  }
-
-  @override
-  void onDragStart(DragStartEvent event) {
-    realm.onDragStart(event);
-    super.onDragStart(event);
-  }
-
-  @override
-  void onDragUpdate(DragUpdateEvent event) {
-    realm.onDragUpdate(event);
-    super.onDragUpdate(event);
-  }
-
-  @override
-  void onDragEnd(DragEndEvent event) {
-    realm.onDragEnd(event);
-    super.onDragEnd(event);
-  }
-
+    with
+        HasTappableComponents,
+        HasDraggableComponents,
+        KeyboardEvents,
+        HasHoverables,
+        HasRealm {
   @override
   Future<void> onLoad() async {
     realm = RealmBuilder()
