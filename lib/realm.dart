@@ -32,16 +32,12 @@ typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 // 3. DragStart searches for pointer with cancelled state and exact same position, then updates it
 
 // Longest lifecycle of a pointer looks like this:
-// Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
+// HoverEnter -> Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
 
 /// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
 /// It automatically hooks up the input events to the [Realm].
 mixin HasRealm
-    on
-        HasTappableComponents,
-        HasDraggableComponents,
-        KeyboardEvents,
-        HasHoverables {
+    on HasTappableComponents, HasDraggableComponents, KeyboardEvents {
   late Realm realm;
 
   @override
@@ -92,12 +88,6 @@ mixin HasRealm
     realm.getResource<Input>().onKeyEvent(event, keysPressed);
     super.onKeyEvent(event, keysPressed);
     return KeyEventResult.ignored;
-  }
-
-  @override
-  void onMouseMove(PointerHoverInfo info) {
-    realm.getResource<Input>().onHover(info);
-    super.onMouseMove(info);
   }
 }
 

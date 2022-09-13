@@ -20,43 +20,60 @@ void hoverableSystem(Realm realm) {
   final query = realm.query(Has([HoverableTrait, TransformTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
+  final hoverEnters = input.justHoverEnterPointers();
   final hovers = input.justHoverPointers();
+  final hoverLeaves = input.justHoverLeavePointers();
+  final pendingHovers = input.pendingHoverPointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final hoverable = node.get<HoverableTrait>();
     final transform = node.get<TransformTrait>();
 
-    // Check new hovers
-    for (var hover in hovers) {
-      if (transform.rect.containsPoint(hover.position)) {
-        if (hoverable.pointers.contains(hover) == false) {
-          hoverable.pointers.add(hover);
-          if (hoverable.onHoverEnter != null) {
-            hoverable.onHoverEnter!(hover);
-          }
-        } else {
-          if (hoverable.onHoverMove != null) {
-            hoverable.onHoverMove!(hover);
-          }
-        }
-      } else {
-        if (hoverable.pointers.contains(hover)) {
-          hoverable.pointers.remove(hover);
-          if (hoverable.onHoverExit != null) {
-            hoverable.onHoverExit!(hover);
-          }
-        }
+    // Check hover enters
+    for (var hoverEnter in hoverEnters) {
+      if (transform.rect.containsPoint(hoverEnter.position)) {
+        hoverable.pointers.add(hoverEnter);
+        hoverable.onHoverEnter?.call(hoverEnter);
       }
     }
 
-    // Check entered pointers that are no longer hovering
-    final exitedPointers = hoverable.pointers
-        .where((pointer) => pointer.isHovering == false)
-        .toList();
-    for (var exitedPointer in exitedPointers) {
-      hoverable.pointers.remove(exitedPointer);
-      if (hoverable.onHoverExit != null) {
-        hoverable.onHoverExit!(exitedPointer);
+    // Check hover moves which aren't in the pointer list
+    for (var hover in hovers) {
+      if (transform.rect.containsPoint(hover.position) &&
+          hoverable.pointers.contains(hover) == false) {
+        hoverable.pointers.add(hover);
+        hoverable.onHoverEnter?.call(hover);
+      }
+    }
+
+    // Check hover leaves
+    for (var hoverLeave in hoverLeaves) {
+      if (hoverable.pointers.contains(hoverLeave)) {
+        hoverable.pointers.remove(hoverLeave);
+        hoverable.onHoverExit?.call(hoverLeave);
+      }
+    }
+
+    // Check the entered pointer list
+    // 1. Check if the pointer is still in the rect and has hover move state
+    // 2. Check if the pointer not being in the hover mode anymore
+    final pointers = hoverable.pointers.toList();
+    for (var pointer in pointers) {
+      if (transform.rect.containsPoint(pointer.position) &&
+          (pointer.isHoverEnter || pointer.isHovering)) {
+        hoverable.onHoverMove?.call(pointer);
+      } else {
+        hoverable.pointers.remove(pointer);
+        hoverable.onHoverExit?.call(pointer);
+      }
+    }
+
+    // Check pending hovers for pointers not yet in the list
+    for (var pendingHover in pendingHovers) {
+      if (transform.rect.containsPoint(pendingHover.position) &&
+          hoverable.pointers.contains(pendingHover) == false) {
+        hoverable.pointers.add(pendingHover);
+        hoverable.onHoverEnter?.call(pendingHover);
       }
     }
   }

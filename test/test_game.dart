@@ -1,3 +1,4 @@
+import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
@@ -9,6 +10,7 @@ class TestGame extends FlameGame
         HasDraggableComponents,
         KeyboardEvents,
         HasHoverables,
+        Hoverable,
         realm.HasRealm {
   TestGame();
 }

@@ -24,11 +24,19 @@ class Pointer {
       PointerStateDown(raw),
     );
   }
-  factory Pointer.fromHoverEvent(int id, PointerHoverInfo raw) {
+  factory Pointer.fromHoverEnterEvent(int id, PointerEnterEvent raw) {
     return Pointer(
       id,
-      raw.eventPosition.game,
-      raw.raw.kind,
+      raw.position.toVector2(),
+      raw.kind,
+      PointerStateHoverEnter(raw),
+    );
+  }
+  factory Pointer.fromHoverEvent(int id, PointerHoverEvent raw) {
+    return Pointer(
+      id,
+      raw.position.toVector2(),
+      raw.kind,
       PointerStateHover(raw),
     );
   }
@@ -60,8 +68,12 @@ class Pointer {
 
   /// Most up to date position of the pointer.
   Vector2 get position {
-    if (state is PointerStateHover) {
-      return (state as PointerStateHover).raw.eventPosition.global;
+    if (state is PointerStateHoverEnter) {
+      return (state as PointerStateHoverEnter).raw.position.toVector2();
+    } else if (state is PointerStateHover) {
+      return (state as PointerStateHover).raw.position.toVector2();
+    } else if (state is PointerStateHoverExit) {
+      return (state as PointerStateHoverExit).raw.position.toVector2();
     } else if (state is PointerStateDown) {
       return (state as PointerStateDown).raw.canvasPosition;
     } else if (state is PointerStateLongDown) {
@@ -90,8 +102,12 @@ class Pointer {
 
   /// Internal representation of a concrete device (Hover) or its interaction (Taps, Drags).
   int get device {
-    if (state is PointerStateHover) {
-      return (state as PointerStateHover).raw.raw.device;
+    if (state is PointerStateHoverEnter) {
+      return (state as PointerStateHoverEnter).raw.device;
+    } else if (state is PointerStateHoverExit) {
+      return (state as PointerStateHoverExit).raw.device;
+    } else if (state is PointerStateHover) {
+      return (state as PointerStateHover).raw.device;
     } else if (state is PointerStateDown) {
       return (state as PointerStateDown).raw.pointerId;
     } else if (state is PointerStateLongDown) {
@@ -112,8 +128,12 @@ class Pointer {
   }
 
   bool get handled {
-    if (state is PointerStateHover) {
-      return (state as PointerStateHover).raw.handled;
+    if (state is PointerStateHoverEnter) {
+      return (state as PointerStateHoverEnter).handled;
+    } else if (state is PointerStateHoverExit) {
+      return (state as PointerStateHoverExit).handled;
+    } else if (state is PointerStateHover) {
+      return (state as PointerStateHover).handled;
     } else if (state is PointerStateDown) {
       return (state as PointerStateDown).raw.handled;
     } else if (state is PointerStateLongDown) {
@@ -134,8 +154,12 @@ class Pointer {
   }
 
   set handled(bool value) {
-    if (state is PointerStateHover) {
-      (state as PointerStateHover).raw.handled = value;
+    if (state is PointerStateHoverEnter) {
+      (state as PointerStateHoverEnter).handled = value;
+    } else if (state is PointerStateHoverExit) {
+      (state as PointerStateHoverExit).handled = value;
+    } else if (state is PointerStateHover) {
+      (state as PointerStateHover).handled = value;
     } else if (state is PointerStateDown) {
       (state as PointerStateDown).raw.handled = value;
     } else if (state is PointerStateLongDown) {
@@ -154,6 +178,10 @@ class Pointer {
   }
 
   // State getters
+  bool get isHoverEnter => state is PointerStateHoverEnter;
+  bool get wasHoverEnter => historyHas<PointerStateHoverEnter>();
+  bool get isHoverLeave => state is PointerStateHoverExit;
+  bool get wasHoverExit => historyHas<PointerStateHoverExit>();
   bool get isHovering => state is PointerStateHover;
   bool get wasHovering => historyHas<PointerStateHover>() || isHovering;
   bool get isDown => state is PointerStateDown;
@@ -226,8 +254,23 @@ class PointerStateDragEnd extends PointerState {
   PointerStateDragEnd(this.raw);
 }
 
+class PointerStateHoverEnter extends PointerState {
+  final PointerEnterEvent raw;
+  bool handled = false;
+
+  PointerStateHoverEnter(this.raw);
+}
+
 class PointerStateHover extends PointerState {
-  final PointerHoverInfo raw;
+  final PointerHoverEvent raw;
+  bool handled = false;
 
   PointerStateHover(this.raw);
+}
+
+class PointerStateHoverExit extends PointerState {
+  final PointerExitEvent raw;
+  bool handled = false;
+
+  PointerStateHoverExit(this.raw);
 }
