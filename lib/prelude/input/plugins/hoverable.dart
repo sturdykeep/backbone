@@ -20,13 +20,13 @@ void hoverableSystem(Realm realm) {
   final query = realm.query(Has([HoverableTrait, TransformTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
+  final hovers = input.justHoverPointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final hoverable = node.get<HoverableTrait>();
     final transform = node.get<TransformTrait>();
 
-    // Check hovers
-    final hovers = input.justHoverPointers();
+    // Check new hovers
     for (var hover in hovers) {
       if (transform.rect.containsPoint(hover.position)) {
         if (hoverable.pointers.contains(hover) == false) {

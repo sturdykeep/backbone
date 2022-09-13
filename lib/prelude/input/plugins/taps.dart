@@ -32,13 +32,19 @@ void tappableSystem(Realm realm) {
   final query = realm.query(Has([TappableTrait, TransformTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
+  final tapStarts = input.justTapDownPointers();
+  final longTapStarts = input.justLongTapDownPointers();
+  final tapEnds = input.justTapUpPointers();
+  final tapCancels = input.justTapCancelPointers();
+  final justPressed = input.justPressedPointers();
+  final pressed = input.pressedPointers();
+  final justReleased = input.justReleasedPointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final tappable = node.get<TappableTrait>();
     final transform = node.get<TransformTrait>();
 
     // Check tap starts
-    final tapStarts = input.justTapDownPointers();
     for (var tapStart in tapStarts) {
       if (tappable.onTapDown != null) {
         if (transform.rect.containsPoint(tapStart.position)) {
@@ -48,7 +54,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check long tap starts
-    final longTapStarts = input.justLongTapDownPointers();
     for (var longTapStart in longTapStarts) {
       if (tappable.onLongTapDown != null) {
         if (transform.rect.containsPoint(longTapStart.position)) {
@@ -58,7 +63,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check tap ends
-    final tapEnds = input.justTapUpPointers();
     for (var tapEnd in tapEnds) {
       if (tappable.onTapUp != null) {
         if (transform.rect.containsPoint(tapEnd.position)) {
@@ -68,7 +72,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check tap cancels
-    final tapCancels = input.justTapCancelPointers();
     for (var tapCancel in tapCancels) {
       if (tappable.onTapCancel != null) {
         if (transform.rect.containsPoint(tapCancel.position)) {
@@ -78,7 +81,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check just pressed
-    final justPressed = input.justPressedPointers();
     for (var pressed in justPressed) {
       if (tappable.onJustPressed != null) {
         if (transform.rect.containsPoint(pressed.position)) {
@@ -88,7 +90,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check pressed
-    final pressed = input.pressedPointers();
     for (var press in pressed) {
       if (tappable.onPressed != null) {
         if (transform.rect.containsPoint(press.position)) {
@@ -98,7 +99,6 @@ void tappableSystem(Realm realm) {
     }
 
     // Check just released
-    final justReleased = input.justReleasedPointers();
     for (var released in justReleased) {
       if (tappable.onJustReleased != null) {
         if (transform.rect.containsPoint(released.position)) {

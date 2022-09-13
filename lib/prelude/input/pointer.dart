@@ -41,6 +41,15 @@ class Pointer {
     return oldState;
   }
 
+  S? replaceStateIfIs<S extends PointerState>(S state) {
+    if (this.state is S) {
+      final oldState = this.state;
+      this.state = state;
+      return oldState as S;
+    }
+    return null;
+  }
+
   bool historyHas<S extends PointerState>() {
     return history.any((s) => s is S);
   }

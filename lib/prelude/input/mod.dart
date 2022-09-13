@@ -15,15 +15,15 @@ import 'package:collection/collection.dart';
 // https://bevy-cheatbook.github.io/input.html
 
 void inputPlugin(RealmBuilder builder) {
-  // Taps
-  builder
-    ..withTrait(TappableTrait)
-    ..withSystem(tappableSystem);
-
   // Hover
   builder
     ..withTrait(HoverableTrait)
     ..withSystem(hoverableSystem);
+
+  // Taps
+  builder
+    ..withTrait(TappableTrait)
+    ..withSystem(tappableSystem);
 
   // Drag
   builder
@@ -49,8 +49,28 @@ class Input {
   final _keyStates = <BackboneKey>[];
   int _lastPointerId = 0;
   final _pointers = <Pointer>[];
+  final _pointersGraveyard = <Pointer>[];
 
   // Input hooks
+  void onHover(PointerHoverInfo event) {
+    _hoverEvents.add(event);
+
+    // Update an existing pointer or create a new one
+    final hoveringPointer = _pointers.firstWhereOrNull((pointer) =>
+        pointer.state is PointerStateHover &&
+        pointer.device == event.raw.device);
+
+    if (hoveringPointer != null) {
+      hoveringPointer.replaceStateIfIs(PointerStateHover(event));
+      // debugPrint(
+      //     "Hover:${hoveringPointer.id} -> Hover (${hoveringPointer.position})");
+    } else {
+      final newPointer = Pointer.fromHoverEvent(_lastPointerId++, event);
+      _pointers.add(newPointer);
+      debugPrint("New Hover:${newPointer.id} (${newPointer.position})");
+    }
+  }
+
   void onTapDown(ex.TapDownEvent event) {
     _tapDowns.add(event);
 
@@ -208,25 +228,6 @@ class Input {
     }
   }
 
-  void onHover(PointerHoverInfo event) {
-    _hoverEvents.add(event);
-
-    // Update an existing pointer or create a new one
-    final hoveringPointer = _pointers.firstWhereOrNull((pointer) =>
-        pointer.state is PointerStateHover &&
-        pointer.device == event.raw.device);
-
-    if (hoveringPointer != null) {
-      hoveringPointer.pushState(PointerStateHover(event));
-      debugPrint(
-          "Hover:${hoveringPointer.id} -> Hover (${hoveringPointer.position})");
-    } else {
-      final newPointer = Pointer.fromHoverEvent(_lastPointerId++, event);
-      _pointers.add(newPointer);
-      debugPrint("New Hover:${newPointer.id} (${newPointer.position})");
-    }
-  }
-
   void clear() {
     _tapDowns.clear();
     _longTapDowns.clear();
@@ -236,6 +237,19 @@ class Input {
     _dragUpdates.clear();
     _dragEnds.clear();
     _hoverEvents.clear();
+
+    // Move all cancelled, up and drag-end pointers to the graveyard
+    _pointers.removeWhere((pointer) {
+      if (pointer.state is PointerStateCancelled ||
+          pointer.state is PointerStateUp ||
+          pointer.state is PointerStateDragEnd) {
+        _pointersGraveyard.add(pointer);
+        debugPrint(
+            "Moved ${pointer.state.runtimeType}:${pointer.id} to graveyard");
+        return true;
+      }
+      return false;
+    });
   }
 
   // Keyboard API

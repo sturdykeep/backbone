@@ -33,13 +33,14 @@ void draggableSystem(Realm realm) {
   final query = realm.query(Has([DraggableTrait, TransformTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
+  final dragStarts = input.justDragStartPointers();
+  final dragUpdates = input.justDragUpdatePointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final draggable = node.get<DraggableTrait>();
     final transform = node.get<TransformTrait>();
 
     // Check drag starts
-    final dragStarts = input.justDragStartPointers();
     for (var dragStart in dragStarts) {
       if (transform.rect.containsPoint(dragStart.position)) {
         if (draggable.onStart != null) {
@@ -50,7 +51,6 @@ void draggableSystem(Realm realm) {
     }
 
     // Check drag updates
-    final dragUpdates = input.justDragUpdatePointers();
     for (var dragUpdate in dragUpdates) {
       if (dragUpdate.payload == node) {
         if (draggable.onUpdate != null) {
@@ -65,13 +65,13 @@ void dragReceiverSystem(Realm realm) {
   final query = realm.query(Has([DragReceiverTrait, TransformTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
+  final dragEnds = input.justDragEndPointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final dragReceiver = node.get<DragReceiverTrait>();
     final transform = node.get<TransformTrait>();
 
     // Check drag ends
-    final dragEnds = input.justDragEndPointers();
     for (var dragEnd in dragEnds) {
       if (transform.rect.containsPoint(dragEnd.position)) {
         final payload = dragEnd.payload as DraggablePointerPayload?;
