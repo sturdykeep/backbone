@@ -60,7 +60,7 @@ void hoverableSystem(Realm realm) {
     final pointers = hoverable.pointers.toList();
     for (var pointer in pointers) {
       if (transform.rect.containsPoint(pointer.position) &&
-          (pointer.isHoverEnter || pointer.isHovering)) {
+          (pointer.isPointerAdded || pointer.isHovering)) {
         hoverable.onHoverMove?.call(pointer);
       } else {
         hoverable.pointers.remove(pointer);

@@ -45,8 +45,8 @@ class Input {
   final _dragUpdates = <ex.DragUpdateEvent>[];
   final _dragEnds = <ex.DragEndEvent>[];
   final _hoverEvents = <PointerHoverEvent>[];
-  final _hoverEnters = <PointerEnterEvent>[];
-  final _hoverLeaves = <PointerExitEvent>[];
+  final _pointerAddedEvents = <PointerAddedEvent>[];
+  final _pointerRemovedEvents = <PointerRemovedEvent>[];
 
   // Processed data
   final _keyStates = <BackboneKey>[];
@@ -61,11 +61,11 @@ class Input {
 
     // Update an existing hover or update a hover enter
     final pointerHoverStart = _pointers.firstWhereOrNull(
-        (p) => p.state is PointerStateHoverEnter && p.device == event.device);
+        (p) => p.state is PointerStateAdded && p.device == event.device);
     if (pointerHoverStart != null) {
       pointerHoverStart.pushState(PointerStateHover(event));
       debugPrint(
-          "HoverEnter:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
+          "PointerAdded:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
     } else {
       final pointerHover = _pointers.firstWhereOrNull(
           (p) => p.state is PointerStateHover && p.device == event.device);
@@ -81,28 +81,28 @@ class Input {
     }
   }
 
-  void onHoverEnter(PointerEnterEvent event) {
-    _hoverEnters.add(event);
+  void onPointerAdded(PointerAddedEvent event) {
+    _pointerAddedEvents.add(event);
 
     // Create a new pointer
-    final pointer = Pointer.fromHoverEnterEvent(_lastPointerId++, event);
+    final pointer = Pointer.fromAddedEvent(_lastPointerId++, event);
     _pointers.add(pointer);
     _pendingHovers.add(pointer);
-    debugPrint("New HoverEnter:${pointer.id} (${pointer.position})");
+    debugPrint("New PointerAdded:${pointer.id} (${pointer.position})");
   }
 
-  void onHoverLeave(PointerExitEvent event) {
-    _hoverLeaves.add(event);
+  void onPointerRemoved(PointerRemovedEvent event) {
+    _pointerRemovedEvents.add(event);
 
     // Update an existing hover or hover enter pointer
     final leavingPointer = _pointers.firstWhere((pointer) =>
         (pointer.state is PointerStateHover ||
-            pointer.state is PointerStateHoverEnter) &&
+            pointer.state is PointerStateAdded) &&
         pointer.device == event.device);
-    leavingPointer.pushState(PointerStateHoverExit(event));
+    leavingPointer.pushState(PointerStateRemoved(event));
     _pendingHovers.remove(leavingPointer);
     debugPrint(
-        "${leavingPointer.history.last is PointerStateHover ? "Hover" : "HoverEnter"}:${leavingPointer.id} -> HoverLeave (${event.position.toVector2()})");
+        "${leavingPointer.history.last is PointerStateHover ? "Hover" : "PointerAdded"}:${leavingPointer.id} -> PointerRemoved (${event.position.toVector2()})");
   }
 
   void onTapDown(ex.TapDownEvent event) {
@@ -279,7 +279,7 @@ class Input {
       if (pointer.state is PointerStateCancelled ||
           pointer.state is PointerStateUp ||
           pointer.state is PointerStateDragEnd ||
-          pointer.state is PointerStateHoverExit) {
+          pointer.state is PointerStateRemoved) {
         _pointersGraveyard.add(pointer);
         debugPrint(
             "Moved ${pointer.state.runtimeType}:${pointer.id} to graveyard");
@@ -471,9 +471,9 @@ class Input {
 
   // - HoverEnter
   Iterable<Pointer> justHoverEnterPointers() {
-    final hoverEnters = _hoverEnters;
+    final hoverEnters = _pointerAddedEvents;
     return _pointers.where((pointer) =>
-        pointer.isHoverEnter &&
+        pointer.isPointerAdded &&
         hoverEnters.any((hoverEnter) => hoverEnter.device == pointer.device));
   }
 
@@ -483,7 +483,7 @@ class Input {
 
   void clearJustHoverEnterPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _hoverEnters
+    _pointerAddedEvents
         .removeWhere((hoverEnter) => hoverEnter.device == pointer.device);
   }
 
@@ -506,9 +506,9 @@ class Input {
 
   // - HoverLeave
   Iterable<Pointer> justHoverLeavePointers() {
-    final hoverLeaves = _hoverLeaves;
+    final hoverLeaves = _pointerRemovedEvents;
     return _pointers.where((pointer) =>
-        pointer.isHoverLeave &&
+        pointer.isPointerRemoved &&
         hoverLeaves.any((hoverLeave) => hoverLeave.device == pointer.device));
   }
 
@@ -518,7 +518,7 @@ class Input {
 
   void clearJustHoverLeavePointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _hoverLeaves
+    _pointerRemovedEvents
         .removeWhere((hoverLeave) => hoverLeave.device == pointer.device);
   }
 
