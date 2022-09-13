@@ -4,11 +4,11 @@ import 'package:backbone/prelude/input/key.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
+import 'package:collection/collection.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart' as ex;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:collection/collection.dart';
 
 // References
 // https://docs.rs/bevy/latest/bevy/input/struct.Input.html
