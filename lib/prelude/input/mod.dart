@@ -110,16 +110,23 @@ class Input {
 
     // Update or create a pointer
     // First search for hovering pointer with the same position
-    final hoveringPointer = _pointers.firstWhere(
+    final hoveringPointer = _pointers.firstWhereOrNull(
       (pointer) =>
           pointer.isHovering &&
           pointer.position == event.canvasPosition &&
           pointer.kind == event.deviceKind,
     );
-    hoveringPointer.pushState(PointerStateDown(event));
-    _pendingHovers.remove(hoveringPointer);
-    debugPrint(
-        "Hover:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> Down (${hoveringPointer.position})");
+    if (hoveringPointer != null) {
+      hoveringPointer.pushState(PointerStateDown(event));
+      _pendingHovers.remove(hoveringPointer);
+      debugPrint(
+          "Hover:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> Down (${hoveringPointer.position})");
+    } else {
+      // Create a new pointer
+      final pointer = Pointer.fromTapDownEvent(_lastPointerId++, event);
+      _pointers.add(pointer);
+      debugPrint("New Down:${pointer.id} (${pointer.position})");
+    }
   }
 
   void onLongTapDown(ex.TapDownEvent event) {
