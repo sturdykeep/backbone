@@ -271,7 +271,8 @@ class Input {
     _pointers.removeWhere((pointer) {
       if (pointer.state is PointerStateCancelled ||
           pointer.state is PointerStateUp ||
-          pointer.state is PointerStateDragEnd) {
+          pointer.state is PointerStateDragEnd ||
+          pointer.state is PointerStateHoverExit) {
         _pointersGraveyard.add(pointer);
         debugPrint(
             "Moved ${pointer.state.runtimeType}:${pointer.id} to graveyard");
