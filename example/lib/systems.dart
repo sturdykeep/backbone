@@ -8,7 +8,7 @@ import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
 import 'package:flame/extensions.dart';
 
-// System that bounces boxes off screen edges
+/// System that bounces boxes off screen edges
 void bounceSystem(Realm realm) {
   final time = realm.getResource<Time>();
   final realmQuery = realm.query(Has([TransformTrait, BouncerTrait]));
@@ -38,7 +38,7 @@ void bounceSystem(Realm realm) {
   }
 }
 
-// System that spawns new boxes on click
+/// System that spawns new boxes on click
 void tapSpawnSystem(Realm realm) {
   final rng = Random();
   final input = realm.getResource<Input>();
