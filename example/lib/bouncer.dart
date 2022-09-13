@@ -9,7 +9,6 @@ import 'package:flame/components.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 
 /// Marker trait for entities that can be bounced.
 class BouncerTrait extends ATrait {}
@@ -29,7 +28,7 @@ class BouncerNode extends ANode with TapCallbacks, DragCallbacks {
     // Add your traits here
     // Make sure to add your traits in the constructor
     // so that the external code can access them directly
-    // via getters
+    // via getters. All traits MUST be registered in your Realm first!
     final transformTrait = TransformTrait();
     transformTrait.size = size;
     addTrait(transformTrait);
