@@ -34,7 +34,7 @@ typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 // Longest lifecycle of a pointer looks like this:
 // Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
 
-/// A mixin that allows you to add a [Realm] to your [FlameGame].
+/// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
 /// It automatically hooks up the input events to the [Realm].
 mixin HasRealm
     on
