@@ -46,13 +46,15 @@ void draggableSystem(Realm realm) {
         if (draggable.onStart != null) {
           final payload = draggable.onStart!(dragStart);
           dragStart.payload = payload;
+        } else {
+          dragStart.payload = DraggablePointerPayload(node, null);
         }
       }
     }
 
     // Check drag updates
     for (var dragUpdate in dragUpdates) {
-      if (dragUpdate.payload == node) {
+      if ((dragUpdate.payload as DraggablePointerPayload?)?.initiator == node) {
         if (draggable.onUpdate != null) {
           draggable.onUpdate!(dragUpdate);
         }
@@ -83,14 +85,14 @@ void dragReceiverSystem(Realm realm) {
               draggable.onEnd!(dragEnd, node);
             }
           }
-        }
-      } else {
-        // Just end the drag for the draggable
-        final payload = dragEnd.payload as DraggablePointerPayload?;
-        if (payload != null) {
-          final draggable = payload.initiator.get<DraggableTrait>();
-          if (draggable.onEnd != null) {
-            draggable.onEnd!(dragEnd, null);
+        } else {
+          // Just end the drag for the draggable
+          final payload = dragEnd.payload as DraggablePointerPayload?;
+          if (payload != null) {
+            final draggable = payload.initiator.get<DraggableTrait>();
+            if (draggable.onEnd != null) {
+              draggable.onEnd!(dragEnd, null);
+            }
           }
         }
       }
