@@ -4,6 +4,7 @@ import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
 import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
+import 'package:example/drag_rect.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
 import 'package:flame/components.dart';
@@ -46,5 +47,6 @@ class MainGame extends FlameGame
       bouncer.transform.position = Vector2(canvasSize.x / 2, canvasSize.y / 2);
       realm.add(bouncer);
     }
+    realm.add(DragRect(Vector2.all(65), Colors.white, Vector2.all(50)));
   }
 }

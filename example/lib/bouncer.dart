@@ -24,7 +24,12 @@ class BouncerNode extends ANode with TapCallbacks, DragCallbacks {
   Paint get currentPaint =>
       (children.elementAt(0).children.elementAt(0) as RectangleComponent).paint;
 
-  BouncerNode(this.size, this.color, this.direction, this.speed) {
+  BouncerNode(
+    this.size,
+    this.color,
+    this.direction,
+    this.speed,
+  ) {
     // Add your traits here
     // Make sure to add your traits in the constructor
     // so that the external code can access them directly
