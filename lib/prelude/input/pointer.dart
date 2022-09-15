@@ -95,6 +95,16 @@ class Pointer {
       } else {
         return startPosition;
       }
+    } else if (state is PointerStateTimeout) {
+      if (history.any((state) => state is PointerStateHover)) {
+        return (history.lastWhere((state) => state is PointerStateHover)
+                as PointerStateHover)
+            .raw
+            .position
+            .toVector2();
+      } else {
+        return startPosition;
+      }
     } else {
       return startPosition;
     }
@@ -122,6 +132,21 @@ class Pointer {
       return (state as PointerStateUp).raw.pointerId;
     } else if (state is PointerStateCancelled) {
       return (state as PointerStateCancelled).raw.pointerId;
+    } else if (state is PointerStateTimeout) {
+      // Search for the last hover or pointer add event
+      if (history.any((state) => state is PointerStateHover)) {
+        return (history.lastWhere((state) => state is PointerStateHover)
+                as PointerStateHover)
+            .raw
+            .device;
+      } else if (history.any((state) => state is PointerStateAdded)) {
+        return (history.lastWhere((state) => state is PointerStateAdded)
+                as PointerStateAdded)
+            .raw
+            .device;
+      } else {
+        return -1;
+      }
     } else {
       return -1;
     }
@@ -148,6 +173,8 @@ class Pointer {
       return (state as PointerStateUp).raw.handled;
     } else if (state is PointerStateCancelled) {
       return (state as PointerStateCancelled).raw.handled;
+    } else if (state is PointerStateTimeout) {
+      return (state as PointerStateTimeout).handled;
     } else {
       return false;
     }
@@ -174,6 +201,8 @@ class Pointer {
       (state as PointerStateUp).raw.handled = value;
     } else if (state is PointerStateCancelled) {
       (state as PointerStateCancelled).raw.handled = value;
+    } else if (state is PointerStateTimeout) {
+      (state as PointerStateTimeout).handled = value;
     }
   }
 
@@ -199,6 +228,8 @@ class Pointer {
   bool get wasUp => historyHas<PointerStateUp>() || isUp;
   bool get isCancelled => state is PointerStateCancelled;
   bool get wasCancelled => historyHas<PointerStateCancelled>() || isCancelled;
+  bool get isTimeout => state is PointerStateTimeout;
+  bool get wasTimeout => historyHas<PointerStateTimeout>() || isTimeout;
 
   // High-level state getters
   bool get isPressed => isDown || isLongDown || isDragStart || isDragUpdate;
@@ -264,6 +295,7 @@ class PointerStateAdded extends PointerState {
 class PointerStateHover extends PointerState {
   final PointerHoverEvent raw;
   bool handled = false;
+  DateTime lastHoverTime = DateTime.now();
 
   PointerStateHover(this.raw);
 }
@@ -273,4 +305,10 @@ class PointerStateRemoved extends PointerState {
   bool handled = false;
 
   PointerStateRemoved(this.raw);
+}
+
+class PointerStateTimeout extends PointerState {
+  bool handled = false;
+
+  PointerStateTimeout();
 }

@@ -279,7 +279,8 @@ class Input {
       if (pointer.state is PointerStateCancelled ||
           pointer.state is PointerStateUp ||
           pointer.state is PointerStateDragEnd ||
-          pointer.state is PointerStateRemoved) {
+          pointer.state is PointerStateRemoved ||
+          pointer.state is PointerStateTimeout) {
         _pointersGraveyard.add(pointer);
         debugPrint(
             "Moved ${pointer.state.runtimeType}:${pointer.id} to graveyard");
@@ -287,6 +288,18 @@ class Input {
       }
       return false;
     });
+
+    // Check all hover pointers to see if they need to time out
+    for (var pointer in _pointers) {
+      if (pointer.state is PointerStateHover) {
+        final hoverState = pointer.state as PointerStateHover;
+        if (DateTime.now().difference(hoverState.lastHoverTime).inSeconds > 5 &&
+            pointer.kind != PointerDeviceKind.mouse) {
+          pointer.pushState(PointerStateTimeout());
+          debugPrint("Hover:${pointer.id} -> Timeout");
+        }
+      }
+    }
   }
 
   // Keyboard API
