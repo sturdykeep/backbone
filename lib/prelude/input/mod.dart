@@ -205,9 +205,15 @@ class Input {
       orElse: () => throw Exception(
           "Drag update event received for a pointer that is not already registered as drag-started or drag-updated"),
     );
-    pointer.pushState(PointerStateDragUpdate(event));
-    debugPrint(
-        "${pointer.history.last is PointerStateDragStart ? "DragStart" : "DragUpdate"}:${pointer.id} -> DragUpdate (${pointer.position})");
+
+    // Either push a new state is DragStart or replace the last state if DragUpdate
+    if (pointer.state is PointerStateDragStart) {
+      pointer.pushState(PointerStateDragUpdate(event));
+      debugPrint(
+          "DragStart:${pointer.id} -> DragUpdate (${event.canvasPosition})");
+    } else {
+      pointer.replaceStateIfIs(PointerStateDragUpdate(event));
+    }
   }
 
   void onDragEnd(ex.DragEndEvent event) {

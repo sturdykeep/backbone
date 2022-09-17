@@ -1,5 +1,6 @@
 import 'package:backbone/builders.dart';
 import 'package:backbone/filter.dart';
+import 'package:backbone/node.dart';
 import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/realm.dart';
@@ -27,6 +28,19 @@ class TransformTrait extends ATrait {
 
   Rect get rect => Rect.fromLTWH(position.x - anchor.x * size.x,
       position.y - anchor.y * size.y, size.x, size.y);
+
+  // Convert current local position to global (world) coordinate space.
+  Vector2 absolutePosition(ANode node) {
+    // Find the first parent, which is a PositionComponent
+    var parent = node.parent;
+    while (parent != null) {
+      if (parent is PositionComponent) {
+        return parent.absolutePositionOf(position);
+      }
+      parent = parent.parent;
+    }
+    return position;
+  }
 }
 
 void transformSystem(Realm realm) {

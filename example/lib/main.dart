@@ -5,7 +5,6 @@ import 'package:backbone/widget.dart';
 void main() async {
   // Spin up Flutter
   WidgetsFlutterBinding.ensureInitialized();
-  debugPrint = (message, {wrapWidth}) {};
   // Start the actual app
   runApp(
     BackboneGameWidget(

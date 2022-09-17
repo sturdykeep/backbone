@@ -10,6 +10,7 @@ class DragRect extends PositionNode {
   final Vector2 fixedSize = Vector2.all(60);
   late final Color color;
   final rng = Random();
+  Vector2 dragOffset = Vector2.zero();
 
   DragRect(Vector2 position) {
     // Create a random color
@@ -22,8 +23,20 @@ class DragRect extends PositionNode {
 
     // Create callbacks for drag events
     final draggableTrait = DraggableTrait(
+      onStart: (pointer, offset) {
+        dragOffset = offset;
+        debugPrint("Drag started with offset $offset");
+        return DraggablePointerPayload(this, null);
+      },
       onUpdate: (pointer) {
-        transformTrait.position = absoluteToLocal(pointer.position);
+        PositionComponent? parentAsPosition;
+        if (parent != null && parent is PositionComponent) {
+          parentAsPosition = parent as PositionComponent;
+        }
+        transformTrait.position = parentAsPosition != null
+            ? parentAsPosition.absoluteToLocal(pointer.position)
+            : pointer.position;
+        transformTrait.position -= dragOffset;
       },
       onEnd: (pointer, node) {
         final bouncer = BouncerNode(
