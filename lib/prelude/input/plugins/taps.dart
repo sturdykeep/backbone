@@ -1,10 +1,8 @@
 import 'package:backbone/filter.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
-import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
-import 'package:flame/extensions.dart';
 
 class TappableTrait extends ATrait {
   // Basic
@@ -29,7 +27,7 @@ class TappableTrait extends ATrait {
 }
 
 void tappableSystem(Realm realm) {
-  final query = realm.query(Has([TappableTrait, TransformTrait]));
+  final query = realm.query(Has([TappableTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
   final tapStarts = input.justTapDownPointers();
@@ -42,12 +40,11 @@ void tappableSystem(Realm realm) {
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final tappable = node.get<TappableTrait>();
-    final transform = node.get<TransformTrait>();
 
     // Check tap starts
     for (var tapStart in tapStarts) {
       if (tappable.onTapDown != null) {
-        if (transform.rect.containsPoint(tapStart.position)) {
+        if (node.containsPoint(tapStart.position)) {
           tappable.onTapDown!(tapStart);
         }
       }
@@ -56,7 +53,7 @@ void tappableSystem(Realm realm) {
     // Check long tap starts
     for (var longTapStart in longTapStarts) {
       if (tappable.onLongTapDown != null) {
-        if (transform.rect.containsPoint(longTapStart.position)) {
+        if (node.containsPoint(longTapStart.position)) {
           tappable.onLongTapDown!(longTapStart);
         }
       }
@@ -65,7 +62,7 @@ void tappableSystem(Realm realm) {
     // Check tap ends
     for (var tapEnd in tapEnds) {
       if (tappable.onTapUp != null) {
-        if (transform.rect.containsPoint(tapEnd.position)) {
+        if (node.containsPoint(tapEnd.position)) {
           tappable.onTapUp!(tapEnd);
         }
       }
@@ -74,7 +71,7 @@ void tappableSystem(Realm realm) {
     // Check tap cancels
     for (var tapCancel in tapCancels) {
       if (tappable.onTapCancel != null) {
-        if (transform.rect.containsPoint(tapCancel.position)) {
+        if (node.containsPoint(tapCancel.position)) {
           tappable.onTapCancel!(tapCancel);
         }
       }
@@ -83,7 +80,7 @@ void tappableSystem(Realm realm) {
     // Check just pressed
     for (var pressed in justPressed) {
       if (tappable.onJustPressed != null) {
-        if (transform.rect.containsPoint(pressed.position)) {
+        if (node.containsPoint(pressed.position)) {
           tappable.onJustPressed!(pressed);
         }
       }
@@ -92,7 +89,7 @@ void tappableSystem(Realm realm) {
     // Check pressed
     for (var press in pressed) {
       if (tappable.onPressed != null) {
-        if (transform.rect.containsPoint(press.position)) {
+        if (node.containsPoint(press.position)) {
           tappable.onPressed!(press);
         }
       }
@@ -101,7 +98,7 @@ void tappableSystem(Realm realm) {
     // Check just released
     for (var released in justReleased) {
       if (tappable.onJustReleased != null) {
-        if (transform.rect.containsPoint(released.position)) {
+        if (node.containsPoint(released.position)) {
           tappable.onJustReleased!(released);
         }
       }

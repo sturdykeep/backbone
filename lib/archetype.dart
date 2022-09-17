@@ -73,5 +73,10 @@ class Archetype {
   }
 
   @override
+  String toString() {
+    return 'Archetype($name)';
+  }
+
+  @override
   int get hashCode => name.hashCode;
 }

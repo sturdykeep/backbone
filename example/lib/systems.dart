@@ -8,16 +8,24 @@ import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
 import 'package:flame/extensions.dart';
 
+import 'drag_bar.dart';
+
 /// System that bounces boxes off screen edges
 void bounceSystem(Realm realm) {
   final time = realm.getResource<Time>();
   final realmQuery = realm.query(Has([TransformTrait, BouncerTrait]));
   // or
   // final realmQuery = realm.query(And([Has([TransformTrait]), Has([BouncerTrait])]));
+  final dragBarQuery = realm.query(Has([DragBoxSpawnerTrait, TransformTrait]));
+  final dragBarTransform = dragBarQuery.first.get<TransformTrait>();
   final queryLength = realmQuery.length;
+  final dragBarSize = Vector2(
+      dragBarTransform.position.y == 0 ? DragBar.space : 0,
+      dragBarTransform.position.x == 0 ? DragBar.space : 0);
+  final gameSizeWithoutDragBar = realm.gameRef.canvasSize - dragBarSize;
   for (var i = 0; i < queryLength; i++) {
     final node = realmQuery.elementAt(i) as BouncerNode;
-    final transform = node.transform;
+    final transform = node.transformTrait;
 
     // Move them in the direction at the speed of `speed` pixels per second
     transform.position += node.direction.normalized() * time.delta * node.speed;
@@ -26,13 +34,13 @@ void bounceSystem(Realm realm) {
     if (transform.position.x < 0) {
       node.direction.x = node.direction.x.abs();
     }
-    if (transform.position.x + transform.size.x > realm.gameRef.canvasSize.x) {
+    if (transform.position.x + transform.size.x > gameSizeWithoutDragBar.x) {
       node.direction.x = -node.direction.x.abs();
     }
     if (transform.position.y < 0) {
       node.direction.y = node.direction.y.abs();
     }
-    if (transform.position.y + transform.size.y > realm.gameRef.canvasSize.y) {
+    if (transform.position.y + transform.size.y > gameSizeWithoutDragBar.y) {
       node.direction.y = -node.direction.y.abs();
     }
   }
@@ -42,7 +50,7 @@ void bounceSystem(Realm realm) {
 void tapSpawnSystem(Realm realm) {
   final rng = Random();
   final input = realm.getResource<Input>();
-  final pointers = input.justReleasedPointers();
+  final pointers = input.justTapUpPointers();
   for (var pointer in pointers) {
     if (pointer.handled == false) {
       final bouncer = BouncerNode(

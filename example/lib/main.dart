@@ -9,7 +9,7 @@ void main() async {
   // Start the actual app
   runApp(
     BackboneGameWidget(
-      game: MainGame(),
+      game: MainGame()..debugMode = true,
     ),
   );
 }

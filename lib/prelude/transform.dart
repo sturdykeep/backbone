@@ -1,5 +1,6 @@
 import 'package:backbone/builders.dart';
 import 'package:backbone/filter.dart';
+import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
@@ -33,16 +34,13 @@ void transformSystem(Realm realm) {
   final queryLength = realmQuery.length;
   for (var i = 0; i < queryLength; i++) {
     final node = realmQuery.elementAt(i);
-    final transform = node.get<TransformTrait>();
-
-    // Check if the node has PositionComponent children
-    final positionChildren = node.children.whereType<PositionComponent>();
-    for (var positionChild in positionChildren) {
-      positionChild.position = transform.position;
-      positionChild.scale = transform.scale;
-      positionChild.angle = transform.rotation;
-      positionChild.size = transform.size;
-      positionChild.anchor = transform.anchor;
+    if (node is PositionNode) {
+      final transform = node.get<TransformTrait>();
+      node.position = transform.position;
+      node.scale = transform.scale;
+      node.angle = transform.rotation;
+      node.size = transform.size;
+      node.anchor = transform.anchor;
     }
   }
 }
