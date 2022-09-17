@@ -61,19 +61,20 @@ void draggableSystem(Realm realm) {
 }
 
 void dragReceiverSystem(Realm realm) {
-  final query = realm.query(Has([DragReceiverTrait]));
+  final query = realm.query(HasAny([DragReceiverTrait, DraggableTrait]));
   final queryLength = query.length;
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
-    final dragReceiver = node.get<DragReceiverTrait>();
+    final dragReceiver = node.tryGet<DragReceiverTrait>();
+    final dragTrait = node.tryGet<DraggableTrait>();
 
     // Check drag ends
     for (var dragEnd in dragEnds) {
       if (node.containsPoint(dragEnd.position)) {
         final payload = dragEnd.payload as DraggablePointerPayload?;
-        if (dragReceiver.onReceive != null) {
+        if (dragReceiver != null && dragReceiver.onReceive != null) {
           dragReceiver.onReceive!(dragEnd, payload);
           if (payload != null) {
             final draggable = payload.initiator.get<DraggableTrait>();
@@ -86,7 +87,7 @@ void dragReceiverSystem(Realm realm) {
           final payload = dragEnd.payload as DraggablePointerPayload?;
           if (payload != null) {
             final draggable = payload.initiator.get<DraggableTrait>();
-            if (draggable.onEnd != null) {
+            if (dragTrait != null && draggable.onEnd != null) {
               draggable.onEnd!(dragEnd, null);
             }
           }

@@ -93,12 +93,9 @@ class Input {
 
   void onPointerRemoved(PointerRemovedEvent event) {
     _pointerRemovedEvents.add(event);
-
     // Update an existing hover or hover enter pointer
-    final leavingPointer = _pointers.firstWhere((pointer) =>
-        (pointer.state is PointerStateHover ||
-            pointer.state is PointerStateAdded) &&
-        pointer.device == event.device);
+    final leavingPointer =
+        _pointers.firstWhere((pointer) => pointer.device == event.device);
     leavingPointer.pushState(PointerStateRemoved(event));
     _pendingHovers.remove(leavingPointer);
     debugPrint(

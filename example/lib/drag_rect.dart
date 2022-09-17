@@ -23,7 +23,7 @@ class DragRect extends PositionNode {
     // Create callbacks for drag events
     final draggableTrait = DraggableTrait(
       onUpdate: (pointer) {
-        transformTrait.position = pointer.position;
+        transformTrait.position = absoluteToLocal(pointer.position);
       },
       onEnd: (pointer, node) {
         final bouncer = BouncerNode(

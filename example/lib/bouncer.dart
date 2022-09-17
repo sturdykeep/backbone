@@ -1,5 +1,4 @@
 import 'package:backbone/position_node.dart';
-import 'package:backbone/prelude/input/plugins/drag.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/transform.dart';
@@ -28,30 +27,6 @@ class BouncerNode extends PositionNode {
   ) : super(
           transformTrait: TransformTrait()..size = size,
         ) {
-    // Add your traits here
-    // Make sure to add your traits in the constructor
-    // so that the external code can access them directly
-    // via getters. All traits MUST be registered in your Realm first!
-    // Receive drags
-    final dragReceiverTrait = DragReceiverTrait(onReceive: ((pointer, payload) {
-      if (payload != null &&
-          payload.data != null &&
-          payload.data is Color &&
-          payload.initiator != this) {
-        currentPaint.color = payload.data as Color;
-      } else {
-        realm!.pushMessage(RemoveBouncerMessage(this));
-      }
-      pointer.handled = true;
-    }));
-    addTrait(dragReceiverTrait);
-
-    // Start drags
-    final draggableTrait = DraggableTrait(onStart: ((pointer) {
-      return DraggablePointerPayload(this, currentPaint.color);
-    }));
-    addTrait(draggableTrait);
-
     // Receive tap ups
     final tappableTrait = TappableTrait(
       onTapUp: (pointer) {
