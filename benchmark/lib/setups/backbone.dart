@@ -1,6 +1,6 @@
 import 'package:backbone/builders.dart';
 import 'package:backbone/filter.dart';
-import 'package:backbone/node.dart';
+import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:benchmark/benchmark.dart';
 
@@ -24,7 +24,7 @@ class TestTraitC extends ATrait {
 }
 
 // Node
-class TestNode extends ANode {
+class TestNode extends PositionNode {
   TestNode();
 }
 
