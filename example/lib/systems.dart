@@ -62,7 +62,7 @@ void tapSpawnSystem(Realm realm) {
               (rng.nextDouble() * 255.0).toInt()),
           (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
           200.0 + 200.0 * rng.nextDouble());
-      bouncer.transform.position = pointer.position;
+      bouncer.transformTrait.position = pointer.position;
       realm.add(bouncer);
     }
   }

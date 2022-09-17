@@ -31,7 +31,7 @@ class DragRect extends PositionNode {
             color,
             (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
             200.0 + 200.0 * rng.nextDouble());
-        bouncer.transform.position = pointer.position;
+        bouncer.transformTrait.position = pointer.position;
         realm!.add(bouncer);
       },
     );
@@ -41,7 +41,8 @@ class DragRect extends PositionNode {
   @override
   Future<void>? onLoad() {
     // Add the actual visible element of this node
-    add(RectangleComponent(size: size, paint: Paint()..color = color));
+    add(RectangleComponent(
+        size: transformTrait.size, paint: Paint()..color = color));
     return super.onLoad();
   }
 }

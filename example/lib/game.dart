@@ -51,7 +51,8 @@ class MainGame extends FlameGame
               (rng.nextDouble() * 255.0).toInt()),
           (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
           200.0 + 200.0 * rng.nextDouble());
-      bouncer.transform.position = Vector2(canvasSize.x / 2, canvasSize.y / 2);
+      bouncer.transformTrait.position =
+          Vector2(canvasSize.x / 2, canvasSize.y / 2);
       realm.add(bouncer);
     }
     realm.add(DragBar(size));

@@ -81,7 +81,8 @@ class BouncerNode extends PositionNode {
   @override
   Future<void>? onLoad() {
     // Add child components here
-    add(RectangleComponent(size: size, paint: Paint()..color = color));
+    add(RectangleComponent(
+        size: transformTrait.size, paint: Paint()..color = color));
 
     return super.onLoad();
   }
