@@ -8,12 +8,11 @@ import 'package:flame/components.dart';
 /// Nodes are a collection of game objects. Nodes can
 /// have traits. Nodes are processed by systems.
 mixin ANode on HasGameRef {
-  /// Realm of the node, if not a root node it might be null
-  Realm?
-      realm; //TODO Can this really be null? A node requires a Realm, see onMount
+  /// Realm of the node, null if not yet added to a realm
+  Realm? realm;
   bool isBackboneMounted = false;
 
-  ///TODO ????
+  /// Archetype of this node, based on the used traits
   Archetype? bucket;
   final List<ATrait> _traits = [];
 
