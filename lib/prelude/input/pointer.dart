@@ -1,4 +1,3 @@
-import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/gestures.dart';
