@@ -6,3 +6,5 @@ class RemoveBouncerMessage extends AMessage {
 
   RemoveBouncerMessage(this.bouncer);
 }
+
+class GameResizseMessage extends AMessage {}

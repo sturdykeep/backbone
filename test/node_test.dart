@@ -1,14 +1,14 @@
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/component_node.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/trait.dart';
-import 'package:backbone/node.dart';
-import 'package:backbone/world.dart';
+import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'testGame.dart';
+import 'test_game.dart';
 
 class IntComponent extends ATrait {
   final int value;
@@ -20,13 +20,13 @@ class StringTrait extends ATrait {
   StringTrait(this.value);
 }
 
-class TestNode extends ANode {
+class TestNode extends ComponentNode {
   TestNode() : super();
 }
 
 Future<void> basicSetup(TestGame game, WidgetTester _) async {
   await game.ready();
-  await game.ensureAdd(WorldBuilder().withTrait(IntComponent).build());
+  await game.ensureAdd(RealmBuilder().withTrait(IntComponent).build());
 }
 
 void main() {
@@ -37,21 +37,21 @@ void main() {
     gameTester.testGameWidget('checks if a trait exists in this node',
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
-      await game.ensureAdd(WorldBuilder()
+      await game.ensureAdd(RealmBuilder()
           .withTrait(IntComponent)
           .withTrait(StringTrait)
           .build());
     }, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       expect(node.hasTrait<IntComponent>(), false);
       node.addTrait(IntComponent(5));
       expect(node.hasTrait<IntComponent>(), true);
-      final result = world.query(Has([IntComponent]), onlyLoaded: true);
+      final result = realm.query(Has([IntComponent]), onlyLoaded: true);
       expect(result.length, 1);
       node.addTrait(StringTrait('SturdyKeep rocks'));
       expect(node.hasTrait<IntComponent>(), true);
@@ -61,16 +61,16 @@ void main() {
     gameTester.testGameWidget('gets an existing trait or adds the one returned',
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
-      await game.ensureAdd(WorldBuilder()
+      await game.ensureAdd(RealmBuilder()
           .withTrait(IntComponent)
           .withTrait(StringTrait)
           .build());
     }, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       expect(node.getOrElse<IntComponent>(() => IntComponent(5)),
           isA<IntComponent>());
@@ -81,10 +81,10 @@ void main() {
     gameTester.testGameWidget('get an existing trait otherwise throws',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       expect(() => node.get<IntComponent>(), throwsA(isA<Exception>()));
       node.addTrait(IntComponent(5));
@@ -94,10 +94,10 @@ void main() {
     gameTester.testGameWidget('get all child components of the node',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       expect(node.findChildren(), isEmpty);
       node.add(Component());
@@ -111,10 +111,10 @@ void main() {
         'get the parent of the node, it might return null',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       expect(node.findNodeParent(), isNull);
       final nestedNode = TestNode();
@@ -129,7 +129,7 @@ void main() {
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
       await game.ensureAdd(
-        WorldBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
+        RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
       );
     }, verify: (game, tester) async {
       expect(
@@ -137,26 +137,26 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
-      var anotherWorldsNode = TestNode();
-      final anotherWorld =
-          WorldBuilder().withTrait(IntComponent).withTrait(StringTrait).build();
-      await game.add(anotherWorld);
-      anotherWorld.add(anotherWorldsNode);
+      var anotherrealmsNode = TestNode();
+      final anotherrealm =
+          RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build();
+      await game.add(anotherrealm);
+      anotherrealm.add(anotherrealmsNode);
       game.update(0);
-      final anotherWorldsNodeTrait = StringTrait('SturdyKeep rocks!');
-      anotherWorldsNode.addTrait(anotherWorldsNodeTrait);
+      final anotherrealmsNodeTrait = StringTrait('SturdyKeep rocks!');
+      anotherrealmsNode.addTrait(anotherrealmsNodeTrait);
       expect(
-          () => world.addTraitToNode<IntComponent, TestNode>(
-              IntComponent(5), anotherWorldsNode),
+          () => realm.addTraitToNode<IntComponent, TestNode>(
+              IntComponent(5), anotherrealmsNode),
           throwsA(isA<Exception>()));
       expect(
-          () => world.removeTraitFromNode<StringTrait, TestNode>(
-              anotherWorldsNodeTrait, anotherWorldsNode),
+          () => realm.removeTraitFromNode<StringTrait, TestNode>(
+              anotherrealmsNodeTrait, anotherrealmsNode),
           throwsA(isA<Exception>()));
       expect(node.traits.isEmpty, true);
       expect(node.sortedTraits.isEmpty, true);
@@ -179,7 +179,7 @@ void main() {
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
       await game.ensureAdd(
-        WorldBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
+        RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
       );
     }, verify: (game, tester) async {
       expect(
@@ -187,10 +187,10 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       var sortedTraits = node.sortedTraits;
       expect(sortedTraits.length, 0);
@@ -211,16 +211,16 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
 
       expect(node.traits.length, 0);
       expect(node.traits.any((comp) => comp is IntComponent), false);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
 
     gameTester.testGameWidget('basic empty node', setUp: basicSetup,
@@ -230,16 +230,16 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
 
       expect(node.traits.length, 0);
       expect(node.traits.any((comp) => comp is IntComponent), false);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
     gameTester.testGameWidget('basic node with component', setUp: basicSetup,
         verify: (game, tester) async {
@@ -248,17 +248,17 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
 
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
     });
     gameTester.testGameWidget('basic node with component and remove',
         setUp: basicSetup, verify: (game, tester) async {
@@ -267,21 +267,21 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
       node.removeTrait<IntComponent>();
       expect(node.traits.length, 0);
       expect(node.traits.any((comp) => comp is IntComponent), false);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
     gameTester.testGameWidget('basic node add and remove', setUp: basicSetup,
         verify: (game, tester) async {
@@ -290,10 +290,10 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
       node.addTrait(IntComponent(1));
       expect(node.traits.length, 1);
@@ -301,13 +301,13 @@ void main() {
           throwsA(isA<Exception>()));
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
-      world.removeNode(node);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 1);
+      realm.removeNode(node);
       expect(node.traits.length, 1);
       expect(node.traits.any((comp) => comp is IntComponent), true);
-      expect(world.nodesByType[TestNode]!.length, 0);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+      expect(realm.nodesByType[TestNode]!.length, 0);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
     gameTester.testGameWidget('node with child nodes add and remove',
         setUp: basicSetup, verify: (game, tester) async {
@@ -316,14 +316,14 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
       node.addTrait(IntComponent(1));
-      world.add(node);
+      realm.add(node);
       game.update(0);
-      final nodesInWorld = world.query(Has([IntComponent]));
-      expect(nodesInWorld.iterables.length, 1);
+      final nodesInrealm = realm.query(Has([IntComponent]));
+      expect(nodesInrealm.iterables.length, 1);
       expect(node.findNodeChildren().length, 0);
       final childNode = TestNode();
       node.add(childNode);
@@ -333,25 +333,25 @@ void main() {
       game.update(0);
       expect(node.findNodeChildren().length, 0);
     });
-    gameTester.testGameWidget('add a node to the world', setUp: basicSetup,
+    gameTester.testGameWidget('add a node to the realm', setUp: basicSetup,
         verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      world.add(node);
+      realm.add(node);
       game.update(0);
-      expect(world.nodesByType[TestNode]!.length, 1);
-      expect(world.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
+      expect(realm.nodesByType[TestNode]!.length, 1);
+      expect(realm.archetypeBuckets[Archetype([IntComponent])]!.length, 0);
     });
 
-    gameTester.testGameWidget('wrongly add a node to the world',
+    gameTester.testGameWidget('wrongly add a node to the realm',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<World>());
-      final world = game.children.first as World;
+      expect(game.children.first, isA<Realm>());
+      final realm = game.children.first as Realm;
       var node = TestNode();
-      expect(() => world.registerNode(node), throwsA(isA<AssertionError>()));
+      expect(() => realm.registerNode(node), throwsA(isA<AssertionError>()));
     });
   });
 }

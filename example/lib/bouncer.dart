@@ -1,53 +1,64 @@
-import 'package:backbone/node.dart';
+import 'package:backbone/position_node.dart';
+import 'package:backbone/prelude/input/plugins/hoverable.dart';
+import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:example/messages.dart';
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
 
 /// Marker trait for entities that can be bounced.
 class BouncerTrait extends ATrait {}
 
-class BouncerNode extends ANode with Tappable {
-  final Vector2 size;
+class BouncerNode extends PositionNode {
   final Color color;
   final Vector2 direction;
   final double speed;
+  var oldColor = Colors.white;
 
-  TransformTrait get transform => get<TransformTrait>();
+  Paint get currentPaint => (children.elementAt(0) as RectangleComponent).paint;
 
-  BouncerNode(this.size, this.color, this.direction, this.speed) {
-    // Add your traits here
-    // Make sure to add your traits in the constructor
-    // so that the external code can access them directly
-    // via getters
-    final transformTrait = TransformTrait();
-    transformTrait.size = size;
-    addTrait(transformTrait);
+  BouncerNode(
+    Vector2 size,
+    this.color,
+    this.direction,
+    this.speed,
+  ) : super(
+          transformTrait: TransformTrait()..size = size,
+        ) {
+    // Receive tap ups
+    final tappableTrait = TappableTrait(
+      onTapUp: (pointer) {
+        if (pointer.handled == false) {
+          realm!.pushMessage(RemoveBouncerMessage(this));
+          pointer.handled = true;
+        }
+      },
+    );
+    addTrait(tappableTrait);
+
+    // Receive hover
+    final hoverableTrait = HoverableTrait(
+      onHoverEnter: (pointer) {
+        oldColor = currentPaint.color;
+        currentPaint.color = Colors.red;
+      },
+      onHoverExit: (pointer) {
+        currentPaint.color = oldColor;
+      },
+    );
+    addTrait(hoverableTrait);
+
     addTrait(BouncerTrait());
-  }
-  @override
-  bool containsLocalPoint(Vector2 point) {
-    return get<TransformTrait>().rect.containsPoint(point);
   }
 
   @override
   Future<void>? onLoad() {
     // Add child components here
-    final positionComponent = PositionComponent();
-    add(positionComponent);
-    positionComponent
-        .add(RectangleComponent(size: size, paint: Paint()..color = color));
+    add(RectangleComponent(
+        size: transformTrait.size, paint: Paint()..color = color));
 
     return super.onLoad();
-  }
-
-  @override
-  bool onTapUp(TapUpInfo info) {
-    world!.pushMessage(RemoveBouncerMessage(this));
-    info.handled = true;
-    return false;
   }
 }

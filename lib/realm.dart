@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
-import 'package:backbone/prelude/input.dart';
+import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
@@ -11,21 +11,96 @@ import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+import 'package:flame/experimental.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
-/// World is the main entry point for all backbone systems
-/// You can have multiple worlds in your game
-class World extends Component with HasGameRef {
+// Notes about the Flame input system:
+// * TapDown is always first before LongTapDown
+// * TapDown and TapCancel are always before DragStart
+// * TapDown and DragStart have different pointerIds, but same positions
+// * While drag is happening, hover events are not sent
+// * Hover events use a device identifier, that can be reused
+
+// So, how do we track things?
+// 1. When tap down happens, we search for a hover with the same position and update it as a tapdown, otherwise create a new one
+// 2. LongTapDown just updates the state of the pointer with the same pointerId
+// 3. DragStart searches for pointer with cancelled state and exact same position, then updates it
+
+// Longest lifecycle of a pointer looks like this:
+// HoverEnter -> Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
+
+/// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
+/// It automatically hooks up the input events to the [Realm].
+mixin HasRealm
+    on HasTappableComponents, HasDraggableComponents, KeyboardEvents {
+  late Realm realm;
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    realm.getResource<Input>().onTapDown(event);
+    super.onTapDown(event);
+  }
+
+  @override
+  void onLongTapDown(TapDownEvent event) {
+    realm.getResource<Input>().onLongTapDown(event);
+    super.onLongTapDown(event);
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    realm.getResource<Input>().onTapUp(event);
+    super.onTapUp(event);
+  }
+
+  @override
+  void onTapCancel(TapCancelEvent event) {
+    realm.getResource<Input>().onTapCancel(event);
+    super.onTapCancel(event);
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    realm.getResource<Input>().onDragStart(event);
+    super.onDragStart(event);
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    realm.getResource<Input>().onDragUpdate(event);
+    super.onDragUpdate(event);
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    realm.getResource<Input>().onDragEnd(event);
+    super.onDragEnd(event);
+  }
+
+  @override
+  KeyEventResult onKeyEvent(
+      RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    realm.getResource<Input>().onKeyEvent(event, keysPressed);
+    super.onKeyEvent(event, keysPressed);
+    return KeyEventResult.ignored;
+  }
+}
+
+/// Realm is the main entry point for all backbone systems
+/// You can have multiple realm in your game
+class Realm extends Component with HasGameRef {
   int _nextUniqueId = 0;
 
   /// Get a unique id for this wolrd instance
-  /// ID's are only unqiue by world
+  /// ID's are only unqiue by realm
   int getNextUniqueId() => _nextUniqueId++;
 
-  /// All type of trais registered in this world
+  /// All type of trais registered in this Realm
   late final HashSet<Type> registeredTraits;
 
   /// ???
@@ -43,8 +118,8 @@ class World extends Component with HasGameRef {
   /// ???
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
 
-  /// Create a new world and provide the traids, ???, systems, messages and resources
-  World(this.registeredTraits, this.archetypeBuckets, this.systems,
+  /// Create a new Realm and provide the traids, ???, systems, messages and resources
+  Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
     addResource(Time());
     addResource(Input());
@@ -100,7 +175,7 @@ class World extends Component with HasGameRef {
     _messageSystemPaused = false;
   }
 
-  // Add a new resource to the world
+  // Add a new resource to the Realm
   void addResource<R extends dynamic>(R resource) {
     resources[R] = resource;
   }
@@ -146,10 +221,10 @@ class World extends Component with HasGameRef {
     }
   }
 
-  /// Add a node to a world
+  /// Add a node to a Realm
   void registerNode<N extends ANode>(N node) {
     assert(node.isBackboneMounted == true,
-        'Add the node to the world via add or addAll. Do not call registerNode');
+        'Add the node to the realm via add or addAll. Do not call registerNode');
     final type = node.runtimeType;
     if (nodesByType.containsKey(type) == false) {
       nodesByType[type] = HashSet();
@@ -158,23 +233,23 @@ class World extends Component with HasGameRef {
     putNodeIntoBucket(node);
   }
 
-  /// Remove an existing node from the world
+  /// Remove an existing node from the realm
   void removeNode<N extends ANode>(N node) {
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
       throw Exception('No nodes of type $type were ever added');
     }
     nodesByType[type]!.remove(node);
-    node.world = this;
+    node.realm = this;
 
     removeNodeFromBuckets(node);
   }
 
   /// Addd a trait to an existing node
   void addTraitToNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.world != this) {
+    if (node.realm != this) {
       throw Exception(
-          'Node $node is not in this world. It was added to another world');
+          'Node $node is not in this realm. It was added to another realm');
     }
 
     removeNodeFromBuckets(node);
@@ -183,9 +258,9 @@ class World extends Component with HasGameRef {
 
   /// Remove a trait from an existing node
   void removeTraitFromNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.world != this) {
+    if (node.realm != this) {
       throw Exception(
-          'Node $node is not in this world. It was added to another world');
+          'Node $node is not in this realm. It was added to another realm');
     }
 
     removeNodeFromBuckets(node);
@@ -193,7 +268,7 @@ class World extends Component with HasGameRef {
   }
 
   // Query
-  /// Query the world for a list of nodes
+  /// Query the realm for a list of nodes
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
@@ -210,50 +285,8 @@ class World extends Component with HasGameRef {
     return MultiIterableView(result);
   }
 
-  // Input System
-  /// Should be called by the game in the `onKeyEvent` for the world's input system
-  /// to become aware of keyboard events.
-  void onKeyEvent(
-    RawKeyEvent event,
-    Set<LogicalKeyboardKey> keysPressed,
-  ) {
-    final input = getResource<Input>();
-    input.keysPressed = keysPressed;
-  }
-
-  /// Should be called by the game in the `onMouseMove` for the world's input system
-  /// to become aware of mouse movement.
-  void onMouseMove(PointerHoverInfo info) {
-    final input = getResource<Input>();
-    input.pointerMove = info;
-    input.mousePosition = info.eventPosition.game;
-  }
-
-  /// Should be called by the game in the `onTapDown` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapDown(int pointerId, TapDownInfo info) {
-    final input = getResource<Input>();
-    input.taps.putIfAbsent(pointerId, () => info);
-    input.taps[pointerId] = info;
-  }
-
-  /// Should be called by the game in the `onTapUp` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapUp(int pointerId, TapUpInfo info) {
-    final input = getResource<Input>();
-    input.tapUps.add(pointerId);
-    input.taps[pointerId]!.handled = info.handled;
-  }
-
-  /// Should be called by the game in the `onTapCancel` for the world's input system
-  /// to become aware of taps and clicks.
-  void onTapCancel(int pointerId) {
-    final input = getResource<Input>();
-    input.tapCancels.add(pointerId);
-  }
-
   // Update Loop
-  /// Update all details of the world, called by Flame
+  /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
     // Update the time
@@ -263,16 +296,6 @@ class World extends Component with HasGameRef {
     for (final system in systems) {
       system(this);
     }
-
-    // Update the input system
-    final input = getResource<Input>();
-    input.keysPressed = {};
-    input.pointerMove = null;
-    input.taps = input.taps
-      ..removeWhere((pointerId, _) => input.tapUps.contains(pointerId))
-      ..removeWhere((pointerId, _) => input.tapCancels.contains(pointerId));
-    input.tapUps = HashSet();
-    input.tapCancels = HashSet();
 
     // Proccess the message queue
     // ...and try to keep at least 60 fps
@@ -300,5 +323,9 @@ class World extends Component with HasGameRef {
         }
       }
     }
+
+    // Clear the inputs
+    final input = getResource<Input>();
+    input.clear();
   }
 }
