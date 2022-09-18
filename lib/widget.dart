@@ -10,7 +10,7 @@ class BackboneGameWidget<T extends HasRealm> extends StatefulWidget {
   const BackboneGameWidget({Key? key, required this.game}) : super(key: key);
 
   @override
-  _BackboneGameWidgetState<T> createState() => _BackboneGameWidgetState<T>();
+  State<BackboneGameWidget<T>> createState() => _BackboneGameWidgetState<T>();
 }
 
 class _BackboneGameWidgetState<T extends HasRealm>
