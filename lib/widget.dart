@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+//TODO This hides all featuers from GameWidget. We need to find anohter way!
 class BackboneGameWidget<T extends HasRealm> extends StatefulWidget {
   final T game;
 
@@ -37,6 +38,7 @@ class _BackboneGameWidgetState<T extends HasRealm>
 
   @override
   Widget build(BuildContext context) {
+    //TODO Do we need this Listner, I think no?
     return Listener(
       child: GameWidget(
         game: widget.game,
