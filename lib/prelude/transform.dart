@@ -43,6 +43,13 @@ class TransformTrait extends ATrait {
   }
 }
 
+/// Default system for TransformTrait, any PositionNode using the trait will
+/// get updated values every frame for:
+/// - position
+/// - scale
+/// - angle
+/// - size
+/// - anchor
 void transformSystem(Realm realm) {
   final realmQuery = realm.query(Has([TransformTrait]));
   final queryLength = realmQuery.length;
