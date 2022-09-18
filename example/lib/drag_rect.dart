@@ -11,6 +11,7 @@ class DragRect extends PositionNode {
   late final Color color;
   final rng = Random();
   Vector2? startingPosition;
+  Vector2 dragOffset = Vector2.zero();
 
   DragRect(Vector2 position) {
     // Create a random color
@@ -25,6 +26,7 @@ class DragRect extends PositionNode {
     final draggableTrait = DraggableTrait(
       onStart: (pointer, offset) {
         startingPosition = transformTrait.position;
+        dragOffset = offset;
         return null;
       },
       onUpdate: (pointer) {
@@ -35,6 +37,7 @@ class DragRect extends PositionNode {
         transformTrait.position = parentAsPosition != null
             ? parentAsPosition.absoluteToLocal(pointer.position)
             : pointer.position;
+        transformTrait.position -= dragOffset;
       },
       onEnd: (pointer, node) {
         if ((findNodeParent()?.containsPoint(pointer.position) ?? false) ==
