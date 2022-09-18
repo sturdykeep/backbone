@@ -10,7 +10,7 @@ class DragRect extends PositionNode {
   final Vector2 fixedSize = Vector2.all(60);
   late final Color color;
   final rng = Random();
-  Vector2 dragOffset = Vector2.zero();
+  Vector2? startingPosition;
 
   DragRect(Vector2 position) {
     // Create a random color
@@ -24,9 +24,8 @@ class DragRect extends PositionNode {
     // Create callbacks for drag events
     final draggableTrait = DraggableTrait(
       onStart: (pointer, offset) {
-        dragOffset = offset;
-        debugPrint("Drag started with offset $offset");
-        return DraggablePointerPayload(this, null);
+        startingPosition = transformTrait.position;
+        return null;
       },
       onUpdate: (pointer) {
         PositionComponent? parentAsPosition;
@@ -36,16 +35,20 @@ class DragRect extends PositionNode {
         transformTrait.position = parentAsPosition != null
             ? parentAsPosition.absoluteToLocal(pointer.position)
             : pointer.position;
-        transformTrait.position -= dragOffset;
       },
       onEnd: (pointer, node) {
-        final bouncer = BouncerNode(
-            Vector2.all(50.0 + 50.0 * rng.nextDouble()),
-            color,
-            (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
-            200.0 + 200.0 * rng.nextDouble());
-        bouncer.transformTrait.position = pointer.position;
-        realm!.add(bouncer);
+        if ((findNodeParent()?.containsPoint(pointer.position) ?? false) ==
+            false) {
+          final bouncer = BouncerNode(
+              Vector2.all(50.0 + 50.0 * rng.nextDouble()),
+              color,
+              (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
+              200.0 + 200.0 * rng.nextDouble());
+          bouncer.transformTrait.position = pointer.position;
+          realm!.add(bouncer);
+          transformTrait.position = startingPosition!;
+          startingPosition = null;
+        }
       },
     );
     addTrait(draggableTrait);

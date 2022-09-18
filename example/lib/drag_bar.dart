@@ -15,16 +15,31 @@ class DragBoxSpawnerTrait extends ATrait {}
 
 class DragBar extends PositionNode {
   static const double space = 80;
+  bool landscapeMode = false;
+  final Paint barBorderPaint = Paint()..color = Colors.white;
 
   void setPositionAndSize({Vector2? screenSize}) {
     screenSize ??= gameRef.size;
     if (screenSize.x >= screenSize.y) {
       transformTrait.position = Vector2(0, screenSize.y - space);
       transformTrait.size = Vector2(screenSize.x, space);
+      landscapeMode = true;
     } else {
       transformTrait.position = Vector2(screenSize.x - space, 0);
       transformTrait.size = Vector2(space, screenSize.y);
+      landscapeMode = false;
     }
+    if (hasChildren) {
+      (findNodeChildren().first as PositionNode).transformTrait.position =
+          getChildStartingPosition();
+    }
+  }
+
+  Vector2 getChildStartingPosition() {
+    if (landscapeMode) {
+      return Vector2(transformTrait.size.x / 2, 40);
+    }
+    return Vector2(40, transformTrait.size.y / 2);
   }
 
   DragBar(Vector2 screenSize) {
@@ -35,13 +50,19 @@ class DragBar extends PositionNode {
 
   @override
   Future<void>? onLoad() {
-    add(DragRect(Vector2(transformTrait.size.x / 2, 40)));
+    add(DragRect(getChildStartingPosition()));
     return super.onLoad();
   }
 
   @override
   void render(Canvas canvas) {
-    super.render(canvas);
-    canvas.drawRect(transformTrait.rect, debugPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(
+          0,
+          0,
+          transformTrait.size.x,
+          transformTrait.size.y,
+        ),
+        barBorderPaint);
   }
 }
