@@ -37,5 +37,7 @@ jobs:
           flutter analyze
           flutter test --coverage .
       - name: Upload coverage to codecov
-        run: curl -s https://codecov.io/bash
-        shell: bash      
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov
