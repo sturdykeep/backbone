@@ -1,8 +1,8 @@
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/component_node.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/trait.dart';
-import 'package:backbone/node.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
@@ -20,7 +20,7 @@ class StringTrait extends ATrait {
   StringTrait(this.value);
 }
 
-class TestNode extends ANode {
+class TestNode extends ComponentNode {
   TestNode() : super();
 }
 

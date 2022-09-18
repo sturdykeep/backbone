@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/component_node.dart';
 import 'package:backbone/message.dart';
-import 'package:backbone/node.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'node_test.dart';
@@ -17,7 +17,7 @@ class ExampleResource {}
 
 class ExampleResource2 {}
 
-class SecondTestNode extends ANode {}
+class SecondTestNode extends ComponentNode {}
 
 void main() {
   group('Realm', () {
