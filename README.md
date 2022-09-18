@@ -27,4 +27,4 @@ No! You can add backbone to any Flame game and use it alongside the existing com
 Yes, there is simple example application that showcases all basic uses-cases of backbone. The code for the app can be found in [example](https://github.com/sturdykeep/backbone/tree/main/example/lib), a [live demo can be found here](https://sturdykeep.github.io/backbone/example_app/).
 
 ## Check out the docs
-Check out our [documentation here](https://github.com/sturdykeep/backbone/tree/main/docs) in the repository or directly in the code.
+Check out our [documentation here](https://github.com/sturdykeep/backbone/blob/main/docs/docs.md) in the repository or directly in the code.
