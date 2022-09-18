@@ -28,7 +28,9 @@ jobs:
       - run: flutter --version
       # Restore packages
       - name: Restore packages
-        run: flutter pub get
+        run: | 
+          flutter pub get
+          flutter pub get benchmark
       # Run tests
       - run: flutter analyze
       - uses: stelynx/dart-full-coverage@v1.0.5
