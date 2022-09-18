@@ -32,7 +32,9 @@ jobs:
           channel: 'stable' # or: 'beta', 'dev' or 'master'
       # Run tests
       - run: flutter config --enable-linux-desktop
-      #- run: flutter build linux
+      - run: flutter --version
+      - name: Restore packages
+        run: flutter pub get
       - run: flutter analyze
       - uses: stelynx/dart-full-coverage@v1.0.5
         with:
