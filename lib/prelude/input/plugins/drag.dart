@@ -51,9 +51,8 @@ void draggableSystem(Realm realm) {
               : Vector2.zero();
           final payload = draggable.onStart!(dragStart, offset);
           dragStart.payload = payload;
-        } else {
-          dragStart.payload = DraggablePointerPayload(node, null);
         }
+        dragStart.payload ??= DraggablePointerPayload(node, null);
       }
     }
 
