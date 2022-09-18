@@ -6,7 +6,6 @@ import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
-import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
@@ -20,8 +19,6 @@ class MainGame extends FlameGame
         HasTappableComponents,
         HasDraggableComponents,
         KeyboardEvents,
-        HasHoverables,
-        Hoverable,
         HasRealm {
   bool realmInitDone = false;
 
