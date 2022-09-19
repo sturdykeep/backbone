@@ -11,7 +11,7 @@ import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
-import 'drag_bar.dart';
+import 'template_bar.dart';
 import 'messages.dart';
 
 class MainGame extends FlameGame
@@ -28,7 +28,7 @@ class MainGame extends FlameGame
         .withPlugin(defaultPlugin)
         .withTrait(BouncerTrait)
         .withTrait(GameResizeTrait)
-        .withTrait(DragBoxSpawnerTrait)
+        .withTrait(TemplateSpawnerTrait)
         .withSystem(bounceSystem)
         .withSystem(tapSpawnSystem)
         .withMessageSystem(removeBounceMessageSystem)
@@ -52,7 +52,7 @@ class MainGame extends FlameGame
           Vector2(canvasSize.x / 2, canvasSize.y / 2);
       realm.add(bouncer);
     }
-    realm.add(DragBar(size));
+    realm.add(TemplateBar(size));
     realmInitDone = true;
   }
 

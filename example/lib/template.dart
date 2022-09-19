@@ -6,14 +6,14 @@ import 'package:example/bouncer.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/widgets.dart';
 
-class DragRect extends PositionNode {
+class Template extends PositionNode {
   final Vector2 fixedSize = Vector2.all(60);
   late final Color color;
   final rng = Random();
   Vector2? startingPosition;
   Vector2 dragOffset = Vector2.zero();
 
-  DragRect(Vector2 position) {
+  Template(Vector2 position) {
     // Create a random color
     color = Color((rng.nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
     // Set position and size
@@ -51,8 +51,8 @@ class DragRect extends PositionNode {
           realm!.add(bouncer);
           transformTrait.position = startingPosition!;
           startingPosition = null;
-          pointer.handled = true;
         }
+        pointer.handled = true;
       },
     );
     addTrait(draggableTrait);

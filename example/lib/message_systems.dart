@@ -1,7 +1,7 @@
 import 'package:backbone/filter.dart';
 import 'package:backbone/message.dart';
 import 'package:backbone/realm.dart';
-import 'package:example/drag_bar.dart';
+import 'package:example/template_bar.dart';
 import 'package:example/messages.dart';
 
 bool removeBounceMessageSystem(Realm realm, AMessage message) {
