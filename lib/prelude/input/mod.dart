@@ -21,17 +21,17 @@ void inputPlugin(RealmBuilder builder) {
     ..withTrait(HoverableTrait)
     ..withSystem(hoverableSystem);
 
-  // Taps
-  builder
-    ..withTrait(TappableTrait)
-    ..withSystem(tappableSystem);
-
   // Drag
   builder
     ..withTrait(DraggableTrait)
     ..withTrait(DragReceiverTrait)
     ..withSystem(draggableSystem)
     ..withSystem(dragReceiverSystem);
+
+  // Taps
+  builder
+    ..withTrait(TappableTrait)
+    ..withSystem(tappableSystem);
 }
 
 /// Resource which contains all the input data for the current frame.

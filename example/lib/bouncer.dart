@@ -29,7 +29,7 @@ class BouncerNode extends PositionNode {
         ) {
     // Receive tap ups
     final tappableTrait = TappableTrait(
-      onTapUp: (pointer) {
+      onJustReleased: (pointer) {
         if (pointer.handled == false) {
           realm!.pushMessage(RemoveBouncerMessage(this));
           pointer.handled = true;
