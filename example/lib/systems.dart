@@ -8,7 +8,7 @@ import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
 import 'package:flame/extensions.dart';
 
-import 'drag_bar.dart';
+import 'template_bar.dart';
 
 /// System that bounces boxes off screen edges
 void bounceSystem(Realm realm) {
@@ -16,12 +16,12 @@ void bounceSystem(Realm realm) {
   final realmQuery = realm.query(Has([TransformTrait, BouncerTrait]));
   // or
   // final realmQuery = realm.query(And([Has([TransformTrait]), Has([BouncerTrait])]));
-  final dragBarQuery = realm.query(Has([DragBoxSpawnerTrait, TransformTrait]));
+  final dragBarQuery = realm.query(Has([TemplateSpawnerTrait, TransformTrait]));
   final dragBarTransform = dragBarQuery.first.get<TransformTrait>();
   final queryLength = realmQuery.length;
   final dragBarSize = Vector2(
-      dragBarTransform.position.y == 0 ? DragBar.space : 0,
-      dragBarTransform.position.x == 0 ? DragBar.space : 0);
+      dragBarTransform.position.y == 0 ? TemplateBar.space : 0,
+      dragBarTransform.position.x == 0 ? TemplateBar.space : 0);
   final gameSizeWithoutDragBar = realm.gameRef.canvasSize - dragBarSize;
   for (var i = 0; i < queryLength; i++) {
     final node = realmQuery.elementAt(i) as BouncerNode;

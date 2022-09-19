@@ -1,6 +1,6 @@
 import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
-import 'package:example/drag_rect.dart';
+import 'package:example/template.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
 
@@ -11,9 +11,9 @@ class GameResizeTrait extends ATrait {
 }
 
 /// Used to find nodes that spawn dragBoxes, like a tag
-class DragBoxSpawnerTrait extends ATrait {}
+class TemplateSpawnerTrait extends ATrait {}
 
-class DragBar extends PositionNode {
+class TemplateBar extends PositionNode {
   static const double space = 80;
   bool landscapeMode = false;
   final Paint barBorderPaint = Paint()..color = Colors.white;
@@ -42,15 +42,15 @@ class DragBar extends PositionNode {
     return Vector2(40, transformTrait.size.y / 2);
   }
 
-  DragBar(Vector2 screenSize) {
+  TemplateBar(Vector2 screenSize) {
     addTrait(GameResizeTrait(setPositionAndSize));
-    addTrait(DragBoxSpawnerTrait());
+    addTrait(TemplateSpawnerTrait());
     setPositionAndSize(screenSize: screenSize);
   }
 
   @override
   Future<void>? onLoad() {
-    add(DragRect(getChildStartingPosition()));
+    add(Template(getChildStartingPosition()));
     return super.onLoad();
   }
 
