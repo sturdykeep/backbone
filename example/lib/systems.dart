@@ -50,7 +50,7 @@ void bounceSystem(Realm realm) {
 void tapSpawnSystem(Realm realm) {
   final rng = Random();
   final input = realm.getResource<Input>();
-  final pointers = input.justTapUpPointers();
+  final pointers = input.justReleasedPointers();
   for (var pointer in pointers) {
     if (pointer.handled == false) {
       final bouncer = BouncerNode(
