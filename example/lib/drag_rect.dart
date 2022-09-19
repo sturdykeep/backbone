@@ -51,6 +51,7 @@ class DragRect extends PositionNode {
           realm!.add(bouncer);
           transformTrait.position = startingPosition!;
           startingPosition = null;
+          pointer.handled = true;
         }
       },
     );
