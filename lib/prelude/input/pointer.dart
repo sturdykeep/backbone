@@ -1,6 +1,10 @@
+// ignore_for_file: implementation_imports
+
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flame/src/events/messages/position_event.dart';
+import 'package:flame/src/events/messages/event.dart';
 
 /// Wraps a pointer device doing something on the screen.
 /// Includes convenience methods for accessing data like position, state, etc.
@@ -67,30 +71,11 @@ class Pointer {
 
   /// Most up to date position of the pointer.
   Vector2 get position {
-    if (state is PointerStateAdded) {
-      return (state as PointerStateAdded).raw.position.toVector2();
-    } else if (state is PointerStateHover) {
-      return (state as PointerStateHover).raw.position.toVector2();
-    } else if (state is PointerStateRemoved) {
-      return (state as PointerStateRemoved).raw.position.toVector2();
-    } else if (state is PointerStateDown) {
-      return (state as PointerStateDown).raw.canvasPosition;
-    } else if (state is PointerStateLongDown) {
-      return (state as PointerStateLongDown).raw.canvasPosition;
-    } else if (state is PointerStateDragStart) {
-      return (state as PointerStateDragStart).raw.canvasPosition;
-    } else if (state is PointerStateUp) {
-      return (state as PointerStateUp).raw.canvasPosition;
-    } else if (state is PointerStateCancelled) {
-      return historyGet<PointerStateDown>().raw.canvasPosition;
-    } else if (state is PointerStateDragUpdate) {
-      return (state as PointerStateDragUpdate).raw.canvasPosition;
-    } else if (state is PointerStateDragEnd) {
+    if (state is PointerStateDragEnd) {
       if (history.any((state) => state is PointerStateDragUpdate)) {
         return (history.lastWhere((state) => state is PointerStateDragUpdate)
                 as PointerStateDragUpdate)
-            .raw
-            .canvasPosition;
+            .position;
       } else {
         return startPosition;
       }
@@ -98,111 +83,43 @@ class Pointer {
       if (history.any((state) => state is PointerStateHover)) {
         return (history.lastWhere((state) => state is PointerStateHover)
                 as PointerStateHover)
-            .raw
-            .position
-            .toVector2();
+            .position;
       } else {
         return startPosition;
       }
+    } else if (state is PointerStateCancelled) {
+      return history[history.length - 1].position;
     } else {
-      return startPosition;
+      return state.position;
     }
   }
 
-  /// Internal representation of a concrete device (Hover) or its interaction (Taps, Drags).
-  int get device {
-    if (state is PointerStateAdded) {
-      return (state as PointerStateAdded).raw.device;
-    } else if (state is PointerStateRemoved) {
-      return (state as PointerStateRemoved).raw.device;
-    } else if (state is PointerStateHover) {
-      return (state as PointerStateHover).raw.device;
-    } else if (state is PointerStateDown) {
-      return (state as PointerStateDown).raw.pointerId;
-    } else if (state is PointerStateLongDown) {
-      return (state as PointerStateLongDown).raw.pointerId;
-    } else if (state is PointerStateDragStart) {
-      return (state as PointerStateDragStart).raw.pointerId;
-    } else if (state is PointerStateDragUpdate) {
-      return (state as PointerStateDragUpdate).raw.pointerId;
-    } else if (state is PointerStateDragEnd) {
-      return (state as PointerStateDragEnd).raw.pointerId;
-    } else if (state is PointerStateUp) {
-      return (state as PointerStateUp).raw.pointerId;
-    } else if (state is PointerStateCancelled) {
-      return (state as PointerStateCancelled).raw.pointerId;
-    } else if (state is PointerStateTimeout) {
+  /// Internal representation of a Flame or Flutter pointers.
+  int get pointerId {
+    if (state is PointerStateTimeout) {
       // Search for the last hover or pointer add event
       if (history.any((state) => state is PointerStateHover)) {
         return (history.lastWhere((state) => state is PointerStateHover)
                 as PointerStateHover)
-            .raw
-            .device;
+            .pointerId;
       } else if (history.any((state) => state is PointerStateAdded)) {
         return (history.lastWhere((state) => state is PointerStateAdded)
                 as PointerStateAdded)
-            .raw
-            .device;
+            .pointerId;
       } else {
-        return -1;
+        return id;
       }
     } else {
-      return -1;
+      return state.pointerId;
     }
   }
 
   bool get handled {
-    if (state is PointerStateAdded) {
-      return (state as PointerStateAdded).handled;
-    } else if (state is PointerStateRemoved) {
-      return (state as PointerStateRemoved).handled;
-    } else if (state is PointerStateHover) {
-      return (state as PointerStateHover).handled;
-    } else if (state is PointerStateDown) {
-      return (state as PointerStateDown).raw.handled;
-    } else if (state is PointerStateLongDown) {
-      return (state as PointerStateLongDown).raw.handled;
-    } else if (state is PointerStateDragStart) {
-      return (state as PointerStateDragStart).raw.handled;
-    } else if (state is PointerStateDragUpdate) {
-      return (state as PointerStateDragUpdate).raw.handled;
-    } else if (state is PointerStateDragEnd) {
-      return (state as PointerStateDragEnd).raw.handled;
-    } else if (state is PointerStateUp) {
-      return (state as PointerStateUp).raw.handled;
-    } else if (state is PointerStateCancelled) {
-      return (state as PointerStateCancelled).raw.handled;
-    } else if (state is PointerStateTimeout) {
-      return (state as PointerStateTimeout).handled;
-    } else {
-      return false;
-    }
+    return state.handled;
   }
 
   set handled(bool value) {
-    if (state is PointerStateAdded) {
-      (state as PointerStateAdded).handled = value;
-    } else if (state is PointerStateRemoved) {
-      (state as PointerStateRemoved).handled = value;
-    } else if (state is PointerStateHover) {
-      (state as PointerStateHover).handled = value;
-    } else if (state is PointerStateDown) {
-      (state as PointerStateDown).raw.handled = value;
-    } else if (state is PointerStateLongDown) {
-      (state as PointerStateLongDown).raw.handled = value;
-    } else if (state is PointerStateDragStart) {
-      (state as PointerStateDragStart).raw.handled = value;
-    } else if (state is PointerStateDragUpdate) {
-      (state as PointerStateDragUpdate).raw.handled = value;
-    } else if (state is PointerStateDragEnd) {
-      (state as PointerStateDragEnd).raw.handled = value;
-    } else if (state is PointerStateUp) {
-      (state as PointerStateUp).raw.handled = value;
-    } else if (state is PointerStateCancelled) {
-      (state as PointerStateCancelled).raw.handled = value;
-    } else if (state is PointerStateTimeout) {
-      (state as PointerStateTimeout).handled = value;
-    }
+    state.handled = value;
   }
 
   // State getters
@@ -240,74 +157,98 @@ class Pointer {
 }
 
 /// Represents the current state of the pointer device.
-class PointerState {}
+class PointerState {
+  final PointerEvent? rawPointerEvent;
+  final Event? rawEvent;
+
+  PositionEvent? get rawPositionEvent =>
+      rawEvent != null && rawEvent is PositionEvent
+          ? rawEvent as PositionEvent
+          : null;
+  Vector2 get position =>
+      rawPointerEvent?.position.toVector2() ??
+      rawPositionEvent?.canvasPosition ??
+      Vector2.zero();
+  int _pointerId = -1;
+  int get pointerId => rawPointerEvent?.pointer ?? _pointerId;
+  int get device => rawPointerEvent?.device ?? -1;
+
+  // Handled
+  bool _handled = false;
+  bool get handled => rawEvent?.handled ?? _handled;
+  set handled(bool value) {
+    if (rawEvent != null) {
+      rawEvent!.handled = value;
+    } else {
+      _handled = value;
+    }
+  }
+
+  PointerState({this.rawPointerEvent, this.rawEvent, int? pointerId}) {
+    if (pointerId != null) {
+      _pointerId = pointerId;
+    }
+  }
+}
 
 class PointerStateDown extends PointerState {
-  final TapDownEvent raw;
-
-  PointerStateDown(this.raw);
+  PointerStateDown(TapDownEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  TapDownEvent get raw => rawEvent as TapDownEvent;
 }
 
 class PointerStateLongDown extends PointerState {
-  final TapDownEvent raw;
-
-  PointerStateLongDown(this.raw);
+  PointerStateLongDown(TapDownEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  TapDownEvent get raw => rawEvent as TapDownEvent;
 }
 
 class PointerStateUp extends PointerState {
-  final TapUpEvent raw;
-
-  PointerStateUp(this.raw);
+  PointerStateUp(TapUpEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  TapUpEvent get raw => rawEvent as TapUpEvent;
 }
 
 class PointerStateCancelled extends PointerState {
-  final TapCancelEvent raw;
-
-  PointerStateCancelled(this.raw);
+  PointerStateCancelled(TapCancelEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  TapCancelEvent get raw => rawEvent as TapCancelEvent;
 }
 
 class PointerStateDragStart extends PointerState {
-  final DragStartEvent raw;
-
-  PointerStateDragStart(this.raw);
+  PointerStateDragStart(DragStartEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  DragStartEvent get raw => rawEvent as DragStartEvent;
 }
 
 class PointerStateDragUpdate extends PointerState {
-  final DragUpdateEvent raw;
-
-  PointerStateDragUpdate(this.raw);
+  PointerStateDragUpdate(DragUpdateEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  DragUpdateEvent get raw => rawEvent as DragUpdateEvent;
 }
 
 class PointerStateDragEnd extends PointerState {
-  final DragEndEvent raw;
-
-  PointerStateDragEnd(this.raw);
+  PointerStateDragEnd(DragEndEvent raw)
+      : super(rawEvent: raw, pointerId: raw.pointerId);
+  DragEndEvent get raw => rawEvent as DragEndEvent;
 }
 
 class PointerStateAdded extends PointerState {
-  final PointerAddedEvent raw;
-  bool handled = false;
-
-  PointerStateAdded(this.raw);
+  PointerStateAdded(PointerAddedEvent raw) : super(rawPointerEvent: raw);
+  PointerAddedEvent get raw => rawPointerEvent as PointerAddedEvent;
 }
 
 class PointerStateHover extends PointerState {
-  final PointerHoverEvent raw;
-  bool handled = false;
   DateTime lastHoverTime = DateTime.now();
-
-  PointerStateHover(this.raw);
+  PointerStateHover(PointerHoverEvent raw) : super(rawPointerEvent: raw);
+  PointerHoverEvent get raw => rawPointerEvent as PointerHoverEvent;
 }
 
 class PointerStateRemoved extends PointerState {
-  final PointerRemovedEvent raw;
-  bool handled = false;
-
-  PointerStateRemoved(this.raw);
+  PointerStateRemoved(PointerRemovedEvent raw) : super(rawPointerEvent: raw);
+  PointerRemovedEvent get raw => rawPointerEvent as PointerRemovedEvent;
 }
 
 class PointerStateTimeout extends PointerState {
-  bool handled = false;
-
   PointerStateTimeout();
 }
