@@ -44,7 +44,7 @@ void tappableSystem(Realm realm) {
     // Check tap starts
     for (var tapStart in tapStarts) {
       if (tappable.onTapDown != null) {
-        if (node.containsPoint(tapStart.position)) {
+        if (node.containsPoint(tapStart.worldPosition(realm.gameRef))) {
           tappable.onTapDown!(tapStart);
         }
       }
@@ -53,7 +53,7 @@ void tappableSystem(Realm realm) {
     // Check long tap starts
     for (var longTapStart in longTapStarts) {
       if (tappable.onLongTapDown != null) {
-        if (node.containsPoint(longTapStart.position)) {
+        if (node.containsPoint(longTapStart.worldPosition(realm.gameRef))) {
           tappable.onLongTapDown!(longTapStart);
         }
       }
@@ -62,7 +62,7 @@ void tappableSystem(Realm realm) {
     // Check tap ends
     for (var tapEnd in tapEnds) {
       if (tappable.onTapUp != null) {
-        if (node.containsPoint(tapEnd.position)) {
+        if (node.containsPoint(tapEnd.worldPosition(realm.gameRef))) {
           tappable.onTapUp!(tapEnd);
         }
       }
@@ -71,7 +71,7 @@ void tappableSystem(Realm realm) {
     // Check tap cancels
     for (var tapCancel in tapCancels) {
       if (tappable.onTapCancel != null) {
-        if (node.containsPoint(tapCancel.position)) {
+        if (node.containsPoint(tapCancel.worldPosition(realm.gameRef))) {
           tappable.onTapCancel!(tapCancel);
         }
       }
@@ -80,7 +80,7 @@ void tappableSystem(Realm realm) {
     // Check just pressed
     for (var pressed in justPressed) {
       if (tappable.onJustPressed != null) {
-        if (node.containsPoint(pressed.position)) {
+        if (node.containsPoint(pressed.worldPosition(realm.gameRef))) {
           tappable.onJustPressed!(pressed);
         }
       }
@@ -89,7 +89,7 @@ void tappableSystem(Realm realm) {
     // Check pressed
     for (var press in pressed) {
       if (tappable.onPressed != null) {
-        if (node.containsPoint(press.position)) {
+        if (node.containsPoint(press.worldPosition(realm.gameRef))) {
           tappable.onPressed!(press);
         }
       }
@@ -98,7 +98,7 @@ void tappableSystem(Realm realm) {
     // Check just released
     for (var released in justReleased) {
       if (tappable.onJustReleased != null) {
-        if (node.containsPoint(released.position)) {
+        if (node.containsPoint(released.worldPosition(realm.gameRef))) {
           tappable.onJustReleased!(released);
         }
       }

@@ -2,6 +2,7 @@
 
 import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flame/src/events/messages/position_event.dart';
 import 'package:flame/src/events/messages/event.dart';
@@ -92,6 +93,10 @@ class Pointer {
     } else {
       return state.position;
     }
+  }
+
+  Vector2 worldPosition(FlameGame game) {
+    return game.camera.screenToWorld(position);
   }
 
   /// Internal representation of a Flame or Flutter pointers.

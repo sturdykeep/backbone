@@ -44,7 +44,7 @@ void draggableSystem(Realm realm) {
 
     // Check drag starts
     for (var dragStart in dragStarts) {
-      if (node.containsPoint(dragStart.position)) {
+      if (node.containsPoint(dragStart.worldPosition(realm.gameRef))) {
         if (draggable.onStart != null) {
           final offset = tranform != null
               ? dragStart.position - tranform.absolutePosition(node)
@@ -87,7 +87,7 @@ void dragReceiverSystem(Realm realm) {
 
     // Check drag ends
     for (var dragEnd in dragEnds) {
-      if (node.containsPoint(dragEnd.position)) {
+      if (node.containsPoint(dragEnd.worldPosition(realm.gameRef))) {
         final payload = dragEnd.payload as DraggablePointerPayload?;
         dragReceiver.onReceive(dragEnd, payload);
       }
