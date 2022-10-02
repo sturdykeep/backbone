@@ -96,7 +96,8 @@ class Pointer {
   }
 
   Vector2 worldPosition(FlameGame game) {
-    return game.camera.screenToWorld(position);
+    final afterViewport = game.camera.viewport.unprojectVector(position);
+    return game.camera.screenToWorld(afterViewport);
   }
 
   /// Internal representation of a Flame or Flutter pointers.
