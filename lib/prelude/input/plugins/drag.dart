@@ -47,7 +47,8 @@ void draggableSystem(Realm realm) {
       if (node.containsPoint(dragStart.worldPosition(realm.gameRef))) {
         if (draggable.onStart != null) {
           final offset = tranform != null
-              ? dragStart.position - tranform.absolutePosition(node)
+              ? dragStart.worldPosition(realm.gameRef) -
+                  tranform.absolutePosition(node)
               : Vector2.zero();
           final payload = draggable.onStart!(dragStart, offset);
           dragStart.payload = payload;
