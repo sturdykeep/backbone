@@ -39,66 +39,84 @@ typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 mixin HasRealm
     on HasTappableComponents, HasDraggableComponents, KeyboardEvents {
   late Realm realm;
+  bool realmReady = false;
 
   @override
   void onTapDown(TapDownEvent event) {
-    realm.getResource<Input>().onTapDown(event);
+    if (realmReady) {
+      realm.getResource<Input>().onTapDown(event);
+    }
+
     super.onTapDown(event);
   }
 
   @override
   void onLongTapDown(TapDownEvent event) {
-    realm.getResource<Input>().onLongTapDown(event);
+    if (realmReady) {
+      realm.getResource<Input>().onLongTapDown(event);
+    }
     super.onLongTapDown(event);
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    realm.getResource<Input>().onTapUp(event);
+    if (realmReady) {
+      realm.getResource<Input>().onTapUp(event);
+    }
     super.onTapUp(event);
   }
 
   @override
   void onTapCancel(TapCancelEvent event) {
-    realm.getResource<Input>().onTapCancel(event);
+    if (realmReady) {
+      realm.getResource<Input>().onTapCancel(event);
+    }
     super.onTapCancel(event);
   }
 
   @override
   void onDragStart(DragStartEvent event) {
-    realm.getResource<Input>().onDragStart(event);
+    if (realmReady) {
+      realm.getResource<Input>().onDragStart(event);
+    }
     super.onDragStart(event);
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    realm.getResource<Input>().onDragUpdate(event);
+    if (realmReady) {
+      realm.getResource<Input>().onDragUpdate(event);
+    }
     super.onDragUpdate(event);
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
-    realm.getResource<Input>().onDragEnd(event);
+    if (realmReady) {
+      realm.getResource<Input>().onDragEnd(event);
+    }
     super.onDragEnd(event);
   }
 
   @override
   KeyEventResult onKeyEvent(
       RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    realm.getResource<Input>().onKeyEvent(event, keysPressed);
+    if (realmReady) {
+      realm.getResource<Input>().onKeyEvent(event, keysPressed);
+    }
     super.onKeyEvent(event, keysPressed);
-    return KeyEventResult.ignored;
+    return KeyEventResult.handled;
   }
 }
 
 /// Realm is the main entry point for all backbone systems
 /// You can have multiple realm in your game
 class Realm extends Component with HasGameRef {
-  int _nextUniqueId = 0;
+  int nextUniqueId = 0;
 
   /// Get a unique id for this wolrd instance
   /// ID's are only unqiue by realm
-  int getNextUniqueId() => _nextUniqueId++;
+  int getNextUniqueId() => nextUniqueId++;
 
   /// All type of trais registered in this Realm
   late final HashSet<Type> registeredTraits;
@@ -129,17 +147,17 @@ class Realm extends Component with HasGameRef {
   SlowMessageDebugCallback? slowMessageDebugCallback;
 
   // Message system
-  bool _messageSystemPaused = false;
-  final Queue<AMessage> _messageQueue = Queue();
+  bool messageSystemPaused = false;
+  final Queue<AMessage> messageQueue = Queue();
 
   /// Push a new message to the end of the queue
   void pushMessage(AMessage message) {
-    _messageQueue.add(message);
+    messageQueue.add(message);
   }
 
   /// Push a message to the first pposition in the queue
   void pushMessageToFront(AMessage message) {
-    _messageQueue.addFirst(message);
+    messageQueue.addFirst(message);
   }
 
   /// Push multiple messages to the queue
@@ -148,31 +166,31 @@ class Realm extends Component with HasGameRef {
     // messageQueue: [c, b, a] (reverse, but execute in order)
     var messagesReverse = messages.toList().reversed;
     for (var message in messagesReverse) {
-      _messageQueue.addFirst(message);
+      messageQueue.addFirst(message);
     }
   }
 
   /// Get the first message in the queue without removing it
   AMessage peekMessage() {
-    return _messageQueue.first;
+    return messageQueue.first;
   }
 
   /// Get the first message in the queue and remove it
   AMessage popMessage() {
-    return _messageQueue.removeFirst();
+    return messageQueue.removeFirst();
   }
 
   /// Is there any message in the queue
-  bool get hasMessage => _messageQueue.isNotEmpty;
+  bool get hasMessage => messageQueue.isNotEmpty;
 
   /// Pause the message system
   void pauseMessageSystem() {
-    _messageSystemPaused = true;
+    messageSystemPaused = true;
   }
 
   /// Resum the message system
   void resumeMessageSystem() {
-    _messageSystemPaused = false;
+    messageSystemPaused = false;
   }
 
   // Add a new resource to the Realm
@@ -300,8 +318,8 @@ class Realm extends Component with HasGameRef {
     // Proccess the message queue
     // ...and try to keep at least 60 fps
     final messagesProcessStartTime = DateTime.now();
-    while (_messageSystemPaused == false) {
-      if (_messageQueue.isEmpty) break;
+    while (messageSystemPaused == false) {
+      if (messageQueue.isEmpty) break;
       if (DateTime.now().difference(messagesProcessStartTime).inMilliseconds >
           8) break;
 

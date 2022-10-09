@@ -20,8 +20,6 @@ class MainGame extends FlameGame
         HasDraggableComponents,
         KeyboardEvents,
         HasRealm {
-  bool realmInitDone = false;
-
   @override
   Future<void> onLoad() async {
     realm = RealmBuilder()
@@ -53,13 +51,13 @@ class MainGame extends FlameGame
       realm.add(bouncer);
     }
     realm.add(TemplateBar(size));
-    realmInitDone = true;
+    realmReady = true;
   }
 
   @override
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
-    if (realmInitDone) {
+    if (realmReady) {
       realm.pushMessage(GameResizseMessage());
     }
   }

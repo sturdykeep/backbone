@@ -48,12 +48,19 @@ class Input {
   final _pointerAddedEvents = <PointerAddedEvent>[];
   final _pointerRemovedEvents = <PointerRemovedEvent>[];
 
+  /// Enable or disable debug prints
+  bool debugMode = false;
   // Processed data
   final _keyStates = <BackboneKey>[];
   int _lastPointerId = 0;
   final _pointers = <Pointer>[];
   final _pointersGraveyard = <Pointer>[];
   final _pendingHovers = <Pointer>[];
+
+  void _debugPrint(String message) {
+    if (debugMode == false) return;
+    debugPrint(message);
+  }
 
   // Input hooks
   void onHover(PointerHoverEvent event) {
@@ -64,7 +71,8 @@ class Input {
         (p) => p.state is PointerStateAdded && p.pointerId == event.device);
     if (pointerHoverStart != null) {
       pointerHoverStart.pushState(PointerStateHover(event));
-      debugPrint(
+
+      _debugPrint(
           "PointerAdded:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
     } else {
       final pointerHover = _pointers.firstWhereOrNull(
@@ -76,7 +84,7 @@ class Input {
         final pointer = Pointer.fromHoverEvent(_lastPointerId++, event);
         _pointers.add(pointer);
         _pendingHovers.add(pointer);
-        debugPrint("New Hover:${pointer.id} ${pointer.position}");
+        _debugPrint("New Hover:${pointer.id} ${pointer.position}");
       }
     }
   }
@@ -88,7 +96,7 @@ class Input {
     final pointer = Pointer.fromAddedEvent(_lastPointerId++, event);
     _pointers.add(pointer);
     _pendingHovers.add(pointer);
-    debugPrint("New PointerAdded:${pointer.id} (${pointer.position})");
+    _debugPrint("New PointerAdded:${pointer.id} (${pointer.position})");
   }
 
   void onPointerRemoved(PointerRemovedEvent event) {
@@ -100,7 +108,7 @@ class Input {
             pointer.state is PointerStateAdded));
     leavingPointer.pushState(PointerStateRemoved(event));
     _pendingHovers.remove(leavingPointer);
-    debugPrint(
+    _debugPrint(
         "${leavingPointer.history.last is PointerStateHover ? "Hover" : "PointerAdded"}:${leavingPointer.id} -> PointerRemoved (${event.position.toVector2()})");
   }
 
@@ -118,13 +126,13 @@ class Input {
     if (hoveringPointer != null) {
       hoveringPointer.pushState(PointerStateDown(event));
       _pendingHovers.remove(hoveringPointer);
-      debugPrint(
+      _debugPrint(
           "Hover:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> Down (${hoveringPointer.position})");
     } else {
       // Create a new pointer
       final pointer = Pointer.fromTapDownEvent(_lastPointerId++, event);
       _pointers.add(pointer);
-      debugPrint("New Down:${pointer.id} (${pointer.position})");
+      _debugPrint("New Down:${pointer.id} (${pointer.position})");
     }
   }
 
@@ -140,7 +148,7 @@ class Input {
           "Long tap down event received for a pointer that is not already registered as down"),
     );
     pointer.pushState(PointerStateLongDown(event));
-    debugPrint("Down:${pointer.id} -> LongDown (${event.canvasPosition})");
+    _debugPrint("Down:${pointer.id} -> LongDown (${event.canvasPosition})");
   }
 
   void onTapUp(ex.TapUpEvent event) {
@@ -157,7 +165,7 @@ class Input {
           "Tap up event received for a pointer that is not already registered as down"),
     );
     pointer.pushState(PointerStateUp(event));
-    debugPrint(
+    _debugPrint(
         "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> Up (${event.canvasPosition})");
   }
 
@@ -175,7 +183,7 @@ class Input {
           "Tap cancel event received for a pointer that is not already registered as down"),
     );
     pointer.pushState(PointerStateCancelled(event));
-    debugPrint(
+    _debugPrint(
         "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> Cancelled (${pointer.position})");
   }
 
@@ -191,7 +199,7 @@ class Input {
           "Drag start event received for a pointer that is not already registered as cancelled"),
     );
     pointer.pushState(PointerStateDragStart(event));
-    debugPrint(
+    _debugPrint(
         "Cancelled:${pointer.id} -> DragStart (${event.canvasPosition})");
   }
 
@@ -211,7 +219,7 @@ class Input {
     // Either push a new state is DragStart or replace the last state if DragUpdate
     if (pointer.state is PointerStateDragStart) {
       pointer.pushState(PointerStateDragUpdate(event));
-      debugPrint(
+      _debugPrint(
           "DragStart:${pointer.id} -> DragUpdate (${event.canvasPosition})");
     } else {
       pointer.replaceStateIfIs(PointerStateDragUpdate(event));
@@ -231,7 +239,7 @@ class Input {
           "Drag end event received for a pointer that is not already registered as drag-started or drag-updated"),
     );
     pointer.pushState(PointerStateDragEnd(event));
-    debugPrint(
+    _debugPrint(
         "${pointer.history.last is PointerStateDragStart ? "DragStart" : "DragUpdate"}:${pointer.id} -> DragEnd (${pointer.position})");
   }
 
@@ -252,7 +260,7 @@ class Input {
             : BackboneKeyState.pressed;
     final existingKey = _keyStates.firstWhere((key) => key.key == logicalKey);
     existingKey.updateState(keyState);
-    debugPrint("Key (${existingKey.key.debugName}) -> $keyState");
+    _debugPrint("Key (${existingKey.key.debugName}) -> $keyState");
 
     // Check `keysPressed` to set the rest of keys to pressed
     for (final key in keysPressed) {
@@ -287,7 +295,7 @@ class Input {
           pointer.state is PointerStateRemoved ||
           pointer.state is PointerStateTimeout) {
         _pointersGraveyard.add(pointer);
-        debugPrint(
+        _debugPrint(
             "Moved ${pointer.state.runtimeType}:${pointer.id} to graveyard");
         return true;
       }
@@ -301,7 +309,7 @@ class Input {
         if (DateTime.now().difference(hoverState.lastHoverTime).inSeconds > 5 &&
             pointer.kind != PointerDeviceKind.mouse) {
           pointer.pushState(PointerStateTimeout());
-          debugPrint("Hover:${pointer.id} -> Timeout");
+          _debugPrint("Hover:${pointer.id} -> Timeout");
         }
       }
     }
