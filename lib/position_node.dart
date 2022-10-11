@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:flame/components.dart';
@@ -11,5 +13,11 @@ class PositionNode extends PositionComponent with HasGameRef, ANode {
 
   PositionNode({TransformTrait? transformTrait}) {
     addTrait(transformTrait ?? TransformTrait());
+  }
+
+  @override
+  void renderTree(Canvas canvas) {
+    if (transformTrait.positionSet == false) return;
+    super.renderTree(canvas);
   }
 }
