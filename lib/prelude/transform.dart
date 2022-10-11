@@ -25,6 +25,7 @@ class TransformTrait extends ATrait {
   Vector2 size = Vector2.zero();
   double rotation = 0.0;
   Anchor anchor = Anchor.topLeft;
+  bool positionSet = false;
 
   Rect get rect => Rect.fromLTWH(position.x - anchor.x * size.x,
       position.y - anchor.y * size.y, size.x, size.y);
@@ -62,6 +63,7 @@ void transformSystem(Realm realm) {
       node.angle = transform.rotation;
       node.size = transform.size;
       node.anchor = transform.anchor;
+      transform.positionSet = true;
     }
   }
 }
