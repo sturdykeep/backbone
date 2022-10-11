@@ -80,6 +80,7 @@ class _BackboneGameWidgetState<T extends HasRealm>
   }
 
   void _handleEvent(PointerEvent event) {
+    if (widget.game.realmReady == false) return;
     if (event is PointerAddedEvent) {
       widget.game.realm.getResource<Input>().onPointerAdded(event);
     } else if (event is PointerHoverEvent) {
