@@ -44,6 +44,7 @@ void draggableSystem(Realm realm) {
 
     // Check drag starts
     for (var dragStart in dragStarts) {
+      if (dragStart.handled) continue; // Otherwise we would override the
       if (node.containsPoint(dragStart.worldPosition(realm.gameRef))) {
         if (draggable.onStart != null) {
           final offset = tranform != null
@@ -51,7 +52,13 @@ void draggableSystem(Realm realm) {
                   tranform.absolutePosition(node)
               : Vector2.zero();
           final payload = draggable.onStart!(dragStart, offset);
-          dragStart.payload = payload;
+          assert(dragStart.handled == false && payload != null,
+              'You need to mark the pointer as handled to use it, ignoring the paylod now. Set pointer.handled = true!');
+          assert(dragStart.handled && payload == null,
+              'The event was marked as handled but null was returned, you need to return DraggablePointerPayload object and set the initiator field.');
+          if (dragStart.handled) {
+            dragStart.payload = payload;
+          }
         }
       }
     }
