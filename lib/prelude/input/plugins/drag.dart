@@ -54,8 +54,6 @@ void draggableSystem(Realm realm) {
           final payload = draggable.onStart!(dragStart, offset);
           assert(dragStart.handled && payload != null,
               'You need to mark the pointer as handled to use it, if you provide a payload. Set pointer.handled = true!');
-          assert(dragStart.handled == false && payload != null,
-              'The event was marked as unhandled but a payload was retunred! Unhandled events must return null');
           if (dragStart.handled) {
             dragStart.payload = payload;
           }
