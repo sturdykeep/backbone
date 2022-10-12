@@ -18,7 +18,7 @@ class DraggableTrait extends ATrait {
   final DraggablePointerPayload? Function(Pointer pointer, Vector2 offset)?
       onStart;
   final void Function(Pointer pointer)? onUpdate;
-  final void Function(Pointer pointer, ANode?)? onEnd;
+  final void Function(Pointer pointer)? onEnd;
 
   DraggableTrait({this.onStart, this.onUpdate, this.onEnd});
 }
@@ -53,12 +53,13 @@ void draggableSystem(Realm realm) {
           final payload = draggable.onStart!(dragStart, offset);
           dragStart.payload = payload;
         }
-        dragStart.payload ??= DraggablePointerPayload(node, null);
       }
     }
 
     // Check drag updates
     for (var dragUpdate in dragUpdates) {
+      if (dragUpdate.payload == null) continue;
+
       if ((dragUpdate.payload as DraggablePointerPayload?)?.initiator == node) {
         if (draggable.onUpdate != null) {
           draggable.onUpdate!(dragUpdate);
@@ -68,9 +69,11 @@ void draggableSystem(Realm realm) {
 
     // Check drag ends
     for (var dragEnd in dragEnds) {
+      if (dragEnd.payload == null) continue;
+
       if ((dragEnd.payload as DraggablePointerPayload?)?.initiator == node) {
         if (draggable.onEnd != null) {
-          draggable.onEnd!(dragEnd, null);
+          draggable.onEnd!(dragEnd);
         }
       }
     }
