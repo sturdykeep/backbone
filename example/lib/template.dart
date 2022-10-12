@@ -39,7 +39,7 @@ class Template extends PositionNode {
             : pointer.position;
         transformTrait.position -= dragOffset;
       },
-      onEnd: (pointer, node) {
+      onEnd: (pointer) {
         if ((findNodeParent()?.containsPoint(pointer.position) ?? false) ==
             false) {
           final bouncer = BouncerNode(
