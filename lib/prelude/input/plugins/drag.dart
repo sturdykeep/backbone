@@ -52,7 +52,7 @@ void draggableSystem(Realm realm) {
                   tranform.absolutePosition(node)
               : Vector2.zero();
           final payload = draggable.onStart!(dragStart, offset);
-          assert(dragStart.handled && payload != null,
+          assert(payload == null || (dragStart.handled && payload != null),
               'You need to mark the pointer as handled to use it, if you provide a payload. Set pointer.handled = true!');
           if (dragStart.handled) {
             dragStart.payload = payload;

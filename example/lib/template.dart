@@ -27,7 +27,8 @@ class Template extends PositionNode {
       onStart: (pointer, offset) {
         startingPosition = transformTrait.position;
         dragOffset = offset;
-        return null;
+        pointer.handled = true;
+        return DraggablePointerPayload(this, null);
       },
       onUpdate: (pointer) {
         PositionComponent? parentAsPosition;

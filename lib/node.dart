@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
+import 'package:backbone/component_node.dart';
+import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
@@ -184,5 +186,10 @@ mixin ANode on HasGameRef {
       }
     }
     return false;
+  }
+
+  // Utilities
+  int compareToOnPriority(ANode other) {
+    return priority.compareTo(other.priority);
   }
 }

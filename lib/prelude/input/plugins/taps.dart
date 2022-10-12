@@ -31,12 +31,21 @@ void tappableSystem(Realm realm) {
   final queryLength = query.length;
   final input = realm.getResource<Input>();
   final tapStarts = input.justTapDownPointers();
+  final foundTapStarts = [];
   final longTapStarts = input.justLongTapDownPointers();
+  final foundLongTapStarts = [];
   final tapEnds = input.justTapUpPointers();
+  final foundTapEnds = [];
   final tapCancels = input.justTapCancelPointers();
+  final foundTapCancels = [];
   final justPressed = input.justPressedPointers();
+  final foundJustPressed = [];
   final pressed = input.pressedPointers();
+  final foundPressed = [];
   final justReleased = input.justReleasedPointers();
+  final foundJustReleased = [];
+
+  // Search for nodes matching the events
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final tappable = node.get<TappableTrait>();
@@ -45,7 +54,11 @@ void tappableSystem(Realm realm) {
     for (var tapStart in tapStarts) {
       if (tappable.onTapDown != null) {
         if (node.containsPoint(tapStart.worldPosition(realm.gameRef))) {
-          tappable.onTapDown!(tapStart);
+          foundTapStarts.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': tapStart,
+          });
         }
       }
     }
@@ -54,7 +67,11 @@ void tappableSystem(Realm realm) {
     for (var longTapStart in longTapStarts) {
       if (tappable.onLongTapDown != null) {
         if (node.containsPoint(longTapStart.worldPosition(realm.gameRef))) {
-          tappable.onLongTapDown!(longTapStart);
+          foundLongTapStarts.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': longTapStart,
+          });
         }
       }
     }
@@ -63,7 +80,11 @@ void tappableSystem(Realm realm) {
     for (var tapEnd in tapEnds) {
       if (tappable.onTapUp != null) {
         if (node.containsPoint(tapEnd.worldPosition(realm.gameRef))) {
-          tappable.onTapUp!(tapEnd);
+          foundTapEnds.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': tapEnd,
+          });
         }
       }
     }
@@ -72,7 +93,11 @@ void tappableSystem(Realm realm) {
     for (var tapCancel in tapCancels) {
       if (tappable.onTapCancel != null) {
         if (node.containsPoint(tapCancel.worldPosition(realm.gameRef))) {
-          tappable.onTapCancel!(tapCancel);
+          foundTapCancels.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': tapCancel,
+          });
         }
       }
     }
@@ -81,7 +106,11 @@ void tappableSystem(Realm realm) {
     for (var pressed in justPressed) {
       if (tappable.onJustPressed != null) {
         if (node.containsPoint(pressed.worldPosition(realm.gameRef))) {
-          tappable.onJustPressed!(pressed);
+          foundJustPressed.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': pressed,
+          });
         }
       }
     }
@@ -90,7 +119,11 @@ void tappableSystem(Realm realm) {
     for (var press in pressed) {
       if (tappable.onPressed != null) {
         if (node.containsPoint(press.worldPosition(realm.gameRef))) {
-          tappable.onPressed!(press);
+          foundPressed.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': press,
+          });
         }
       }
     }
@@ -99,9 +132,77 @@ void tappableSystem(Realm realm) {
     for (var released in justReleased) {
       if (tappable.onJustReleased != null) {
         if (node.containsPoint(released.worldPosition(realm.gameRef))) {
-          tappable.onJustReleased!(released);
+          foundJustReleased.add({
+            'node': node,
+            'tappable': tappable,
+            'pointer': released,
+          });
         }
       }
     }
+  }
+
+  // Call the callbacks based on the node's priority
+  final foundTapStartsLength = foundTapStarts.length;
+  final foundTapStartsSorted = (foundTapStarts.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundTapStartsLength; i++) {
+    final found = foundTapStartsSorted.elementAt(i);
+    found["tappable"].onTapDown!(found["pointer"]);
+  }
+
+  final foundLongTapStartsLength = foundLongTapStarts.length;
+  final foundLongTapStartsSorted = (foundLongTapStarts.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundLongTapStartsLength; i++) {
+    final found = foundLongTapStartsSorted.elementAt(i);
+    found["tappable"].onLongTapDown!(found["pointer"]);
+  }
+
+  final foundTapEndsLength = foundTapEnds.length;
+  final foundTapEndsSorted = (foundTapEnds.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundTapEndsLength; i++) {
+    final found = foundTapEndsSorted.elementAt(i);
+    found["tappable"].onTapUp!(found["pointer"]);
+  }
+
+  final foundTapCancelsLength = foundTapCancels.length;
+  final foundTapCancelsSorted = (foundTapCancels.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundTapCancelsLength; i++) {
+    final found = foundTapCancelsSorted.elementAt(i);
+    found["tappable"].onTapCancel!(found["pointer"]);
+  }
+
+  final foundJustPressedLength = foundJustPressed.length;
+  final foundJustPressedSorted = (foundJustPressed.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundJustPressedLength; i++) {
+    final found = foundJustPressedSorted.elementAt(i);
+    found["tappable"].onJustPressed!(found["pointer"]);
+  }
+
+  final foundPressedLength = foundPressed.length;
+  final foundPressedSorted = (foundPressed.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundPressedLength; i++) {
+    final found = foundPressedSorted.elementAt(i);
+    found["tappable"].onPressed!(found["pointer"]);
+  }
+
+  final foundJustReleasedLength = foundJustReleased.length;
+  final foundJustReleasedSorted = (foundJustReleased.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundJustReleasedLength; i++) {
+    final found = foundJustReleasedSorted.elementAt(i);
+    found["tappable"].onJustReleased!(found["pointer"]);
   }
 }
