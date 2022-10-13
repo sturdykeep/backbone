@@ -37,6 +37,9 @@ void draggableSystem(Realm realm) {
   final dragStarts = input.justDragStartPointers();
   final dragUpdates = input.justDragUpdatePointers();
   final dragEnds = input.justDragEndPointers();
+
+  final foundDragStarts = [];
+
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final draggable = node.get<DraggableTrait>();
@@ -44,19 +47,18 @@ void draggableSystem(Realm realm) {
 
     // Check drag starts
     for (var dragStart in dragStarts) {
-      if (dragStart.handled) continue; // Otherwise we would override the
       if (node.containsPoint(dragStart.worldPosition(realm.gameRef))) {
         if (draggable.onStart != null) {
           final offset = tranform != null
               ? dragStart.worldPosition(realm.gameRef) -
                   tranform.absolutePosition(node)
               : Vector2.zero();
-          final payload = draggable.onStart!(dragStart, offset);
-          assert(payload == null || (dragStart.handled && payload != null),
-              'You need to mark the pointer as handled to use it, if you provide a payload. Set pointer.handled = true!');
-          if (dragStart.handled) {
-            dragStart.payload = payload;
-          }
+          foundDragStarts.add({
+            'node': node,
+            'draggable': draggable,
+            'pointer': dragStart,
+            'offset': offset,
+          });
         }
       }
     }
@@ -81,6 +83,26 @@ void draggableSystem(Realm realm) {
           draggable.onEnd!(dragEnd);
         }
       }
+    }
+  }
+
+  // Call the callbacks based on the node's priority
+  final foundDragStartsLength = foundDragStarts.length;
+  final foundDragStartsSorted = (foundDragStarts.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundDragStartsLength; i++) {
+    final dragStart = foundDragStartsSorted.elementAt(i);
+    final node = dragStart["node"];
+    final draggable = node.get<DraggableTrait>();
+    final pointer = dragStart["pointer"];
+    if (pointer.handled) continue; // Otherwise we would override the
+    final offset = dragStart["offset"];
+    final payload = draggable.onStart!(pointer, offset);
+    assert(payload == null || (pointer.handled && payload != null),
+        'You need to mark the pointer as handled to use it, if you provide a payload. Set pointer.handled = true!');
+    if (pointer.handled) {
+      pointer.payload = payload;
     }
   }
 }
