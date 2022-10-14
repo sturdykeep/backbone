@@ -62,6 +62,10 @@ class Input {
     debugPrint(message);
   }
 
+  bool _isCloseBy(Vector2 a, Vector2 b) {
+    return (a.x - b.x).abs() <= 1.0 && (a.y - b.y).abs() <= 1.0;
+  }
+
   // Input hooks
   void onHover(PointerHoverEvent event) {
     _hoverEvents.add(event);
@@ -120,7 +124,7 @@ class Input {
     final hoveringPointer = _pointers.firstWhereOrNull(
       (pointer) =>
           pointer.isHovering &&
-          pointer.position == event.canvasPosition &&
+          _isCloseBy(pointer.position, event.canvasPosition) &&
           pointer.kind == event.deviceKind,
     );
     if (hoveringPointer != null) {
@@ -194,7 +198,7 @@ class Input {
     final pointer = _pointers.firstWhere(
       (pointer) =>
           pointer.state is PointerStateCancelled &&
-          pointer.position == event.canvasPosition,
+          _isCloseBy(pointer.position, event.canvasPosition),
       orElse: () => throw Exception(
           "Drag start event received for a pointer that is not already registered as cancelled"),
     );
