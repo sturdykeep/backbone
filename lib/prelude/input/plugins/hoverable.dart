@@ -3,6 +3,7 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flutter/widgets.dart';
 
 class HoverableTrait extends ATrait {
   final void Function(Pointer pointer)? onHoverEnter;
@@ -22,6 +23,11 @@ void hoverableSystem(Realm realm) {
   final hovers = input.justHoverPointers();
   final hoverLeaves = input.justHoverLeavePointers();
   final pendingHovers = input.pendingHoverPointers();
+
+  final foundHoverEnters = [];
+  final foundHoverExits = [];
+  final foundHoverMoves = [];
+
   for (var i = 0; i < queryLength; i++) {
     final node = query.elementAt(i);
     final hoverable = node.get<HoverableTrait>();
@@ -30,7 +36,11 @@ void hoverableSystem(Realm realm) {
     for (var hoverEnter in hoverEnters) {
       if (node.containsPoint(hoverEnter.worldPosition(realm.gameRef))) {
         hoverable.pointers.add(hoverEnter);
-        hoverable.onHoverEnter?.call(hoverEnter);
+        foundHoverEnters.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': hoverEnter,
+        });
       }
     }
 
@@ -39,7 +49,11 @@ void hoverableSystem(Realm realm) {
       if (node.containsPoint(hover.worldPosition(realm.gameRef)) &&
           hoverable.pointers.contains(hover) == false) {
         hoverable.pointers.add(hover);
-        hoverable.onHoverEnter?.call(hover);
+        foundHoverEnters.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': hover,
+        });
       }
     }
 
@@ -47,7 +61,11 @@ void hoverableSystem(Realm realm) {
     for (var hoverLeave in hoverLeaves) {
       if (hoverable.pointers.contains(hoverLeave)) {
         hoverable.pointers.remove(hoverLeave);
-        hoverable.onHoverExit?.call(hoverLeave);
+        foundHoverExits.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': hoverLeave,
+        });
       }
     }
 
@@ -58,10 +76,18 @@ void hoverableSystem(Realm realm) {
     for (var pointer in pointers) {
       if (node.containsPoint(pointer.worldPosition(realm.gameRef)) &&
           (pointer.isPointerAdded || pointer.isHovering)) {
-        hoverable.onHoverMove?.call(pointer);
+        foundHoverMoves.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': pointer,
+        });
       } else {
         hoverable.pointers.remove(pointer);
-        hoverable.onHoverExit?.call(pointer);
+        foundHoverExits.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': pointer,
+        });
       }
     }
 
@@ -70,8 +96,47 @@ void hoverableSystem(Realm realm) {
       if (node.containsPoint(pendingHover.worldPosition(realm.gameRef)) &&
           hoverable.pointers.contains(pendingHover) == false) {
         hoverable.pointers.add(pendingHover);
-        hoverable.onHoverEnter?.call(pendingHover);
+        foundHoverEnters.add({
+          'node': node,
+          'hoverable': hoverable,
+          'pointer': pendingHover,
+        });
       }
     }
+  }
+
+  // Call the callbacks based on the node's priority
+  debugPrint("Frame");
+  final foundHoverEntersLength = foundHoverEnters.length;
+  final foundHoverEntersSorted = (foundHoverEnters.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundHoverEntersLength; i++) {
+    final found = foundHoverEntersSorted.elementAt(i);
+    final hoverable = found["hoverable"];
+    hoverable.onHoverEnter?.call(found["pointer"]);
+    debugPrint("Hover enter");
+  }
+
+  final foundHoverExitsLength = foundHoverExits.length;
+  final foundHoverExitsSorted = (foundHoverExits.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundHoverExitsLength; i++) {
+    final found = foundHoverExitsSorted.elementAt(i);
+    final hoverable = found["hoverable"];
+    hoverable.onHoverExit?.call(found["pointer"]);
+    debugPrint("Hover exit");
+  }
+
+  final foundHoverMovesLength = foundHoverMoves.length;
+  final foundHoverMovesSorted = (foundHoverMoves.toList()
+        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+      .reversed;
+  for (var i = 0; i < foundHoverMovesLength; i++) {
+    final found = foundHoverMovesSorted.elementAt(i);
+    final hoverable = found["hoverable"];
+    hoverable.onHoverMove?.call(found["pointer"]);
+    debugPrint("Hover move");
   }
 }

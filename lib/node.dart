@@ -185,4 +185,9 @@ mixin ANode on HasGameRef {
     }
     return false;
   }
+
+  // Utilities
+  int compareToOnPriority(ANode other) {
+    return priority.compareTo(other.priority);
+  }
 }
