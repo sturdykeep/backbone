@@ -3,7 +3,6 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
-import 'package:flutter/widgets.dart';
 
 class HoverableTrait extends ATrait {
   final void Function(Pointer pointer)? onHoverEnter;
@@ -106,7 +105,7 @@ void hoverableSystem(Realm realm) {
   }
 
   // Call the callbacks based on the node's priority
-  debugPrint("Frame");
+
   final foundHoverEntersLength = foundHoverEnters.length;
   final foundHoverEntersSorted = (foundHoverEnters.toList()
         ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
@@ -115,7 +114,6 @@ void hoverableSystem(Realm realm) {
     final found = foundHoverEntersSorted.elementAt(i);
     final hoverable = found["hoverable"];
     hoverable.onHoverEnter?.call(found["pointer"]);
-    debugPrint("Hover enter");
   }
 
   final foundHoverExitsLength = foundHoverExits.length;
@@ -126,7 +124,6 @@ void hoverableSystem(Realm realm) {
     final found = foundHoverExitsSorted.elementAt(i);
     final hoverable = found["hoverable"];
     hoverable.onHoverExit?.call(found["pointer"]);
-    debugPrint("Hover exit");
   }
 
   final foundHoverMovesLength = foundHoverMoves.length;
@@ -137,6 +134,5 @@ void hoverableSystem(Realm realm) {
     final found = foundHoverMovesSorted.elementAt(i);
     final hoverable = found["hoverable"];
     hoverable.onHoverMove?.call(found["pointer"]);
-    debugPrint("Hover move");
   }
 }
