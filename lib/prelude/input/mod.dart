@@ -63,7 +63,7 @@ class Input {
   }
 
   bool _isCloseBy(Vector2 a, Vector2 b) {
-    return (a.x - b.x).abs() <= 1.0 && (a.y - b.y).abs() <= 1.0;
+    return (a.x - b.x).abs() <= 10.0 && (a.y - b.y).abs() <= 10.0;
   }
 
   // Input hooks
@@ -196,12 +196,20 @@ class Input {
 
     // Update an existing cancelled pointer or throw if not found
     final pointer = _pointers.firstWhere(
-      (pointer) =>
-          pointer.state is PointerStateCancelled &&
-          _isCloseBy(pointer.position, event.canvasPosition),
-      orElse: () => throw Exception(
-          "Drag start event received for a pointer that is not already registered as cancelled"),
-    );
+        (pointer) =>
+            pointer.state is PointerStateCancelled &&
+            _isCloseBy(pointer.position, event.canvasPosition), orElse: () {
+      // Generate a map on fly key distance to event : value the pointer
+      final map = {
+        for (var pointer in _pointers
+            .where((pointer) => pointer.state is PointerStateCancelled))
+          pointer.position.distanceToSquared(event.canvasPosition): pointer
+      };
+      final fallbackPointer = map[map.keys.min]!;
+      _debugPrint(
+          'onDragStart fallback pointer distance was above 10px took pointer at ${fallbackPointer.position} for event at ${event.canvasPosition}');
+      return fallbackPointer;
+    });
     pointer.pushState(PointerStateDragStart(event));
     _debugPrint(
         "Cancelled:${pointer.id} -> DragStart (${event.canvasPosition})");
