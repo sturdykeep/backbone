@@ -312,7 +312,13 @@ class Realm extends Component with HasGameRef {
 
     // Update all the systems
     for (final system in systems) {
+      final systemsStartTime = DateTime.now();
       system(this);
+      final systemExecutionTime = DateTime.now().difference(systemsStartTime);
+      if (systemExecutionTime.inMilliseconds > 2) {
+        debugPrint(
+            'X:${system.toString()},${systemExecutionTime.inMilliseconds}');
+      }
     }
 
     // Proccess the message queue

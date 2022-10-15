@@ -53,16 +53,24 @@ class TransformTrait extends ATrait {
 /// - anchor
 void transformSystem(Realm realm) {
   final realmQuery = realm.query(Has([TransformTrait]));
-  final queryLength = realmQuery.length;
-  for (var i = 0; i < queryLength; i++) {
-    final node = realmQuery.elementAt(i);
+  for (final node in realmQuery) {
     if (node is PositionNode) {
       final transform = node.get<TransformTrait>();
-      node.position = transform.position;
-      node.scale = transform.scale;
-      node.angle = transform.rotation;
-      node.size = transform.size;
-      node.anchor = transform.anchor;
+      if (node.position != transform.position) {
+        node.position = transform.position;
+      }
+      if (node.scale != transform.scale) {
+        node.scale = transform.scale;
+      }
+      if (node.angle != transform.rotation) {
+        node.angle = transform.rotation;
+      }
+      if (node.size != transform.size) {
+        node.size = transform.size;
+      }
+      if (node.anchor != transform.anchor) {
+        node.anchor = transform.anchor;
+      }
       transform.positionSet = true;
     }
   }
