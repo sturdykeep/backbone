@@ -16,7 +16,6 @@ class HoverableTrait extends ATrait {
 
 void hoverableSystem(Realm realm) {
   final query = realm.query(Has([HoverableTrait]));
-  final queryLength = query.length;
   final input = realm.getResource<Input>();
   final hoverEnters = input.justHoverEnterPointers();
   final hovers = input.justHoverPointers();
@@ -27,8 +26,7 @@ void hoverableSystem(Realm realm) {
   final foundHoverExits = [];
   final foundHoverMoves = [];
 
-  for (var i = 0; i < queryLength; i++) {
-    final node = query.elementAt(i);
+  for (final node in query) {
     final hoverable = node.get<HoverableTrait>();
 
     // Check hover enters
@@ -105,33 +103,26 @@ void hoverableSystem(Realm realm) {
   }
 
   // Call the callbacks based on the node's priority
-
-  final foundHoverEntersLength = foundHoverEnters.length;
   final foundHoverEntersSorted = (foundHoverEnters.toList()
         ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
       .reversed;
-  for (var i = 0; i < foundHoverEntersLength; i++) {
-    final found = foundHoverEntersSorted.elementAt(i);
+  for (final found in foundHoverEntersSorted) {
     final hoverable = found["hoverable"];
     hoverable.onHoverEnter?.call(found["pointer"]);
   }
 
-  final foundHoverExitsLength = foundHoverExits.length;
   final foundHoverExitsSorted = (foundHoverExits.toList()
         ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
       .reversed;
-  for (var i = 0; i < foundHoverExitsLength; i++) {
-    final found = foundHoverExitsSorted.elementAt(i);
+  for (final found in foundHoverExitsSorted) {
     final hoverable = found["hoverable"];
     hoverable.onHoverExit?.call(found["pointer"]);
   }
 
-  final foundHoverMovesLength = foundHoverMoves.length;
   final foundHoverMovesSorted = (foundHoverMoves.toList()
         ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
       .reversed;
-  for (var i = 0; i < foundHoverMovesLength; i++) {
-    final found = foundHoverMovesSorted.elementAt(i);
+  for (final found in foundHoverMovesSorted) {
     final hoverable = found["hoverable"];
     hoverable.onHoverMove?.call(found["pointer"]);
   }

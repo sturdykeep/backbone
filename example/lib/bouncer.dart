@@ -17,7 +17,7 @@ class BouncerNode extends PositionNode {
   final double speed;
   var oldColor = Colors.white;
 
-  Paint get currentPaint => (children.elementAt(0) as RectangleComponent).paint;
+  Paint get currentPaint => (children.first as RectangleComponent).paint;
 
   BouncerNode(
     Vector2 size,

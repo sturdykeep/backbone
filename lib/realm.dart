@@ -14,7 +14,6 @@ import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
@@ -135,6 +134,8 @@ class Realm extends Component with HasGameRef {
 
   /// ???
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
+
+  bool logPerformanceData = false;
 
   /// Create a new Realm and provide the traids, ???, systems, messages and resources
   Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
@@ -291,8 +292,8 @@ class Realm extends Component with HasGameRef {
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
     for (final archetype in archetypeBuckets.keys) {
-      final nodes = archetypeBuckets[archetype]!;
       if (filter.matches(archetype)) {
+        final nodes = archetypeBuckets[archetype]!;
         if (onlyLoaded) {
           result.add(nodes.where((node) => node.isLoaded).toList());
         } else {
@@ -303,10 +304,18 @@ class Realm extends Component with HasGameRef {
     return MultiIterableView(result);
   }
 
+  @override
+  void onMount() {
+    if (logPerformanceData) {
+      logPerformance('Running', 'true');
+    }
+  }
+
   // Update Loop
   /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
+    final updateStart = DateTime.now();
     // Update the time
     getResource<Time>().delta = dt;
 
@@ -314,10 +323,10 @@ class Realm extends Component with HasGameRef {
     for (final system in systems) {
       final systemsStartTime = DateTime.now();
       system(this);
-      final systemExecutionTime = DateTime.now().difference(systemsStartTime);
-      if (systemExecutionTime.inMilliseconds > 2) {
-        debugPrint(
-            'X:${system.toString()},${systemExecutionTime.inMilliseconds}');
+      if (logPerformanceData) {
+        final systemExecutionTime = DateTime.now().difference(systemsStartTime);
+        logPerformance('Systems',
+            '${system.toString()},${systemExecutionTime.inMilliseconds}');
       }
     }
 
@@ -337,7 +346,7 @@ class Realm extends Component with HasGameRef {
       }
 
       // Debug code for development
-      if (kDebugMode) {
+      if (logPerformanceData) {
         final messageExecutionTime =
             DateTime.now().difference(messageProcessTimeStart);
         if (messageExecutionTime.inMilliseconds > 2) {
@@ -351,5 +360,11 @@ class Realm extends Component with HasGameRef {
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
+    logPerformance('Update',
+        DateTime.now().difference(updateStart).inMilliseconds.toString());
+  }
+
+  void logPerformance(String category, String value) {
+    debugPrint('prefmon:$category->$value:prefmon');
   }
 }

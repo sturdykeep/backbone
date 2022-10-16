@@ -300,7 +300,7 @@ class Input {
     _hoverEvents.clear();
 
     // Move all cancelled, up and drag-end pointers to the graveyard
-    _pointers.removeWhere((pointer) {
+    /*_pointers.removeWhere((pointer) {
       if (pointer.state is PointerStateCancelled ||
           pointer.state is PointerStateUp ||
           pointer.state is PointerStateDragEnd ||
@@ -313,7 +313,7 @@ class Input {
       }
       return false;
     });
-
+    
     // Check all hover pointers to see if they need to time out
     for (var pointer in _pointers) {
       if (pointer.state is PointerStateHover) {
@@ -325,6 +325,7 @@ class Input {
         }
       }
     }
+    */
   }
 
   // Keyboard API
