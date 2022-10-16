@@ -31,17 +31,16 @@ class DragReceiverTrait extends ATrait {
 }
 
 void draggableSystem(Realm realm) {
-  final query = realm.query(Has([DraggableTrait]));
-  final queryLength = query.length;
   final input = realm.getResource<Input>();
   final dragStarts = input.justDragStartPointers();
   final dragUpdates = input.justDragUpdatePointers();
   final dragEnds = input.justDragEndPointers();
+  if (dragStarts.isEmpty && dragUpdates.isEmpty && dragEnds.isEmpty) return;
 
+  final query = realm.query(Has([DraggableTrait]));
   final foundDragStarts = [];
 
-  for (var i = 0; i < queryLength; i++) {
-    final node = query.elementAt(i);
+  for (final node in query) {
     final draggable = node.get<DraggableTrait>();
     final tranform = node.tryGet<TransformTrait>();
 
@@ -87,12 +86,10 @@ void draggableSystem(Realm realm) {
   }
 
   // Call the callbacks based on the node's priority
-  final foundDragStartsLength = foundDragStarts.length;
   final foundDragStartsSorted = (foundDragStarts.toList()
         ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
       .reversed;
-  for (var i = 0; i < foundDragStartsLength; i++) {
-    final dragStart = foundDragStartsSorted.elementAt(i);
+  for (final dragStart in foundDragStartsSorted) {
     final node = dragStart["node"];
     final draggable = node.get<DraggableTrait>();
     final pointer = dragStart["pointer"];
@@ -108,12 +105,12 @@ void draggableSystem(Realm realm) {
 }
 
 void dragReceiverSystem(Realm realm) {
-  final query = realm.query(Has([DragReceiverTrait]));
-  final queryLength = query.length;
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
-  for (var i = 0; i < queryLength; i++) {
-    final node = query.elementAt(i);
+  if (dragEnds.isEmpty) return;
+  final query = realm.query(Has([DragReceiverTrait]));
+
+  for (final node in query) {
     final dragReceiver = node.get<DragReceiverTrait>();
 
     // Check drag ends

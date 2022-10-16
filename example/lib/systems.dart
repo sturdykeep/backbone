@@ -23,25 +23,26 @@ void bounceSystem(Realm realm) {
       dragBarTransform.position.y == 0 ? TemplateBar.space : 0,
       dragBarTransform.position.x == 0 ? TemplateBar.space : 0);
   final gameSizeWithoutDragBar = realm.gameRef.canvasSize - dragBarSize;
-  for (var i = 0; i < queryLength; i++) {
-    final node = realmQuery.elementAt(i) as BouncerNode;
-    final transform = node.transformTrait;
+  for (final node in realmQuery) {
+    final bouncerNode = node as BouncerNode;
+    final transform = bouncerNode.transformTrait;
 
     // Move them in the direction at the speed of `speed` pixels per second
-    transform.position += node.direction.normalized() * time.delta * node.speed;
+    transform.position +=
+        bouncerNode.direction.normalized() * time.delta * node.speed;
 
     // Now bounce them from edges
     if (transform.position.x < 0) {
-      node.direction.x = node.direction.x.abs();
+      bouncerNode.direction.x = bouncerNode.direction.x.abs();
     }
     if (transform.position.x + transform.size.x > gameSizeWithoutDragBar.x) {
-      node.direction.x = -node.direction.x.abs();
+      bouncerNode.direction.x = -bouncerNode.direction.x.abs();
     }
     if (transform.position.y < 0) {
-      node.direction.y = node.direction.y.abs();
+      bouncerNode.direction.y = bouncerNode.direction.y.abs();
     }
     if (transform.position.y + transform.size.y > gameSizeWithoutDragBar.y) {
-      node.direction.y = -node.direction.y.abs();
+      bouncerNode.direction.y = -bouncerNode.direction.y.abs();
     }
   }
 }
