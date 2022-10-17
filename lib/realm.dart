@@ -311,6 +311,14 @@ class Realm extends Component with HasGameRef {
     }
   }
 
+  @override
+  void renderTree(Canvas canvas) {
+    final renderStart = DateTime.now();
+    super.renderTree(canvas);
+    logPerformance('Render',
+        DateTime.now().difference(renderStart).inMilliseconds.toString());
+  }
+
   // Update Loop
   /// Update all details of the realm, called by Flame
   @override
