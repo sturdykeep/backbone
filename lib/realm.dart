@@ -124,6 +124,8 @@ class Realm extends Component with HasGameRef {
   late final HashMap<Archetype, List<ANode>> archetypeBuckets;
   late final List<Archetype> archetypeBucketsKeys;
   late final List<List<ANode>> archetypeBucketsValues;
+  final List<Archetype> nonEmptyBucketKeys = [];
+  final List<List<ANode>> nonEmptyBucketValues = [];
 
   /// List of all registered systems
   late final List<System> systems;
@@ -228,6 +230,16 @@ class Realm extends Component with HasGameRef {
       final currentBucketList = archetypeBuckets[currentBucket]!;
       currentBucketList.remove(node);
       node.bucket = null;
+
+      // also remove from the non-emmpty bucket cache
+      final index = nonEmptyBucketKeys.indexOf(currentBucket);
+      if (index != -1) {
+        // check if it's actually empty now
+        if (nonEmptyBucketValues[index].isEmpty) {
+          nonEmptyBucketKeys.removeAt(index);
+          nonEmptyBucketValues.removeAt(index);
+        }
+      }
     }
   }
 
@@ -241,6 +253,13 @@ class Realm extends Component with HasGameRef {
       }
       archetypeBuckets[archetype]!.add(node);
       node.bucket = archetype;
+
+      // if necessary add to the non-empty bucket cache
+      final index = nonEmptyBucketKeys.indexOf(archetype);
+      if (index == -1) {
+        nonEmptyBucketKeys.add(archetype);
+        nonEmptyBucketValues.add(archetypeBuckets[archetype]!);
+      }
     }
   }
 
@@ -295,11 +314,12 @@ class Realm extends Component with HasGameRef {
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
-    final length = archetypeBucketsKeys.length;
+    final length = nonEmptyBucketKeys.length;
     for (var i = 0; i < length; i++) {
-      final archetype = archetypeBucketsKeys[i];
-      if (filter.matches(archetype)) {
-        final nodes = archetypeBucketsValues[i];
+      final archetype = nonEmptyBucketKeys[i];
+      final nodes = nonEmptyBucketValues[i];
+
+      if (nodes.isNotEmpty && filter.matches(archetype)) {
         if (onlyLoaded) {
           result.add(nodes.where((node) => node.isLoaded).toList());
         } else {
