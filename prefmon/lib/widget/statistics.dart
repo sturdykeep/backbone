@@ -33,6 +33,7 @@ class _StatisticsState extends State<Statistics> {
   final RegExp systemMatcher = RegExp('\'(.*?)\'');
   List<SystemData> _lastData = [];
   final List<int> _updateTimes = [];
+  final List<int> _renderTimes = [];
   @override
   void initState() {
     Globals.worker.callback = _events;
@@ -86,6 +87,8 @@ class _StatisticsState extends State<Statistics> {
           _systemData[systemName]!.add(int.parse(elements.last));
         } else if (event.category == "Update") {
           _updateTimes.add(int.parse(event.data));
+        } else if (event.category == "Render") {
+          _renderTimes.add(int.parse(event.data));
         }
       }
     } else if (event is Starting) {
@@ -105,6 +108,12 @@ class _StatisticsState extends State<Statistics> {
     return _updateTimes.fold<int>(
             0, (previousValue, element) => previousValue += element) ~/
         max(_updateTimes.length, 1);
+  }
+
+  int _getAvgRenderTime() {
+    return _renderTimes.fold<int>(
+            0, (previousValue, element) => previousValue += element) ~/
+        max(_renderTimes.length, 1);
   }
 
   @override
@@ -152,7 +161,7 @@ class _StatisticsState extends State<Statistics> {
                     return _lastData[index].label;
                   },
                   textStyle: Theme.of(context).textTheme.bodySmall,
-                  horizontalAxisStep: 1,
+                  horizontalAxisStep: 100,
                 ),
               ],
               foregroundDecorations: [
@@ -166,6 +175,13 @@ class _StatisticsState extends State<Statistics> {
           child: Padding(
             padding: const EdgeInsets.only(top: 5, right: 5),
             child: Text("Update time(avg): ${_getAvgUpdateTime()} ms"),
+          ),
+        ),
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5, left: 5),
+            child: Text("Render time(avg): ${_getAvgRenderTime()} ms"),
           ),
         )
       ],
