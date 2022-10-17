@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:prefmon/core/settings.dart';
 
 abstract class PrefMonEvent {}
@@ -43,7 +44,7 @@ class BackboneWorker {
       "flutter",
       cmdParts.sublist(1),
       workingDirectory: workingDir,
-      runInShell: Platform.isWindows,
+      runInShell: Platform.isWindows || Platform.isLinux,
     );
     _flutterRunner.exitCode.then((value) => callback?.call(Stopped()));
     final encoding = utf8.decoder;

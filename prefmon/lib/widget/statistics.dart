@@ -21,17 +21,34 @@ enum RunState {
 }
 
 class SystemData {
-  final String label;
+  final String column;
+  final String? parent;
+  final List<int> values = [];
+
+  SystemData(this.column, this.parent);
+}
+
+class ProcessedSystemData {
+  final String column;
+  final String? parent;
   final int value;
 
-  SystemData(this.label, this.value);
+  ProcessedSystemData(this.column, this.value, {this.parent});
+
+  @override
+  String toString() {
+    if (parent != null) {
+      return "$parent->$column";
+    } else {
+      return column;
+    }
+  }
 }
 
 class _StatisticsState extends State<Statistics> {
   RunState _runState = RunState.stopped;
-  final Map<String, List<int>> _systemData = {};
-  final RegExp systemMatcher = RegExp('\'(.*?)\'');
-  List<SystemData> _lastData = [];
+  final List<SystemData> _systemData = [];
+  List<ProcessedSystemData> _lastData = [];
   final List<int> _updateTimes = [];
   final List<int> _renderTimes = [];
   @override
@@ -45,16 +62,20 @@ class _StatisticsState extends State<Statistics> {
     debugPrint(message);
   }
 
-  List<SystemData> _avgTimesBySystem() {
-    _lastData = _systemData.entries
-        .map((e) => SystemData(
-            e.key,
-            e.value.fold(0, (total, element) => total + element) ~/
-                max(e.value.length, 0)))
-        .toList()
-      ..sort(
-        (a, b) => a.label.compareTo(b.label),
-      );
+  List<ProcessedSystemData> _avgTimesBySystem() {
+    // Proccess _systemData into a list of ProcessedSystemData
+    // which aggregates the values received over time.
+    final result = <ProcessedSystemData>[];
+    final systemData = _systemData;
+    for (var data in systemData) {
+      final values = data.values;
+      final sum =
+          values.fold(0, (previousValue, element) => previousValue + element);
+      final avg = sum / values.length;
+      result.add(
+          ProcessedSystemData(data.column, avg.toInt(), parent: data.parent));
+    }
+    _lastData = result..sort((a, b) => a.toString().compareTo(b.toString()));
     return _lastData;
   }
 
@@ -76,15 +97,26 @@ class _StatisticsState extends State<Statistics> {
         setState(() {
           _runState = RunState.running;
         });
-        Timer.periodic(const Duration(seconds: 1), _updateChart);
+        Timer.periodic(const Duration(milliseconds: 300), _updateChart);
       } else {
         // parse different categories update view
         if (event.category == "Systems") {
           final elements = event.data.split(',');
-          final systemName =
-              systemMatcher.firstMatch(elements.first)!.group(0)!;
-          _systemData[systemName] ??= [];
-          _systemData[systemName]!.add(int.parse(elements.last));
+          final column = elements[0];
+          final parent = elements[1] == "null" ? null : elements[1];
+          final value = int.parse(elements[2]);
+
+          SystemData systemData;
+          if (_systemData
+              .any((sd) => sd.column == column && sd.parent == parent))
+            systemData = _systemData
+                .firstWhere((sd) => sd.column == column && sd.parent == parent);
+          else {
+            systemData = SystemData(column, parent);
+            _systemData.add(systemData);
+          }
+
+          systemData.values.add(value);
         } else if (event.category == "Update") {
           _updateTimes.add(int.parse(event.data));
         } else if (event.category == "Render") {
@@ -132,12 +164,12 @@ class _StatisticsState extends State<Statistics> {
       children: [
         Padding(
           padding: const EdgeInsets.all(15.0),
-          child: Chart<void>(
+          child: Chart<ProcessedSystemData>(
             state: ChartState(
               ChartData.fromList(
                   _avgTimesBySystem()
-                      .map((e) => BarValue<String>.withValue(
-                          e.label, e.value.toDouble()))
+                      .map((e) => ChartItem<ProcessedSystemData>(
+                          e, 0, e.value.toDouble()))
                       .toList(),
                   axisMin: 0,
                   axisMax: _lastData
@@ -145,12 +177,13 @@ class _StatisticsState extends State<Statistics> {
                               value.value > element.value ? value : element)
                           .value +
                       1),
-              itemOptions: const BarItemOptions(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                radius: BorderRadius.vertical(
+              itemOptions: BarItemOptions(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                radius: const BorderRadius.vertical(
                   top: Radius.circular(32.0),
                 ),
-                color: Colors.red,
+                colorForKey: (item, index) =>
+                    item.value.parent == null ? Colors.red : Colors.grey,
               ),
               backgroundDecorations: [
                 GridDecoration(
@@ -158,7 +191,7 @@ class _StatisticsState extends State<Statistics> {
                   showHorizontalValues: true,
                   showVerticalValues: true,
                   verticalAxisValueFromIndex: (index) {
-                    return _lastData[index].label;
+                    return _lastData[index].toString();
                   },
                   textStyle: Theme.of(context).textTheme.bodySmall,
                   horizontalAxisStep: 100,

@@ -165,6 +165,7 @@ void main() {
         }
         return false;
       }).build();
+      realm.logPerformanceData = true;
       realm.pushMessage(RealmTestMessage(1));
       realm.update(0.0);
       realm.update(0.0);

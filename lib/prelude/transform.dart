@@ -52,7 +52,13 @@ class TransformTrait extends ATrait {
 /// - size
 /// - anchor
 void transformSystem(Realm realm) {
+  final queryStartTime = DateTime.now();
   final realmQuery = realm.query(Has([TransformTrait]));
+  final queryEndTime = DateTime.now();
+  final queryTime = queryEndTime.difference(queryStartTime).inMicroseconds;
+  Realm.logSystemPerformance(
+      "query", Realm.getSystemName(transformSystem), queryTime);
+
   for (final node in realmQuery) {
     if (node is PositionNode) {
       final transform = node.get<TransformTrait>();

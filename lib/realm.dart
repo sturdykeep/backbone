@@ -120,8 +120,10 @@ class Realm extends Component with HasGameRef {
   /// All type of trais registered in this Realm
   late final HashSet<Type> registeredTraits;
 
-  /// ???
+  /// Nodes sorted into lists by their archetype
   late final HashMap<Archetype, List<ANode>> archetypeBuckets;
+  late final List<Archetype> archetypeBucketsKeys;
+  late final List<List<ANode>> archetypeBucketsValues;
 
   /// List of all registered systems
   late final List<System> systems;
@@ -132,7 +134,7 @@ class Realm extends Component with HasGameRef {
   /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
 
-  /// ???
+  /// Map of nodes sorted by their type
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
 
   bool logPerformanceData = false;
@@ -140,6 +142,8 @@ class Realm extends Component with HasGameRef {
   /// Create a new Realm and provide the traids, ???, systems, messages and resources
   Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
+    archetypeBucketsKeys = archetypeBuckets.keys.toList();
+    archetypeBucketsValues = archetypeBuckets.values.toList();
     addResource(Time());
     addResource(Input());
   }
@@ -291,9 +295,11 @@ class Realm extends Component with HasGameRef {
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
-    for (final archetype in archetypeBuckets.keys) {
+    final length = archetypeBucketsKeys.length;
+    for (var i = 0; i < length; i++) {
+      final archetype = archetypeBucketsKeys[i];
       if (filter.matches(archetype)) {
-        final nodes = archetypeBuckets[archetype]!;
+        final nodes = archetypeBucketsValues[i];
         if (onlyLoaded) {
           result.add(nodes.where((node) => node.isLoaded).toList());
         } else {
@@ -333,8 +339,8 @@ class Realm extends Component with HasGameRef {
       system(this);
       if (logPerformanceData) {
         final systemExecutionTime = DateTime.now().difference(systemsStartTime);
-        logPerformance('Systems',
-            '${system.toString()},${systemExecutionTime.inMicroseconds}');
+        logSystemPerformance(
+            getSystemName(system), null, systemExecutionTime.inMicroseconds);
       }
     }
 
@@ -372,7 +378,22 @@ class Realm extends Component with HasGameRef {
         DateTime.now().difference(updateStart).inMilliseconds.toString());
   }
 
-  void logPerformance(String category, String value) {
+  // Performance logging
+  static void logPerformance(String category, String value) {
     debugPrint('prefmon:$category->$value:prefmon');
+  }
+
+  static void logSystemPerformance(
+      String column, String? parentColumn, int value) {
+    logPerformance("Systems", "$column,$parentColumn,$value");
+  }
+
+  static final RegExp systemMatcher = RegExp('\'(.*?)\'');
+  static String getSystemName(System system) {
+    final match = systemMatcher.firstMatch(system.toString());
+    if (match != null) {
+      return match.group(1)!;
+    }
+    return 'Unknown System';
   }
 }
