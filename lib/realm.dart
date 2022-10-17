@@ -334,7 +334,7 @@ class Realm extends Component with HasGameRef {
       if (logPerformanceData) {
         final systemExecutionTime = DateTime.now().difference(systemsStartTime);
         logPerformance('Systems',
-            '${system.toString()},${systemExecutionTime.inMilliseconds}');
+            '${system.toString()},${systemExecutionTime.inMicroseconds}');
       }
     }
 

@@ -161,7 +161,7 @@ class _StatisticsState extends State<Statistics> {
                     return _lastData[index].label;
                   },
                   textStyle: Theme.of(context).textTheme.bodySmall,
-                  horizontalAxisStep: 1,
+                  horizontalAxisStep: 100,
                 ),
               ],
               foregroundDecorations: [
