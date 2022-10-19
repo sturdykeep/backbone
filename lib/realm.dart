@@ -346,8 +346,10 @@ class Realm extends Component with HasGameRef {
   void renderTree(Canvas canvas) {
     final renderStart = DateTime.now();
     super.renderTree(canvas);
-    Log.logPerformance('Render',
-        DateTime.now().difference(renderStart).inMilliseconds.toString());
+    if (logPerformanceData) {
+      Log.logPerformance('Render',
+          DateTime.now().difference(renderStart).inMilliseconds.toString());
+    }
   }
 
   // Update Loop
@@ -404,11 +406,12 @@ class Realm extends Component with HasGameRef {
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
-    Log.logPerformance('Update',
-        DateTime.now().difference(updateStart).inMilliseconds.toString());
-
-    // Update the frame count and try to process the log
-    frame += 1;
-    Log.processPerformanceLogs();
+    if (logPerformanceData) {
+      Log.logPerformance('Update',
+          DateTime.now().difference(updateStart).inMilliseconds.toString());
+      // Update the frame count and try to process the log
+      frame += 1;
+      Log.processPerformanceLogs();
+    }
   }
 }
