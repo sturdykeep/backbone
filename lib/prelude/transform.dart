@@ -31,6 +31,10 @@ class TransformTrait extends ATrait {
   // Wrappers and dirty flags
   void setDirty({bool value = false}) {
     _dirtyPosition = value;
+    _dirtyScale = value;
+    _dirtySize = value;
+    _dirtyRotation = value;
+    _dirtyAnchor = value;
   }
 
   // -- position
