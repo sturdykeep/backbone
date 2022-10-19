@@ -136,11 +136,16 @@ class _StatisticsState extends State<Statistics> {
     return _lastData;
   }
 
+  bool _noData() =>
+      _systemData.isEmpty && _renderTimes.isEmpty && _updateTimes.isEmpty;
+
   void _updateChart(Timer t) {
     if (_runState == RunState.stopped) {
       t.cancel();
     } else {
-      if (_systemData.isEmpty) return;
+      if (_noData()) {
+        return;
+      }
 
       setState(() {
         //Refresh the chart?
@@ -218,7 +223,7 @@ class _StatisticsState extends State<Statistics> {
     if (_runState == RunState.starting) {
       return const SimpleState.starting();
     }
-    if (_systemData.isEmpty) {
+    if (_noData()) {
       return const SimpleState(
           text: 'Waiting for data', icon: Icons.build_sharp);
     }
@@ -226,57 +231,61 @@ class _StatisticsState extends State<Statistics> {
       children: [
         Padding(
           padding: const EdgeInsets.all(15.0),
-          child: Chart<ProcessedSystemData>(
-            state: ChartState(
-              ChartData.fromList(
-                  _avgTimesBySystem()
-                      .map((e) => ChartItem<ProcessedSystemData>(
-                          e, 0, e.avg.toDouble()))
-                      .toList(),
-                  axisMin: 0,
-                  axisMax: _lastData
-                          .reduce((value, element) =>
-                              value.avg > element.avg ? value : element)
-                          .avg +
-                      1),
-              itemOptions: BarItemOptions(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                radius: const BorderRadius.vertical(
-                  top: Radius.circular(32.0),
+          child: _systemData.isEmpty
+              ? const Center(
+                  child: Text('No system data received'),
+                )
+              : Chart<ProcessedSystemData>(
+                  state: ChartState(
+                    ChartData.fromList(
+                        _avgTimesBySystem()
+                            .map((e) => ChartItem<ProcessedSystemData>(
+                                e, 0, e.avg.toDouble()))
+                            .toList(),
+                        axisMin: 0,
+                        axisMax: _lastData
+                                .reduce((value, element) =>
+                                    value.avg > element.avg ? value : element)
+                                .avg +
+                            10),
+                    itemOptions: BarItemOptions(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      radius: const BorderRadius.vertical(
+                        top: Radius.circular(32.0),
+                      ),
+                      colorForKey: (item, index) =>
+                          item.value.parent == null ? Colors.red : Colors.grey,
+                    ),
+                    backgroundDecorations: [
+                      GridDecoration(
+                        verticalAxisStep: 1,
+                        showHorizontalValues: true,
+                        showVerticalValues: true,
+                        verticalAxisValueFromIndex: (index) {
+                          return _lastData[index].toString();
+                        },
+                        textStyle: Theme.of(context).textTheme.bodySmall,
+                        horizontalAxisStep: 10,
+                      ),
+                    ],
+                    foregroundDecorations: [
+                      BorderDecoration(borderWidth: 5.0),
+                    ],
+                  ),
                 ),
-                colorForKey: (item, index) =>
-                    item.value.parent == null ? Colors.red : Colors.grey,
-              ),
-              backgroundDecorations: [
-                GridDecoration(
-                  verticalAxisStep: 1,
-                  showHorizontalValues: true,
-                  showVerticalValues: true,
-                  verticalAxisValueFromIndex: (index) {
-                    return _lastData[index].toString();
-                  },
-                  textStyle: Theme.of(context).textTheme.bodySmall,
-                  horizontalAxisStep: 10,
-                ),
-              ],
-              foregroundDecorations: [
-                BorderDecoration(borderWidth: 5.0),
-              ],
-            ),
-          ),
         ),
         Align(
           alignment: Alignment.topRight,
           child: Padding(
             padding: const EdgeInsets.only(top: 5, right: 5),
-            child: Text("Update time(avg): ${_getAvgUpdateTime()} ms"),
+            child: Text("Update time(avg): ${_getAvgUpdateTime() / 1000} ms"),
           ),
         ),
         Align(
           alignment: Alignment.topLeft,
           child: Padding(
             padding: const EdgeInsets.only(top: 5, left: 5),
-            child: Text("Render time(avg): ${_getAvgRenderTime()} ms"),
+            child: Text("Render time(avg): ${_getAvgRenderTime() / 1000} ms"),
           ),
         )
       ],
