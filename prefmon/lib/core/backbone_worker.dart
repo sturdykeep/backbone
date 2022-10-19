@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
 import 'package:prefmon/core/settings.dart';
 
 abstract class PrefMonEvent {}
