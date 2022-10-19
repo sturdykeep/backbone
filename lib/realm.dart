@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
+import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
@@ -138,6 +139,10 @@ class Realm extends Component with HasGameRef {
 
   /// Map of nodes sorted by their type
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
+
+  /// Current frame number being processed
+  int frame = 0;
+  static int globalFrame = 0;
 
   bool logPerformanceData = false;
 
@@ -333,7 +338,7 @@ class Realm extends Component with HasGameRef {
   @override
   void onMount() {
     if (logPerformanceData) {
-      logPerformance('Running', 'true');
+      Log.logPerformance('Running', 'true');
     }
   }
 
@@ -341,7 +346,7 @@ class Realm extends Component with HasGameRef {
   void renderTree(Canvas canvas) {
     final renderStart = DateTime.now();
     super.renderTree(canvas);
-    logPerformance('Render',
+    Log.logPerformance('Render',
         DateTime.now().difference(renderStart).inMilliseconds.toString());
   }
 
@@ -349,6 +354,11 @@ class Realm extends Component with HasGameRef {
   /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
+    // Globally the frame would be set only once at the beginning of the frame
+    if (globalFrame != frame) {
+      globalFrame = frame;
+    }
+
     final updateStart = DateTime.now();
     // Update the time
     getResource<Time>().delta = dt;
@@ -359,8 +369,8 @@ class Realm extends Component with HasGameRef {
       system(this);
       if (logPerformanceData) {
         final systemExecutionTime = DateTime.now().difference(systemsStartTime);
-        logSystemPerformance(
-            getSystemName(system), null, systemExecutionTime.inMicroseconds);
+        Log.logSystemPerformance(Log.getSystemName(system), null,
+            systemExecutionTime.inMicroseconds);
       }
     }
 
@@ -394,26 +404,11 @@ class Realm extends Component with HasGameRef {
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
-    logPerformance('Update',
+    Log.logPerformance('Update',
         DateTime.now().difference(updateStart).inMilliseconds.toString());
-  }
 
-  // Performance logging
-  static void logPerformance(String category, String value) {
-    debugPrint('prefmon:$category->$value:prefmon');
-  }
-
-  static void logSystemPerformance(
-      String column, String? parentColumn, int value) {
-    logPerformance("Systems", "$column,$parentColumn,$value");
-  }
-
-  static final RegExp systemMatcher = RegExp('\'(.*?)\'');
-  static String getSystemName(System system) {
-    final match = systemMatcher.firstMatch(system.toString());
-    if (match != null) {
-      return match.group(1)!;
-    }
-    return 'Unknown System';
+    // Update the frame count and try to process the log
+    frame += 1;
+    Log.processPerformanceLogs();
   }
 }

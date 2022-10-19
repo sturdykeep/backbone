@@ -24,16 +24,29 @@ class SystemData {
   final String column;
   final String? parent;
   final List<int> values = [];
+  final int frame;
 
-  SystemData(this.column, this.parent);
+  SystemData(this.column, this.parent, this.frame);
+}
+
+class ProcessedFrameSystemData {
+  final String column;
+  final String? parent;
+  int value;
+  final int frame;
+
+  ProcessedFrameSystemData(this.column, this.value, this.frame, {this.parent});
 }
 
 class ProcessedSystemData {
   final String column;
   final String? parent;
-  final int value;
+  final List<int> values;
+  int count;
 
-  ProcessedSystemData(this.column, this.value, {this.parent});
+  int get avg => values.reduce((value, element) => value + element) ~/ count;
+
+  ProcessedSystemData(this.column, this.values, this.count, {this.parent});
 
   @override
   String toString() {
@@ -64,18 +77,62 @@ class _StatisticsState extends State<Statistics> {
 
   List<ProcessedSystemData> _avgTimesBySystem() {
     // Proccess _systemData into a list of ProcessedSystemData
-    // which aggregates the values received over time.
-    final result = <ProcessedSystemData>[];
+    // which averages the sums of data received over time for different
+    // frames.
     final systemData = _systemData;
+    // Sort data into frame "buckets"
+    final systemDataByFrame = <int, List<SystemData>>{};
     for (var data in systemData) {
-      final values = data.values;
-      final sum =
-          values.fold(0, (previousValue, element) => previousValue + element);
-      final avg = sum / values.length;
-      result.add(
-          ProcessedSystemData(data.column, avg.toInt(), parent: data.parent));
+      final frameData = systemDataByFrame[data.frame] ?? [];
+      frameData.add(data);
+      systemDataByFrame[data.frame] = frameData;
     }
-    _lastData = result..sort((a, b) => a.toString().compareTo(b.toString()));
+    // Process data into ProcessedFrameSystemData with a sum of all values
+    // for that column and parent during one frame.
+    final processedFrameData = <int, List<ProcessedFrameSystemData>>{};
+    for (var frame in systemDataByFrame.keys) {
+      final frameData = systemDataByFrame[frame]!;
+      final frameProcessed = processedFrameData[frame] ?? [];
+      for (var data in frameData) {
+        final existing = frameProcessed
+            .cast<ProcessedFrameSystemData?>()
+            .firstWhere(
+                (processed) =>
+                    processed!.column == data.column &&
+                    processed.parent == data.parent,
+                orElse: () => null);
+        if (existing != null) {
+          existing.value += data.values.reduce((a, b) => a + b);
+        } else {
+          frameProcessed.add(ProcessedFrameSystemData(
+              data.column, data.values.reduce((a, b) => a + b), frame,
+              parent: data.parent));
+        }
+      }
+      // make sure to add the data to the list
+      processedFrameData[frame] = frameProcessed;
+    }
+    // Average out the data over multiple frames
+    final processedData = <ProcessedSystemData>[];
+    for (var frame in processedFrameData.keys) {
+      final frameData = processedFrameData[frame]!;
+      for (var data in frameData) {
+        final existing = processedData.cast<ProcessedSystemData?>().firstWhere(
+            (processed) =>
+                processed!.column == data.column &&
+                processed.parent == data.parent,
+            orElse: () => null);
+        if (existing != null) {
+          existing.values.add(data.value);
+          existing.count++;
+        } else {
+          processedData.add(ProcessedSystemData(data.column, [data.value], 1,
+              parent: data.parent));
+        }
+      }
+    }
+    _lastData = processedData
+      ..sort((a, b) => a.toString().compareTo(b.toString()));
     return _lastData;
   }
 
@@ -105,14 +162,19 @@ class _StatisticsState extends State<Statistics> {
           final column = elements[0];
           final parent = elements[1] == "null" ? null : elements[1];
           final value = int.parse(elements[2]);
+          final frame = int.parse(elements[3]);
 
           SystemData systemData;
-          if (_systemData
-              .any((sd) => sd.column == column && sd.parent == parent))
-            systemData = _systemData
-                .firstWhere((sd) => sd.column == column && sd.parent == parent);
-          else {
-            systemData = SystemData(column, parent);
+          if (_systemData.any((sd) =>
+              sd.column == column &&
+              sd.parent == parent &&
+              sd.frame == frame)) {
+            systemData = _systemData.firstWhere((sd) =>
+                sd.column == column &&
+                sd.parent == parent &&
+                sd.frame == frame);
+          } else {
+            systemData = SystemData(column, parent, frame);
             _systemData.add(systemData);
           }
 
@@ -169,13 +231,13 @@ class _StatisticsState extends State<Statistics> {
               ChartData.fromList(
                   _avgTimesBySystem()
                       .map((e) => ChartItem<ProcessedSystemData>(
-                          e, 0, e.value.toDouble()))
+                          e, 0, e.avg.toDouble()))
                       .toList(),
                   axisMin: 0,
                   axisMax: _lastData
                           .reduce((value, element) =>
-                              value.value > element.value ? value : element)
-                          .value +
+                              value.avg > element.avg ? value : element)
+                          .avg +
                       1),
               itemOptions: BarItemOptions(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
