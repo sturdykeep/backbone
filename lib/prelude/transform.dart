@@ -30,60 +30,60 @@ class TransformTrait extends ATrait {
 
   // Wrappers and dirty flags
   void setDirty({bool value = false}) {
-    _dirtyPosition = value;
-    _dirtyScale = value;
-    _dirtySize = value;
-    _dirtyRotation = value;
-    _dirtyAnchor = value;
+    dirtyPosition = value;
+    dirtyScale = value;
+    dirtySize = value;
+    dirtyRotation = value;
+    dirtyAnchor = value;
   }
 
   // -- position
-  bool _dirtyPosition = false;
+  bool dirtyPosition = false;
   Vector2 get position => _position;
   set position(Vector2 value) {
     if (_position != value) {
       _position = value;
-      _dirtyPosition = true;
+      dirtyPosition = true;
     }
   }
 
   // -- scale
-  bool _dirtyScale = false;
+  bool dirtyScale = false;
   Vector2 get scale => _scale;
   set scale(Vector2 value) {
     if (_scale != value) {
       _scale = value;
-      _dirtyScale = true;
+      dirtyScale = true;
     }
   }
 
   // -- rotation
-  bool _dirtyRotation = false;
+  bool dirtyRotation = false;
   double get rotation => _rotation;
   set rotation(double value) {
     if (_rotation != value) {
       _rotation = value;
-      _dirtyRotation = true;
+      dirtyRotation = true;
     }
   }
 
   // -- size
-  bool _dirtySize = false;
+  bool dirtySize = false;
   Vector2 get size => _size;
   set size(Vector2 value) {
     if (_size != value) {
       _size = value;
-      _dirtySize = true;
+      dirtySize = true;
     }
   }
 
   // -- anchor
-  bool _dirtyAnchor = false;
+  bool dirtyAnchor = false;
   Anchor get anchor => _anchor;
   set anchor(Anchor value) {
     if (_anchor != value) {
       _anchor = value;
-      _dirtyAnchor = true;
+      dirtyAnchor = true;
     }
   }
 
@@ -120,19 +120,19 @@ void transformSystem(Realm realm) {
     final bodyWatch = LogStopwatch();
     if (node is PositionNode) {
       final transform = node.get<TransformTrait>();
-      if (transform._dirtyPosition) {
+      if (transform.dirtyPosition) {
         node.position = transform.position;
       }
-      if (transform._dirtyScale) {
+      if (transform.dirtyScale) {
         node.scale = transform.scale;
       }
-      if (transform._dirtyRotation) {
+      if (transform.dirtyRotation) {
         node.angle = transform.rotation;
       }
-      if (transform._dirtySize) {
+      if (transform.dirtySize) {
         node.size = transform.size;
       }
-      if (transform._dirtyAnchor) {
+      if (transform.dirtyAnchor) {
         node.anchor = transform.anchor;
       }
       transform.positionSet = true;
