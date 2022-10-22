@@ -43,7 +43,7 @@ class BackboneWorker {
       "flutter",
       cmdParts.sublist(1),
       workingDirectory: workingDir,
-      runInShell: Platform.isWindows,
+      runInShell: Platform.isWindows || Platform.isLinux,
     );
     _flutterRunner.exitCode.then((value) => callback?.call(Stopped()));
     final encoding = utf8.decoder;

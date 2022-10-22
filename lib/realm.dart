@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
+import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
@@ -120,8 +121,12 @@ class Realm extends Component with HasGameRef {
   /// All type of trais registered in this Realm
   late final HashSet<Type> registeredTraits;
 
-  /// ???
+  /// Nodes sorted into lists by their archetype
   late final HashMap<Archetype, List<ANode>> archetypeBuckets;
+  late final List<Archetype> archetypeBucketsKeys;
+  late final List<List<ANode>> archetypeBucketsValues;
+  final List<Archetype> nonEmptyBucketKeys = [];
+  final List<List<ANode>> nonEmptyBucketValues = [];
 
   /// List of all registered systems
   late final List<System> systems;
@@ -132,14 +137,20 @@ class Realm extends Component with HasGameRef {
   /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
 
-  /// ???
+  /// Map of nodes sorted by their type
   final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
+
+  /// Current frame number being processed
+  int frame = 0;
+  static int globalFrame = 0;
 
   bool logPerformanceData = false;
 
   /// Create a new Realm and provide the traids, ???, systems, messages and resources
   Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
       this.messageSystems, this.resources) {
+    archetypeBucketsKeys = archetypeBuckets.keys.toList();
+    archetypeBucketsValues = archetypeBuckets.values.toList();
     addResource(Time());
     addResource(Input());
   }
@@ -224,6 +235,16 @@ class Realm extends Component with HasGameRef {
       final currentBucketList = archetypeBuckets[currentBucket]!;
       currentBucketList.remove(node);
       node.bucket = null;
+
+      // also remove from the non-emmpty bucket cache
+      final index = nonEmptyBucketKeys.indexOf(currentBucket);
+      if (index != -1) {
+        // check if it's actually empty now
+        if (nonEmptyBucketValues[index].isEmpty) {
+          nonEmptyBucketKeys.removeAt(index);
+          nonEmptyBucketValues.removeAt(index);
+        }
+      }
     }
   }
 
@@ -237,6 +258,13 @@ class Realm extends Component with HasGameRef {
       }
       archetypeBuckets[archetype]!.add(node);
       node.bucket = archetype;
+
+      // if necessary add to the non-empty bucket cache
+      final index = nonEmptyBucketKeys.indexOf(archetype);
+      if (index == -1) {
+        nonEmptyBucketKeys.add(archetype);
+        nonEmptyBucketValues.add(archetypeBuckets[archetype]!);
+      }
     }
   }
 
@@ -291,9 +319,12 @@ class Realm extends Component with HasGameRef {
   MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
       {bool onlyLoaded = false}) {
     List<List<ANode>> result = [];
-    for (final archetype in archetypeBuckets.keys) {
-      if (filter.matches(archetype)) {
-        final nodes = archetypeBuckets[archetype]!;
+    final length = nonEmptyBucketKeys.length;
+    for (var i = 0; i < length; i++) {
+      final archetype = nonEmptyBucketKeys[i];
+      final nodes = nonEmptyBucketValues[i];
+
+      if (nodes.isNotEmpty && filter.matches(archetype)) {
         if (onlyLoaded) {
           result.add(nodes.where((node) => node.isLoaded).toList());
         } else {
@@ -307,7 +338,7 @@ class Realm extends Component with HasGameRef {
   @override
   void onMount() {
     if (logPerformanceData) {
-      logPerformance('Running', 'true');
+      Log.logPerformance('Running', 'true');
     }
   }
 
@@ -315,14 +346,21 @@ class Realm extends Component with HasGameRef {
   void renderTree(Canvas canvas) {
     final renderStart = DateTime.now();
     super.renderTree(canvas);
-    logPerformance('Render',
-        DateTime.now().difference(renderStart).inMilliseconds.toString());
+    if (logPerformanceData) {
+      Log.logPerformance('Render',
+          DateTime.now().difference(renderStart).inMilliseconds.toString());
+    }
   }
 
   // Update Loop
   /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
+    // Globally the frame would be set only once at the beginning of the frame
+    if (globalFrame != frame) {
+      globalFrame = frame;
+    }
+
     final updateStart = DateTime.now();
     // Update the time
     getResource<Time>().delta = dt;
@@ -333,8 +371,8 @@ class Realm extends Component with HasGameRef {
       system(this);
       if (logPerformanceData) {
         final systemExecutionTime = DateTime.now().difference(systemsStartTime);
-        logPerformance('Systems',
-            '${system.toString()},${systemExecutionTime.inMicroseconds}');
+        Log.logSystemPerformance(Log.getSystemName(system), null,
+            systemExecutionTime.inMicroseconds);
       }
     }
 
@@ -368,11 +406,12 @@ class Realm extends Component with HasGameRef {
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
-    logPerformance('Update',
-        DateTime.now().difference(updateStart).inMilliseconds.toString());
-  }
-
-  void logPerformance(String category, String value) {
-    debugPrint('prefmon:$category->$value:prefmon');
+    if (logPerformanceData) {
+      Log.logPerformance('Update',
+          DateTime.now().difference(updateStart).inMilliseconds.toString());
+      // Update the frame count and try to process the log
+      frame += 1;
+      Log.processPerformanceLogs();
+    }
   }
 }
