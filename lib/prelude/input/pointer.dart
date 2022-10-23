@@ -95,7 +95,8 @@ class Pointer {
     }
   }
 
-  Vector2 worldPosition(FlameGame game) {
+  Vector2 worldPosition(FlameGame game, {PointerState? fromState}) {
+    final positionToTransform = fromState?.position ?? position;
     final afterViewport = game.camera.viewport.unprojectVector(position);
     return game.camera.screenToWorld(afterViewport);
   }
