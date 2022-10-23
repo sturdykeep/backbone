@@ -46,7 +46,10 @@ void draggableSystem(Realm realm) {
 
     // Check drag starts
     for (var dragStart in dragStarts) {
-      if (node.containsPoint(dragStart.worldPosition(realm.gameRef))) {
+      final dragStartState =
+          dragStart.history.firstWhere(((e) => e is PointerStateDragStart));
+      if (node.containsPoint(
+          dragStart.worldPosition(realm.gameRef, fromState: dragStartState))) {
         if (draggable.onStart != null) {
           final offset = tranform != null
               ? dragStart.worldPosition(realm.gameRef) -
