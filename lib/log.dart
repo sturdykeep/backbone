@@ -83,13 +83,4 @@ class Log {
     transformQueryTime = 0;
     transformBodyTime = 0;
   }
-
-  static final RegExp systemMatcher = RegExp('\'(.*?)\'');
-  static String getSystemName(System system) {
-    final match = systemMatcher.firstMatch(system.toString());
-    if (match != null) {
-      return match.group(1)!;
-    }
-    return 'Unknown System';
-  }
 }

@@ -10,104 +10,11 @@ import 'package:backbone/filter.dart';
 import 'package:backbone/message.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
+import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
-import 'package:flame/experimental.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
-
-// Notes about the Flame input system:
-// * TapDown is always first before LongTapDown
-// * TapDown and TapCancel are always before DragStart
-// * TapDown and DragStart have different pointerIds, but same positions
-// * While drag is happening, hover events are not sent
-// * Hover events use a device identifier, that can be reused
-
-// So, how do we track things?
-// 1. When tap down happens, we search for a hover with the same position and update it as a tapdown, otherwise create a new one
-// 2. LongTapDown just updates the state of the pointer with the same pointerId
-// 3. DragStart searches for pointer with cancelled state and exact same position, then updates it
-
-// Longest lifecycle of a pointer looks like this:
-// HoverEnter -> Hover -> TapDown -> TapCancel -> LongTapDown -> DragStart -> DragUpdate -> DragEnd
-
-/// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
-/// It automatically hooks up the input events to the [Realm].
-mixin HasRealm
-    on HasTappableComponents, HasDraggableComponents, KeyboardEvents {
-  late Realm realm;
-  bool realmReady = false;
-
-  @override
-  void onTapDown(TapDownEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapDown(event);
-    }
-
-    super.onTapDown(event);
-  }
-
-  @override
-  void onLongTapDown(TapDownEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onLongTapDown(event);
-    }
-    super.onLongTapDown(event);
-  }
-
-  @override
-  void onTapUp(TapUpEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapUp(event);
-    }
-    super.onTapUp(event);
-  }
-
-  @override
-  void onTapCancel(TapCancelEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapCancel(event);
-    }
-    super.onTapCancel(event);
-  }
-
-  @override
-  void onDragStart(DragStartEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragStart(event);
-    }
-    super.onDragStart(event);
-  }
-
-  @override
-  void onDragUpdate(DragUpdateEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragUpdate(event);
-    }
-    super.onDragUpdate(event);
-  }
-
-  @override
-  void onDragEnd(DragEndEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragEnd(event);
-    }
-    super.onDragEnd(event);
-  }
-
-  @override
-  KeyEventResult onKeyEvent(
-      RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    if (realmReady) {
-      realm.getResource<Input>().onKeyEvent(event, keysPressed);
-    }
-    super.onKeyEvent(event, keysPressed);
-    return KeyEventResult.handled;
-  }
-}
 
 /// Realm is the main entry point for all backbone systems
 /// You can have multiple realm in your game
@@ -130,6 +37,7 @@ class Realm extends Component with HasGameRef {
 
   /// List of all registered systems
   late final List<System> systems;
+  late final HashMap<System, SystemResult> systemResults = HashMap();
 
   /// List of all messages systems
   late final List<MessageSystem> messageSystems;
@@ -200,7 +108,7 @@ class Realm extends Component with HasGameRef {
     messageSystemPaused = true;
   }
 
-  /// Resum the message system
+  /// Resume the message system
   void resumeMessageSystem() {
     messageSystemPaused = false;
   }
@@ -225,8 +133,26 @@ class Realm extends Component with HasGameRef {
     return resources.remove(R) as R?;
   }
 
-  // Traits and nodes
+  // Systems and their results
+  R runDependency<R>(System system) {
+    if (systemResults.containsKey(system) == false) {
+      final systemStartTime = DateTime.now();
+      systemResults.putIfAbsent(system, () => system(this));
+      if (logPerformanceData) {
+        final systemExecutionTime = DateTime.now().difference(systemStartTime);
+        Log.logSystemPerformance(
+            getSystemName(system), null, systemExecutionTime.inMicroseconds);
+      }
+    }
+    return systemResults[system] as R;
+  }
 
+  R runDependencyByName<R>(String name) {
+    return runDependency<R>(
+        systems.firstWhere((s) => getSystemName(s) == name));
+  }
+
+  // Traits and nodes
   /// Remove a node from a bucket
   void removeNodeFromBuckets(ANode node) {
     // Remove the trait from the existing archetype storage
@@ -335,23 +261,6 @@ class Realm extends Component with HasGameRef {
     return MultiIterableView(result);
   }
 
-  @override
-  void onMount() {
-    if (logPerformanceData) {
-      Log.logPerformance('Running', 'true');
-    }
-  }
-
-  @override
-  void renderTree(Canvas canvas) {
-    final renderStart = DateTime.now();
-    super.renderTree(canvas);
-    if (logPerformanceData) {
-      Log.logPerformance('Render',
-          DateTime.now().difference(renderStart).inMilliseconds.toString());
-    }
-  }
-
   // Update Loop
   /// Update all details of the realm, called by Flame
   @override
@@ -365,15 +274,18 @@ class Realm extends Component with HasGameRef {
     // Update the time
     getResource<Time>().delta = dt;
 
+    // Reset the system results
+    systemResults.clear();
+
     // Update all the systems
-    for (final system in systems) {
-      final systemsStartTime = DateTime.now();
-      system(this);
-      if (logPerformanceData) {
-        final systemExecutionTime = DateTime.now().difference(systemsStartTime);
-        Log.logSystemPerformance(Log.getSystemName(system), null,
-            systemExecutionTime.inMicroseconds);
+    while (true) {
+      // Run the first system which doesn't have a result yet
+      final system = systems
+          .firstWhereOrNull((s) => systemResults.containsKey(s) == false);
+      if (system == null) {
+        break;
       }
+      runDependency(system);
     }
 
     // Proccess the message queue
@@ -412,6 +324,23 @@ class Realm extends Component with HasGameRef {
       // Update the frame count and try to process the log
       frame += 1;
       Log.processPerformanceLogs();
+    }
+  }
+
+  @override
+  void onMount() {
+    if (logPerformanceData) {
+      Log.logPerformance('Running', 'true');
+    }
+  }
+
+  @override
+  void renderTree(Canvas canvas) {
+    final renderStart = DateTime.now();
+    super.renderTree(canvas);
+    if (logPerformanceData) {
+      Log.logPerformance('Render',
+          DateTime.now().difference(renderStart).inMilliseconds.toString());
     }
   }
 }

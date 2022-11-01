@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
-import 'package:backbone/realm.dart';
+import 'package:backbone/realm_mixin.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
