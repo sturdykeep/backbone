@@ -89,9 +89,9 @@ void selectableSystem(Realm realm) {
       final node = event.node;
       final trait = node.tryGet<SelectableTrait>();
       if (trait != null) {
-        if (trait.selectable == true) {
-          if (ctrlPressed == true) {
-            if (trait.selected == true) {
+        if (trait.selectable) {
+          if (ctrlPressed) {
+            if (trait.selected) {
               selection.remove(node);
             } else {
               selection.add(node);
