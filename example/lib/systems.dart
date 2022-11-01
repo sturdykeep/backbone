@@ -2,11 +2,14 @@ import 'dart:math';
 
 import 'package:backbone/filter.dart';
 import 'package:backbone/prelude/input/mod.dart';
+import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
+import 'package:example/messages.dart';
 import 'package:flame/extensions.dart';
+import 'package:flutter/services.dart';
 
 import 'template_bar.dart';
 
@@ -65,6 +68,17 @@ void tapSpawnSystem(Realm realm) {
           200.0 + 200.0 * rng.nextDouble());
       bouncer.transformTrait.position = pointer.position;
       realm.add(bouncer);
+    }
+  }
+}
+
+void deleteRemoveSystem(Realm realm) {
+  final selected = realm.getResource<Selection>();
+  final toRemove = selected.nodes.toList();
+  final input = realm.getResource<Input>();
+  if (input.justPressed(LogicalKeyboardKey.delete)) {
+    for (final node in toRemove) {
+      realm.pushMessage(RemoveBouncerMessage(node as BouncerNode));
     }
   }
 }

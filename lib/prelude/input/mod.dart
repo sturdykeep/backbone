@@ -2,6 +2,7 @@ import 'package:backbone/builders.dart';
 import 'package:backbone/prelude/input/plugins/drag.dart';
 import 'package:backbone/prelude/input/key.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
+import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:collection/collection.dart';
@@ -32,6 +33,12 @@ void inputPlugin(RealmBuilder builder) {
   builder
     ..withTrait(TappableTrait)
     ..withSystem(tappableSystem);
+
+  // Selection
+  builder
+    ..withResource(Selection, Selection())
+    ..withTrait(SelectableTrait)
+    ..withSystem(selectableSystem);
 }
 
 /// Resource which contains all the input data for the current frame.

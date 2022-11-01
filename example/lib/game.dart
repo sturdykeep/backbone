@@ -29,6 +29,7 @@ class MainGame extends FlameGame
         .withTrait(TemplateSpawnerTrait)
         .withSystem(bounceSystem)
         .withSystem(tapSpawnSystem)
+        .withSystem(deleteRemoveSystem)
         .withMessageSystem(removeBounceMessageSystem)
         .withMessageSystem(resizeMessageSystem)
         .build();

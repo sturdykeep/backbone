@@ -1,6 +1,7 @@
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
+import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -31,6 +32,9 @@ class DragReceiverTrait extends ATrait {
 }
 
 void draggableSystem(Realm realm) {
+  // Dependencies to maintain order
+  realm.runDependency(hoverableSystem);
+
   final input = realm.getResource<Input>();
   final dragStarts = input.justDragStartPointers();
   final dragUpdates = input.justDragUpdatePointers();
@@ -111,6 +115,9 @@ void draggableSystem(Realm realm) {
 }
 
 void dragReceiverSystem(Realm realm) {
+  // Dependencies to maintain order
+  realm.runDependency(draggableSystem);
+
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
   if (dragEnds.isEmpty) return;

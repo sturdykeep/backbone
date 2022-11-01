@@ -1,5 +1,6 @@
 import 'package:backbone/position_node.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
+import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
@@ -16,8 +17,20 @@ class BouncerNode extends PositionNode {
   final Vector2 direction;
   final double speed;
   var oldColor = Colors.white;
+  var hovered = false;
+  var selected = false;
 
   Paint get currentPaint => (children.first as RectangleComponent).paint;
+
+  Color colorFromFlags() {
+    if (hovered) {
+      return Colors.red;
+    } else if (selected) {
+      return Colors.blue;
+    } else {
+      return color;
+    }
+  }
 
   BouncerNode(
     Vector2 size,
@@ -31,24 +44,38 @@ class BouncerNode extends PositionNode {
     final tappableTrait = TappableTrait(
       onJustReleased: (pointer) {
         if (pointer.handled == false) {
-          realm!.pushMessage(RemoveBouncerMessage(this));
-          pointer.handled = true;
+          print('Bouncer tapped');
         }
       },
     );
     addTrait(tappableTrait);
 
+    oldColor = color;
     // Receive hover
     final hoverableTrait = HoverableTrait(
       onHoverEnter: (pointer) {
-        oldColor = currentPaint.color;
-        currentPaint.color = Colors.red;
+        hovered = true;
+        currentPaint.color = colorFromFlags();
       },
       onHoverExit: (pointer) {
-        currentPaint.color = oldColor;
+        hovered = false;
+        currentPaint.color = colorFromFlags();
       },
     );
     addTrait(hoverableTrait);
+
+    // Selectable trait
+    final selectableTrait = SelectableTrait(
+      onSelected: () {
+        selected = true;
+        currentPaint.color = colorFromFlags();
+      },
+      onDeselected: () {
+        selected = false;
+        currentPaint.color = colorFromFlags();
+      },
+    );
+    addTrait(selectableTrait);
 
     addTrait(BouncerTrait());
   }
