@@ -89,10 +89,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(tapStart.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(tapStart, node, tappable);
-        result.tapStarts.add(event);
-        if (tappable.onTapDown != null) {
-          foundTapStarts.add(event);
-        }
+        foundTapStarts.add(event);
       }
       if (found == false) {
         result.tapStartMisses.add(tapStart);
@@ -105,10 +102,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(longTapStart.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(longTapStart, node, tappable);
-        result.longTapStarts.add(event);
-        if (tappable.onLongTapDown != null) {
-          foundLongTapStarts.add(event);
-        }
+        foundLongTapStarts.add(event);
       }
       if (found == false) {
         result.longTapStartMisses.add(longTapStart);
@@ -121,10 +115,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(tapEnd.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(tapEnd, node, tappable);
-        result.tapEnds.add(event);
-        if (tappable.onTapUp != null) {
-          foundTapEnds.add(event);
-        }
+        foundTapEnds.add(event);
       }
       if (found == false) {
         result.tapEndMisses.add(tapEnd);
@@ -137,10 +128,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(tapCancel.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(tapCancel, node, tappable);
-        result.tapCancels.add(event);
-        if (tappable.onTapCancel != null) {
-          foundTapCancels.add(event);
-        }
+        foundTapCancels.add(event);
       }
       if (found == false) {
         result.tapCancelMisses.add(tapCancel);
@@ -153,10 +141,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(pressed.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(pressed, node, tappable);
-        result.justPressed.add(event);
-        if (tappable.onJustPressed != null) {
-          foundJustPressed.add(event);
-        }
+        foundJustPressed.add(event);
       }
       if (found == false) {
         result.justPressedMisses.add(pressed);
@@ -169,10 +154,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(press.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(press, node, tappable);
-        result.pressed.add(event);
-        if (tappable.onPressed != null) {
-          foundPressed.add(event);
-        }
+        foundPressed.add(event);
       }
       if (found == false) {
         result.pressedMisses.add(press);
@@ -185,10 +167,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       if (node.containsPoint(released.worldPosition(realm.gameRef))) {
         found = true;
         final event = CapturedTappableEvent(released, node, tappable);
-        result.justReleased.add(event);
-        if (tappable.onJustReleased != null) {
-          foundJustReleased.add(event);
-        }
+        foundJustReleased.add(event);
       }
       if (found == false) {
         result.justReleasedMisses.add(released);
@@ -201,49 +180,56 @@ TappableSystemResult tappableSystem(Realm realm) {
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundTapStartsSorted) {
-    found.trait.onTapDown!(found.pointer);
+    found.trait.onTapDown?.call(found.pointer);
+    result.tapStarts.add(found);
   }
 
   final foundLongTapStartsSorted = (foundLongTapStarts.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundLongTapStartsSorted) {
-    found.trait.onLongTapDown!(found.pointer);
+    found.trait.onLongTapDown?.call(found.pointer);
+    result.longTapStarts.add(found);
   }
 
   final foundTapEndsSorted = (foundTapEnds.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundTapEndsSorted) {
-    found.trait.onTapUp!(found.pointer);
+    found.trait.onTapUp?.call(found.pointer);
+    result.tapEnds.add(found);
   }
 
   final foundTapCancelsSorted = (foundTapCancels.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundTapCancelsSorted) {
-    found.trait.onTapCancel!(found.pointer);
+    found.trait.onTapCancel?.call(found.pointer);
+    result.tapCancels.add(found);
   }
 
   final foundJustPressedSorted = (foundJustPressed.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundJustPressedSorted) {
-    found.trait.onJustPressed!(found.pointer);
+    found.trait.onJustPressed?.call(found.pointer);
+    result.justPressed.add(found);
   }
 
   final foundPressedSorted = (foundPressed.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundPressedSorted) {
-    found.trait.onPressed!(found.pointer);
+    found.trait.onPressed?.call(found.pointer);
+    result.pressed.add(found);
   }
 
   final foundJustReleasedSorted = (foundJustReleased.toList()
         ..sort((a, b) => a.node.compareToOnPriority(b.node)))
       .reversed;
   for (final found in foundJustReleasedSorted) {
-    found.trait.onJustReleased!(found.pointer);
+    found.trait.onJustReleased?.call(found.pointer);
+    result.justReleased.add(found);
   }
 
   return result;

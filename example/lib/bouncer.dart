@@ -66,13 +66,15 @@ class BouncerNode extends PositionNode {
 
     // Selectable trait
     final selectableTrait = SelectableTrait(
-      onSelected: () {
+      onSelected: (pointer) {
         selected = true;
         currentPaint.color = colorFromFlags();
+        return true;
       },
-      onDeselected: () {
+      onDeselected: (pointer) {
         selected = false;
         currentPaint.color = colorFromFlags();
+        return true;
       },
     );
     addTrait(selectableTrait);
