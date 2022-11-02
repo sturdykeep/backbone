@@ -85,20 +85,17 @@ void selectableSystem(Realm realm) {
       input.pressed(LogicalKeyboardKey.metaLeft) ||
       input.pressed(LogicalKeyboardKey.metaRight);
   for (final event in tappable.justReleased) {
-    if (event.pointer.handled == false) {
-      final node = event.node;
-      final trait = node.tryGet<SelectableTrait>();
-      if (trait != null) {
-        if (ctrlPressed) {
-          if (trait.selected) {
-            selection.remove(node);
-          } else {
-            selection.add(node);
-          }
+    final node = event.node;
+    final trait = node.tryGet<SelectableTrait>();
+    if (trait != null) {
+      if (ctrlPressed) {
+        if (trait.selected) {
+          selection.remove(node);
         } else {
-          selection.replace([node]);
+          selection.add(node);
         }
-        event.pointer.handled = true;
+      } else {
+        selection.replace([node]);
       }
     }
   }
