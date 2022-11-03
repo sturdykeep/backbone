@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 /// Resource that holds a reference to [SelectableTrait] nodes, which
 /// are currently selected.
 class Selection {
+  bool Function(Pointer pointer)? onGlobalDeslect;
+
   /// The currently selected nodes.
   final List<ANode> nodes = [];
 
@@ -103,13 +105,8 @@ void selectableSystem(Realm realm) {
   // Process the misses as deselection.
   if (ctrlPressed == false) {
     for (final pointer in tappable.justReleasedMisses) {
-      // TODO: This needs to be run after the rest of the systems
-      // and needs to check if the pointer was handled. For example,
-      // if one wants to execute an action with selected nodes when
-      // a user clicks on an empty space (e.g. RTS right-click to move).
-
-      // Deselct all nodes if the user clicks on an empty space.
-      if (pointer.handled == false) {
+      final shouldDeselect = selection.onGlobalDeslect?.call(pointer) ?? true;
+      if (shouldDeselect == true) {
         selection.clear(pointer: pointer);
       }
     }
