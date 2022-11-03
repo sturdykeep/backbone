@@ -232,5 +232,29 @@ TappableSystemResult tappableSystem(Realm realm) {
     result.justReleased.add(found);
   }
 
+  // Remove pointers which hit a node
+  // from the misses list
+  for (final found in result.tapStarts) {
+    result.tapStartMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.longTapStarts) {
+    result.longTapStartMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.tapEnds) {
+    result.tapEndMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.tapCancels) {
+    result.tapCancelMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.justPressed) {
+    result.justPressedMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.pressed) {
+    result.pressedMisses.removeWhere((p) => p == found.pointer);
+  }
+  for (final found in result.justReleased) {
+    result.justReleasedMisses.removeWhere((p) => p == found.pointer);
+  }
+
   return result;
 }

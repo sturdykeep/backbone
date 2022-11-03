@@ -52,10 +52,10 @@ class Selection {
   }
 
   /// Replace the current selection with a new selection.
-  void replace(List<ANode> newSelection) {
-    clear();
+  void replace(List<ANode> newSelection, {Pointer? pointer}) {
+    clear(pointer: pointer);
     for (final node in newSelection) {
-      add(node);
+      add(node, pointer: pointer);
     }
   }
 }
@@ -90,12 +90,12 @@ void selectableSystem(Realm realm) {
     if (trait != null) {
       if (ctrlPressed) {
         if (trait.selected) {
-          selection.remove(node);
+          selection.remove(node, pointer: event.pointer);
         } else {
-          selection.add(node);
+          selection.add(node, pointer: event.pointer);
         }
       } else {
-        selection.replace([node]);
+        selection.replace([node], pointer: event.pointer);
       }
     }
   }
@@ -110,8 +110,7 @@ void selectableSystem(Realm realm) {
 
       // Deselct all nodes if the user clicks on an empty space.
       if (pointer.handled == false) {
-        selection.clear();
-        pointer.handled = true;
+        selection.clear(pointer: pointer);
       }
     }
   }

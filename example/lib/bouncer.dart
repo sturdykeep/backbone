@@ -69,11 +69,13 @@ class BouncerNode extends PositionNode {
       onSelected: (pointer) {
         selected = true;
         currentPaint.color = colorFromFlags();
+        pointer?.handled = true;
         return true;
       },
       onDeselected: (pointer) {
         selected = false;
         currentPaint.color = colorFromFlags();
+        pointer?.handled = true;
         return true;
       },
     );
