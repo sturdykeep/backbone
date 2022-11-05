@@ -111,6 +111,8 @@ class TransformTrait extends ATrait {
 /// - size
 /// - anchor
 void transformSystem(Realm realm) {
+  Log.transformQueryTime = 0;
+  Log.transformBodyTime = 0;
   final queryWatch = LogStopwatch();
   final realmQuery = realm.query(Has([TransformTrait]));
   Log.transformQueryTime += queryWatch.stop();
