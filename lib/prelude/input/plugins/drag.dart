@@ -1,6 +1,7 @@
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
+import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -31,6 +32,9 @@ class DragReceiverTrait extends ATrait {
 }
 
 void draggableSystem(Realm realm) {
+  // Dependencies to maintain order
+  realm.runDependency(hoverableSystem);
+
   final input = realm.getResource<Input>();
   final dragStarts = input.justDragStartPointers();
   final dragUpdates = input.justDragUpdatePointers();
@@ -46,13 +50,16 @@ void draggableSystem(Realm realm) {
 
     // Check drag starts
     for (var dragStart in dragStarts) {
-      final dragStartState =
-          dragStart.history.firstWhere(((e) => e is PointerStateDragStart));
-      if (node.containsPoint(
-          dragStart.worldPosition(realm.gameRef, fromState: dragStartState))) {
+      // Find a state which existed right before the tap cancell
+      final state = dragStart.history.lastWhere(
+          (state) => state is PointerStateDown || state is PointerStateLongDown,
+          orElse: () =>
+              throw 'Tap down event not found for the drag start position correction');
+      final point = dragStart.worldPosition(realm.gameRef, fromState: state);
+      if (node.containsPoint(point)) {
         if (draggable.onStart != null) {
           final offset = tranform != null
-              ? dragStart.worldPosition(realm.gameRef) -
+              ? dragStart.worldPosition(realm.gameRef, fromState: state) -
                   tranform.absolutePosition(node)
               : Vector2.zero();
           foundDragStarts.add({
@@ -108,6 +115,9 @@ void draggableSystem(Realm realm) {
 }
 
 void dragReceiverSystem(Realm realm) {
+  // Dependencies to maintain order
+  realm.runDependency(draggableSystem);
+
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
   if (dragEnds.isEmpty) return;
