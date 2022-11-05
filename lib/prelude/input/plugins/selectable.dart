@@ -1,3 +1,4 @@
+import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
@@ -95,6 +96,22 @@ class SelectableTrait extends ATrait {
   SelectableTrait({this.onSelected, this.onDeselected});
 }
 
+/// A system to ensure SelectableTrait nodes also have a TappableTrait.
+void ensureSelectableNodesAreTappable(Realm realm) {
+  final toChange = <ANode>[];
+  final query = realm.query(And([
+    Has([SelectableTrait]),
+    Without([TappableTrait])
+  ]));
+  for (final node in query) {
+    toChange.add(node);
+  }
+
+  for (final node in toChange) {
+    node.addTrait(TappableTrait());
+  }
+}
+
 /// A system that handles selection of nodes.
 void selectableSystem(Realm realm) {
   final selection = realm.getResource<Selection>();
@@ -110,11 +127,6 @@ void selectableSystem(Realm realm) {
     final node = event.node;
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
-      var tappable = node.tryGet<TappableTrait>();
-      if (tappable == null) {
-        tappable = TappableTrait();
-        node.addTrait(tappable);
-      }
       if (ctrlPressed) {
         if (trait.selected) {
           selection.remove(node, pointer: event.pointer);

@@ -38,6 +38,7 @@ void inputPlugin(RealmBuilder builder) {
   builder
     ..withResource(Selection, Selection())
     ..withTrait(SelectableTrait)
+    ..withSystem(ensureSelectableNodesAreTappable)
     ..withSystem(selectableSystem);
 }
 
