@@ -55,9 +55,29 @@ class Selection {
 
   /// Replace the current selection with a new selection.
   void replace(List<ANode> newSelection, {Pointer? pointer}) {
-    clear(pointer: pointer);
+    final newSelectionResults = <ANode>[];
     for (final node in newSelection) {
-      add(node, pointer: pointer);
+      final trait = node.tryGet<SelectableTrait>();
+      if (trait != null) {
+        if (trait.selected == false) {
+          final shouldGetSelected = trait.onSelected?.call(pointer);
+          if (shouldGetSelected == true) {
+            newSelectionResults.add(node);
+          }
+        }
+      }
+    }
+
+    // Deselect all nodes.
+    if (newSelectionResults.isNotEmpty) {
+      clear(pointer: pointer);
+    }
+
+    // Select the new nodes.
+    for (final node in newSelectionResults) {
+      final trait = node.tryGet<SelectableTrait>()!;
+      trait.selected = true;
+      nodes.add(node);
     }
   }
 }
