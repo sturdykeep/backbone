@@ -134,22 +134,35 @@ class Realm extends Component with HasGameRef {
   }
 
   // Systems and their results
-  R runDependency<R>(System system) {
-    if (systemResults.containsKey(system) == false) {
-      final systemStartTime = DateTime.now();
-      systemResults.putIfAbsent(system, () => system(this));
-      if (logPerformanceData) {
-        final systemExecutionTime = DateTime.now().difference(systemStartTime);
-        Log.logSystemPerformance(
-            getSystemName(system), null, systemExecutionTime.inMicroseconds);
+  /// Make sure the system was run this frame, or run it.
+  /// Returns the result of the system.
+  R checkOrRunSystem<R>(System system, {bool force = false}) {
+    if (force == false) {
+      if (systemResults.containsKey(system) == false) {
+        // final systemStartTime = DateTime.now();
+        systemResults.putIfAbsent(system, () => system(this));
+        // if (logPerformanceData) {
+        //   final systemExecutionTime = DateTime.now().difference(systemStartTime);
+        //   Log.logSystemPerformance(
+        //       getSystemName(system), null, systemExecutionTime.inMicroseconds);
+        // }
+      }
+    } else {
+      if (systemResults.containsKey(system)) {
+        systemResults[system] = system(this);
+      } else {
+        systemResults.putIfAbsent(system, () => system(this));
       }
     }
     return systemResults[system] as R;
   }
 
-  R runDependencyByName<R>(String name) {
-    return runDependency<R>(
-        systems.firstWhere((s) => getSystemName(s) == name));
+  /// Make sure the system was run this frame, or run it.
+  /// Returns the result of the system.
+  R checkOrRunSystemByName<R>(String name, {bool force = false}) {
+    return checkOrRunSystem<R>(
+        systems.firstWhere((s) => getSystemName(s) == name),
+        force: force);
   }
 
   // Traits and nodes
@@ -285,7 +298,7 @@ class Realm extends Component with HasGameRef {
       if (system == null) {
         break;
       }
-      runDependency(system);
+      checkOrRunSystem(system);
     }
 
     // Proccess the message queue

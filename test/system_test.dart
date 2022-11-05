@@ -21,7 +21,7 @@ void main() {
     var systemMultiplyTwoRun = false;
     double systemMultiplyTwo(Realm realm) {
       systemMultiplyTwoRun = true;
-      var value = realm.runDependency(systemInteger);
+      var value = realm.checkOrRunSystem(systemInteger);
       return value * 2;
     }
 
@@ -125,8 +125,8 @@ void main() {
 
       systemIntegerRun = false;
       systemMultiplyTwoRun = false;
-      realm.runDependency(systemInteger);
-      realm.runDependency(systemMultiplyTwo);
+      realm.checkOrRunSystem(systemInteger);
+      realm.checkOrRunSystem(systemMultiplyTwo);
       expect(systemIntegerRun, false);
       expect(systemMultiplyTwoRun, false);
     });

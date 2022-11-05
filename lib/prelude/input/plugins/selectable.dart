@@ -115,7 +115,7 @@ void ensureSelectableNodesAreTappable(Realm realm) {
 /// A system that handles selection of nodes.
 void selectableSystem(Realm realm) {
   final selection = realm.getResource<Selection>();
-  final tappable = realm.runDependency<TappableSystemResult>(tappableSystem);
+  final tappable = realm.checkOrRunSystem<TappableSystemResult>(tappableSystem);
   final input = realm.getResource<Input>();
   // When control is pressed, the selection is additive.
   // Otherwise, the selection is replaced.

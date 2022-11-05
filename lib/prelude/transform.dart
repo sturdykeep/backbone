@@ -26,7 +26,6 @@ class TransformTrait extends ATrait {
   Vector2 _size = Vector2.zero();
   double _rotation = 0.0;
   Anchor _anchor = Anchor.topLeft;
-  bool positionSet = false;
 
   // Wrappers and dirty flags
   void setDirty({bool value = false}) {
@@ -135,7 +134,6 @@ void transformSystem(Realm realm) {
       if (transform.dirtyAnchor) {
         node.anchor = transform.anchor;
       }
-      transform.positionSet = true;
       transform.setDirty(value: false);
     }
     Log.transformBodyTime += bodyWatch.stop();
