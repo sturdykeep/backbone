@@ -110,6 +110,11 @@ void selectableSystem(Realm realm) {
     final node = event.node;
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
+      var tappable = node.tryGet<TappableTrait>();
+      if (tappable == null) {
+        tappable = TappableTrait();
+        node.addTrait(tappable);
+      }
       if (ctrlPressed) {
         if (trait.selected) {
           selection.remove(node, pointer: event.pointer);
