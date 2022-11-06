@@ -139,13 +139,7 @@ class Realm extends Component with HasGameRef {
   R checkOrRunSystem<R>(System system, {bool force = false}) {
     if (force == false) {
       if (systemResults.containsKey(system) == false) {
-        // final systemStartTime = DateTime.now();
         systemResults.putIfAbsent(system, () => system(this));
-        // if (logPerformanceData) {
-        //   final systemExecutionTime = DateTime.now().difference(systemStartTime);
-        //   Log.logSystemPerformance(
-        //       getSystemName(system), null, systemExecutionTime.inMicroseconds);
-        // }
       }
     } else {
       if (systemResults.containsKey(system)) {
@@ -236,6 +230,10 @@ class Realm extends Component with HasGameRef {
     if (node.realm != this) {
       throw Exception(
           'Node $node is not in this realm. It was added to another realm');
+    }
+    if (trait.node != null && trait.node != node) {
+      throw Exception(
+          'Trait $trait is already added to another node ${trait.node}');
     }
 
     removeNodeFromBuckets(node);
