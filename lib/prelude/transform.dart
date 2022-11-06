@@ -27,7 +27,6 @@ class TransformTrait extends ATrait {
   Anchor _anchor = Anchor.topLeft;
 
   // -- position
-  bool dirtyPosition = false;
   Vector2 get position => _position;
   set position(Vector2 value) {
     if (_position != value) {
@@ -39,7 +38,6 @@ class TransformTrait extends ATrait {
   }
 
   // -- scale
-  bool dirtyScale = false;
   Vector2 get scale => _scale;
   set scale(Vector2 value) {
     if (_scale != value) {
@@ -51,7 +49,6 @@ class TransformTrait extends ATrait {
   }
 
   // -- rotation
-  bool dirtyRotation = false;
   double get rotation => _rotation;
   set rotation(double value) {
     if (_rotation != value) {
@@ -63,7 +60,6 @@ class TransformTrait extends ATrait {
   }
 
   // -- size
-  bool dirtySize = false;
   Vector2 get size => _size;
   set size(Vector2 value) {
     if (_size != value) {
@@ -75,7 +71,6 @@ class TransformTrait extends ATrait {
   }
 
   // -- anchor
-  bool dirtyAnchor = false;
   Anchor get anchor => _anchor;
   set anchor(Anchor value) {
     if (_anchor != value) {
