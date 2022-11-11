@@ -149,17 +149,11 @@ void selectableSystem(Realm realm) {
 
   // Process the misses as deselection.
   if (ctrlPressed == false) {
-    // Pointers miss any node.
-    for (final pointer in tappable.justReleasedMisses) {
-      final shouldDeselect = selection.onGlobalDeslect?.call(pointer) ?? true;
-      if (shouldDeselect == true) {
-        selection.clear(pointer: pointer);
-      }
-    }
-
     // Some pointers hit some nodes, but all of them rejected the selection,
     // or didn't have a SelectableTrait.
-    if (somethingGotSelected == false && tappable.justReleased.isNotEmpty) {
+    if (somethingGotSelected == false &&
+        (tappable.justReleased.isNotEmpty ||
+            tappable.justReleasedMisses.isNotEmpty)) {
       for (final pointer in tappable.justReleasedMisses) {
         final shouldDeselect = selection.onGlobalDeslect?.call(pointer) ?? true;
         if (shouldDeselect == true) {
