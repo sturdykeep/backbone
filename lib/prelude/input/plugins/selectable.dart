@@ -16,7 +16,8 @@ class Selection {
   final List<ANode> nodes = [];
 
   /// Adds a node to the selection.
-  void add(ANode node, {Pointer? pointer}) {
+  /// Returns true, if the node was successfuly selected.
+  bool add(ANode node, {Pointer? pointer}) {
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
       if (trait.selected == false) {
@@ -24,9 +25,11 @@ class Selection {
         if (shouldGetSelected == true) {
           trait.selected = true;
           nodes.add(node);
+          return true;
         }
       }
     }
+    return false;
   }
 
   /// Removes a node from the selection.
@@ -55,7 +58,8 @@ class Selection {
   }
 
   /// Replace the current selection with a new selection.
-  void replace(List<ANode> newSelection, {Pointer? pointer}) {
+  /// Returns true if the selection was successfuly replaced.
+  bool replace(List<ANode> newSelection, {Pointer? pointer}) {
     final newSelectionResults = <ANode>[];
     for (final node in newSelection) {
       final trait = node.tryGet<SelectableTrait>();
@@ -80,6 +84,8 @@ class Selection {
       trait.selected = true;
       nodes.add(node);
     }
+
+    return newSelectionResults.isNotEmpty;
   }
 }
 
@@ -123,6 +129,7 @@ void selectableSystem(Realm realm) {
       input.pressed(LogicalKeyboardKey.controlRight) ||
       input.pressed(LogicalKeyboardKey.metaLeft) ||
       input.pressed(LogicalKeyboardKey.metaRight);
+  bool somethingGotSelected = false;
   for (final event in tappable.justReleased) {
     final node = event.node;
     final trait = node.tryGet<SelectableTrait>();
@@ -131,20 +138,33 @@ void selectableSystem(Realm realm) {
         if (trait.selected) {
           selection.remove(node, pointer: event.pointer);
         } else {
-          selection.add(node, pointer: event.pointer);
+          somethingGotSelected = selection.add(node, pointer: event.pointer);
         }
       } else {
-        selection.replace([node], pointer: event.pointer);
+        somethingGotSelected =
+            selection.replace([node], pointer: event.pointer);
       }
     }
   }
 
   // Process the misses as deselection.
   if (ctrlPressed == false) {
+    // Pointers miss any node.
     for (final pointer in tappable.justReleasedMisses) {
       final shouldDeselect = selection.onGlobalDeslect?.call(pointer) ?? true;
       if (shouldDeselect == true) {
         selection.clear(pointer: pointer);
+      }
+    }
+
+    // Some pointers hit some nodes, but all of them rejected the selection,
+    // or didn't have a SelectableTrait.
+    if (somethingGotSelected == false && tappable.justReleased.isNotEmpty) {
+      for (final pointer in tappable.justReleasedMisses) {
+        final shouldDeselect = selection.onGlobalDeslect?.call(pointer) ?? true;
+        if (shouldDeselect == true) {
+          selection.clear(pointer: pointer);
+        }
       }
     }
   }
