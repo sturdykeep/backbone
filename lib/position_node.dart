@@ -14,10 +14,4 @@ class PositionNode extends PositionComponent with HasGameRef, ANode {
   PositionNode({TransformTrait? transformTrait}) {
     addTrait(transformTrait ?? TransformTrait());
   }
-
-  @override
-  void renderTree(Canvas canvas) {
-    if (transformTrait.positionSet == false) return;
-    super.renderTree(canvas);
-  }
 }

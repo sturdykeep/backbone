@@ -17,7 +17,6 @@ import 'package:flame/extensions.dart';
 /// - anchor
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
-  builder.withSystem(transformSystem);
 }
 
 class TransformTrait extends ATrait {
@@ -26,64 +25,59 @@ class TransformTrait extends ATrait {
   Vector2 _size = Vector2.zero();
   double _rotation = 0.0;
   Anchor _anchor = Anchor.topLeft;
-  bool positionSet = false;
-
-  // Wrappers and dirty flags
-  void setDirty({bool value = false}) {
-    dirtyPosition = value;
-    dirtyScale = value;
-    dirtySize = value;
-    dirtyRotation = value;
-    dirtyAnchor = value;
-  }
 
   // -- position
-  bool dirtyPosition = false;
   Vector2 get position => _position;
   set position(Vector2 value) {
     if (_position != value) {
       _position = value;
-      dirtyPosition = true;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).position = value;
+      }
     }
   }
 
   // -- scale
-  bool dirtyScale = false;
   Vector2 get scale => _scale;
   set scale(Vector2 value) {
     if (_scale != value) {
       _scale = value;
-      dirtyScale = true;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).scale = value;
+      }
     }
   }
 
   // -- rotation
-  bool dirtyRotation = false;
   double get rotation => _rotation;
   set rotation(double value) {
     if (_rotation != value) {
       _rotation = value;
-      dirtyRotation = true;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).angle = value;
+      }
     }
   }
 
   // -- size
-  bool dirtySize = false;
   Vector2 get size => _size;
   set size(Vector2 value) {
     if (_size != value) {
       _size = value;
-      dirtySize = true;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).size = value;
+      }
     }
   }
 
   // -- anchor
-  bool dirtyAnchor = false;
   Anchor get anchor => _anchor;
   set anchor(Anchor value) {
     if (_anchor != value) {
       _anchor = value;
-      dirtyAnchor = true;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).anchor = value;
+      }
     }
   }
 
@@ -102,42 +96,15 @@ class TransformTrait extends ATrait {
     }
     return position;
   }
-}
 
-/// Default system for TransformTrait, any PositionNode using the trait will
-/// get updated values every frame for:
-/// - position
-/// - scale
-/// - angle
-/// - size
-/// - anchor
-void transformSystem(Realm realm) {
-  final queryWatch = LogStopwatch();
-  final realmQuery = realm.query(Has([TransformTrait]));
-  Log.transformQueryTime += queryWatch.stop();
-
-  for (final node in realmQuery) {
-    final bodyWatch = LogStopwatch();
+  @override
+  void onAdd(ANode node) {
     if (node is PositionNode) {
-      final transform = node.get<TransformTrait>();
-      if (transform.dirtyPosition) {
-        node.position = transform.position;
-      }
-      if (transform.dirtyScale) {
-        node.scale = transform.scale;
-      }
-      if (transform.dirtyRotation) {
-        node.angle = transform.rotation;
-      }
-      if (transform.dirtySize) {
-        node.size = transform.size;
-      }
-      if (transform.dirtyAnchor) {
-        node.anchor = transform.anchor;
-      }
-      transform.positionSet = true;
-      transform.setDirty(value: false);
+      node.position = position;
+      node.scale = scale;
+      node.angle = rotation;
+      node.size = size;
+      node.anchor = anchor;
     }
-    Log.transformBodyTime += bodyWatch.stop();
   }
 }

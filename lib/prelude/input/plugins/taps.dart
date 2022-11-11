@@ -58,7 +58,7 @@ class CapturedTappableEvent {
 
 TappableSystemResult tappableSystem(Realm realm) {
   // Dependencies to maintain order
-  realm.runDependency(dragReceiverSystem);
+  realm.checkOrRunSystem(dragReceiverSystem);
 
   final query = realm.query(Has([TappableTrait]));
   final result = TappableSystemResult();

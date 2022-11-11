@@ -134,22 +134,29 @@ class Realm extends Component with HasGameRef {
   }
 
   // Systems and their results
-  R runDependency<R>(System system) {
-    if (systemResults.containsKey(system) == false) {
-      final systemStartTime = DateTime.now();
-      systemResults.putIfAbsent(system, () => system(this));
-      if (logPerformanceData) {
-        final systemExecutionTime = DateTime.now().difference(systemStartTime);
-        Log.logSystemPerformance(
-            getSystemName(system), null, systemExecutionTime.inMicroseconds);
+  /// Make sure the system was run this frame, or run it.
+  /// Returns the result of the system.
+  R checkOrRunSystem<R>(System system, {bool force = false}) {
+    if (force == false) {
+      if (systemResults.containsKey(system) == false) {
+        systemResults.putIfAbsent(system, () => system(this));
+      }
+    } else {
+      if (systemResults.containsKey(system)) {
+        systemResults[system] = system(this);
+      } else {
+        systemResults.putIfAbsent(system, () => system(this));
       }
     }
     return systemResults[system] as R;
   }
 
-  R runDependencyByName<R>(String name) {
-    return runDependency<R>(
-        systems.firstWhere((s) => getSystemName(s) == name));
+  /// Make sure the system was run this frame, or run it.
+  /// Returns the result of the system.
+  R checkOrRunSystemByName<R>(String name, {bool force = false}) {
+    return checkOrRunSystem<R>(
+        systems.firstWhere((s) => getSystemName(s) == name),
+        force: force);
   }
 
   // Traits and nodes
@@ -224,6 +231,10 @@ class Realm extends Component with HasGameRef {
       throw Exception(
           'Node $node is not in this realm. It was added to another realm');
     }
+    if (trait.node != null && trait.node != node) {
+      throw Exception(
+          'Trait $trait is already added to another node ${trait.node}');
+    }
 
     removeNodeFromBuckets(node);
     putNodeIntoBucket(node);
@@ -285,7 +296,7 @@ class Realm extends Component with HasGameRef {
       if (system == null) {
         break;
       }
-      runDependency(system);
+      checkOrRunSystem(system);
     }
 
     // Proccess the message queue
@@ -318,11 +329,12 @@ class Realm extends Component with HasGameRef {
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
+    // Update the frame count
+    frame += 1;
     if (logPerformanceData) {
       Log.logPerformance('Update',
           DateTime.now().difference(updateStart).inMilliseconds.toString());
-      // Update the frame count and try to process the log
-      frame += 1;
+      // Try to process the log
       Log.processPerformanceLogs();
     }
   }

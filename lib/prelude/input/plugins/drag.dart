@@ -33,7 +33,7 @@ class DragReceiverTrait extends ATrait {
 
 void draggableSystem(Realm realm) {
   // Dependencies to maintain order
-  realm.runDependency(hoverableSystem);
+  realm.checkOrRunSystem(hoverableSystem);
 
   final input = realm.getResource<Input>();
   final dragStarts = input.justDragStartPointers();
@@ -116,7 +116,7 @@ void draggableSystem(Realm realm) {
 
 void dragReceiverSystem(Realm realm) {
   // Dependencies to maintain order
-  realm.runDependency(draggableSystem);
+  realm.checkOrRunSystem(draggableSystem);
 
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();

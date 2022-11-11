@@ -115,7 +115,14 @@ mixin ANode on HasGameRef {
   // Traits
   /// Add a trait to this node
   void addTrait(ATrait trait) {
+    if (trait.node != null && trait.node != this) {
+      throw Exception(
+          'Trait $trait is already added to another node ${trait.node}');
+    }
+
     _traits.add(trait);
+    trait.node = this;
+    trait.onAdd(this);
     try {
       realm?.addTraitToNode(trait, this);
     } catch (e) {
@@ -131,6 +138,8 @@ mixin ANode on HasGameRef {
         _traits.cast<ATrait?>().firstWhere((c) => c is T, orElse: () => null);
     if (trait != null) {
       _traits.remove(trait);
+      trait.onRemove(this);
+      trait.node = null;
       realm?.removeTraitFromNode(trait, this);
     }
   }
