@@ -143,7 +143,6 @@ class _MainScreenState extends State<MainScreen>
         'yaml',
       ],
     );
-    if (mounted == false) return;
 
     String? folder;
     if (result != null) {
@@ -151,14 +150,16 @@ class _MainScreenState extends State<MainScreen>
       if (file.path.endsWith('pubspec.yaml')) {
         folder = file.path;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Select the pubspec.yaml file of your game',
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Select the pubspec.yaml file of your game',
+              ),
+              backgroundColor: Colors.red,
             ),
-            backgroundColor: Colors.red,
-          ),
-        );
+          );
+        }
       }
     }
     if (folder != null) {

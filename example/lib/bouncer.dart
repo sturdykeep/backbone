@@ -4,7 +4,6 @@ import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
-import 'package:example/messages.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +43,7 @@ class BouncerNode extends PositionNode {
     final tappableTrait = TappableTrait(
       onJustReleased: (pointer) {
         if (pointer.handled == false) {
-          print('Bouncer tapped');
+          debugPrint('Bouncer tapped');
         }
       },
     );

@@ -23,7 +23,7 @@ class SimpleState extends StatelessWidget {
         children: [
           Text(
             text,
-            style: Theme.of(context).textTheme.headline4,
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           Icon(
             icon,

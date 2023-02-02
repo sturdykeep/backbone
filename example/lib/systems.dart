@@ -21,7 +21,6 @@ void bounceSystem(Realm realm) {
   // final realmQuery = realm.query(And([Has([TransformTrait]), Has([BouncerTrait])]));
   final dragBarQuery = realm.query(Has([TemplateSpawnerTrait, TransformTrait]));
   final dragBarTransform = dragBarQuery.first.get<TransformTrait>();
-  final queryLength = realmQuery.length;
   final dragBarSize = Vector2(
       dragBarTransform.position.y == 0 ? TemplateBar.space : 0,
       dragBarTransform.position.x == 0 ? TemplateBar.space : 0);

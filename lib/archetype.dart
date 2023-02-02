@@ -30,7 +30,7 @@ class Archetype {
     return archetypes;
   }
 
-  static HashMap<Type, int> _typeToIndex = HashMap<Type, int>();
+  static final HashMap<Type, int> _typeToIndex = HashMap<Type, int>();
   static int toIndex(Type type) {
     if (_typeToIndex.containsKey(type)) {
       return _typeToIndex[type]!;
