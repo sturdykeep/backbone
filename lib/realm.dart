@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
@@ -68,26 +69,55 @@ class Realm extends Component with HasGameRef {
 
   // Message system
   bool messageSystemPaused = false;
+  int messageSystemTimeBudget = 8;
   final Queue<AMessage> messageQueue = Queue();
+  final HashMap<AMessage, Completer<dynamic>> messageCompleters = HashMap();
 
   /// Push a new message to the end of the queue
-  void pushMessage(AMessage message) {
+  Future<T?> pushMessage<T>(AMessage<T> message) {
+    final completer = Completer();
     messageQueue.add(message);
+    messageCompleters.putIfAbsent(message, () => completer);
+    return completer.future.then((v) => v as T?);
   }
 
   /// Push a message to the first pposition in the queue
-  void pushMessageToFront(AMessage message) {
+  Future<T?> pushMessageToFront<T>(AMessage<T> message) {
+    final completer = Completer();
     messageQueue.addFirst(message);
+    messageCompleters.putIfAbsent(message, () => completer);
+    return completer.future.then((v) => v as T?);
+  }
+
+  /// Push a message right after a given message
+  Future<T?> pushMessageAfter<T>(AMessage<T> message, AMessage after) {
+    final completer = Completer();
+    final oldMessages = messageQueue.toList();
+    messageQueue.clear();
+    for (var oldMessage in oldMessages) {
+      messageQueue.add(oldMessage);
+      if (oldMessage == after) {
+        messageQueue.add(message);
+      }
+    }
+    messageCompleters.putIfAbsent(message, () => completer);
+    return completer.future.then((v) => v as T?);
   }
 
   /// Push multiple messages to the queue
-  void pushMessagesToFrontInOrder(Iterable<AMessage> messages) {
+  Future<List<dynamic>> pushMessagesToFrontInOrder(
+      Iterable<AMessage> messages) {
     // messages: [a, b, c]
     // messageQueue: [c, b, a] (reverse, but execute in order)
     var messagesReverse = messages.toList().reversed;
+    final List<Completer> completers = [];
     for (var message in messagesReverse) {
+      final completer = Completer();
       messageQueue.addFirst(message);
+      messageCompleters.putIfAbsent(message, () => completer);
+      completers.add(completer);
     }
+    return Future.wait(completers.map((e) => e.future));
   }
 
   /// Get the first message in the queue without removing it
@@ -98,6 +128,24 @@ class Realm extends Component with HasGameRef {
   /// Get the first message in the queue and remove it
   AMessage popMessage() {
     return messageQueue.removeFirst();
+  }
+
+  /// Resolves the `Future` of the given message with a result.
+  /// Always returns true for use in message systems on return.
+  /// ```
+  /// bool exampleMessageSystem(Realm realm, AMessage message) {
+  ///   if (message is ExampleMessage) {
+  ///     return realm.resolveMessage(message, 'result');
+  ///   }
+  ///   return false;
+  /// }
+  /// ```
+  bool resolveMessage<T>(AMessage<T> message, T result) {
+    final completer = messageCompleters.remove(message);
+    if (completer != null) {
+      completer.complete(result);
+    }
+    return true;
   }
 
   /// Is there any message in the queue
@@ -305,20 +353,28 @@ class Realm extends Component with HasGameRef {
     while (messageSystemPaused == false) {
       if (messageQueue.isEmpty) break;
       if (DateTime.now().difference(messagesProcessStartTime).inMilliseconds >
-          8) break;
+          messageSystemTimeBudget) break;
 
       final currentMessage = popMessage();
       final messageProcessTimeStart = DateTime.now();
 
       for (final system in messageSystems) {
-        if (system(this, currentMessage)) break;
+        if (system(this, currentMessage)) {
+          // Make sure completer is cleaned up
+          // and future is resolved
+          final completer = messageCompleters.remove(currentMessage);
+          if (completer != null) {
+            completer.complete();
+          }
+          break;
+        }
       }
 
       // Debug code for development
       if (logPerformanceData) {
         final messageExecutionTime =
             DateTime.now().difference(messageProcessTimeStart);
-        if (messageExecutionTime.inMilliseconds > 2) {
+        if (messageExecutionTime.inMilliseconds >= messageSystemTimeBudget) {
           debugPrint(
               '(Warning) Message ${currentMessage.runtimeType} took too long (${messageExecutionTime.inMilliseconds} ms) to process');
           slowMessageDebugCallback?.call(currentMessage);

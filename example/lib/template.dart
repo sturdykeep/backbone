@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:backbone/position_node.dart';
@@ -60,7 +61,7 @@ class Template extends PositionNode {
   }
 
   @override
-  Future<void>? onLoad() {
+  FutureOr<void> onLoad() {
     // Add the actual visible element of this node
     add(RectangleComponent(
         size: transformTrait.size, paint: Paint()..color = color));
