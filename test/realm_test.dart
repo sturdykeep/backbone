@@ -8,10 +8,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'node_test.dart';
 
-class RealmTestMessage extends AMessage {
+class RealmTestMessage extends AMessage<int> {
   RealmTestMessage(this.value);
   final int value;
 }
+
+class VoidMessage extends AMessage<void> {}
 
 class ExampleResource {}
 
@@ -150,16 +152,16 @@ void main() {
       expect(resultValueOne, 1);
       expect(resultValueTwo, 1);
     });
-    test('message only processed once', () {
+    test('message only processed once and slow warning works', () {
       var resultValue = 0;
       var realm = RealmBuilder().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           if (message.value == 1) {
             resultValue += message.value;
             return true;
-          } else if (message.value == 5) {
+          } else {
             //This will tirgger a slow message warning
-            sleep(const Duration(milliseconds: 5));
+            sleep(Duration(milliseconds: message.value));
             return true;
           }
         }
@@ -174,10 +176,62 @@ void main() {
       realm.slowMessageDebugCallback = ((slowMessage) {
         slowMessageFound = true;
       });
-      realm.pushMessage(RealmTestMessage(5));
+      realm.messageSystemTimeBudget = 20;
+
+      realm.pushMessage(RealmTestMessage(2));
+      realm.update(0.0);
+      expect(resultValue, 1);
+      expect(slowMessageFound, false);
+
+      realm.pushMessage(RealmTestMessage(15));
+      realm.pushMessage(RealmTestMessage(15));
+      realm.update(0.0);
+      expect(resultValue, 1);
+      expect(slowMessageFound, false);
+
+      slowMessageFound = false;
+      realm.pushMessage(RealmTestMessage(30));
       realm.update(0.0);
       expect(resultValue, 1);
       expect(slowMessageFound, true);
+    });
+    test('await a message', () async {
+      var realm = RealmBuilder().withMessageSystem((realm, message) {
+        if (message is RealmTestMessage) {
+          return realm.resolveMessage(message, message.value);
+        }
+        return false;
+      }).build();
+      final returnedFuture = realm.pushMessage(RealmTestMessage(1));
+      realm.update(0.0);
+      expect(await returnedFuture, 1);
+    });
+    test('await multiple messages', () async {
+      var realm = RealmBuilder().withMessageSystem((realm, message) {
+        if (message is RealmTestMessage) {
+          return realm.resolveMessage(message, message.value);
+        }
+        return false;
+      }).build();
+      final returnedFutureOne = realm.pushMessage(RealmTestMessage(1));
+      final returnedFutureTwo = realm.pushMessage(RealmTestMessage(2));
+      realm.update(0.0);
+      expect(await returnedFutureOne, 1);
+      expect(await returnedFutureTwo, 2);
+    });
+    test('void message', () async {
+      var executed = false;
+      var realm = RealmBuilder().withMessageSystem((realm, message) {
+        if (message is VoidMessage) {
+          executed = true;
+          return true;
+        }
+        return false;
+      }).build();
+      final returnedFuture = realm.pushMessage(VoidMessage());
+      realm.update(0.0);
+      await returnedFuture;
+      expect(executed, true);
     });
   });
 }
