@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:backbone/position_node.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/plugins/selectable.dart';
@@ -84,7 +86,7 @@ class BouncerNode extends PositionNode {
   }
 
   @override
-  Future<void>? onLoad() {
+  FutureOr<void> onLoad() {
     // Add child components here
     add(RectangleComponent(
         size: transformTrait.size, paint: Paint()..color = color));

@@ -8,7 +8,7 @@ typedef SystemResult = dynamic;
 typedef System = SystemResult Function(Realm realm);
 
 /// MessageSystems are used to process messages from a realm. Each update
-/// call has a given amount of tim (????) to work on messages each update loop.
+/// call has a given amount of time to work on messages each update loop.
 typedef MessageSystem = bool Function(Realm realm, AMessage message);
 
 final RegExp systemNameMatcher = RegExp('\'(.*?)\'');

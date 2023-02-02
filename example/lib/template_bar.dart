@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:example/template.dart';
@@ -49,7 +51,7 @@ class TemplateBar extends PositionNode {
   }
 
   @override
-  Future<void>? onLoad() {
+  FutureOr<void> onLoad() {
     add(Template(getChildStartingPosition()));
     return super.onLoad();
   }
