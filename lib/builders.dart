@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
-import 'package:backbone/message.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:backbone/realm.dart';
