@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:backbone/realm.dart';
-import 'package:backbone/system.dart';
 import 'package:flutter/widgets.dart';
 
 class SystemPerformanceLog {
