@@ -281,7 +281,6 @@ class Input {
     final existingKey = _keyStates.firstWhere((key) => key.key == logicalKey);
     existingKey.updateState(keyState);
     _debugPrint("Key (${existingKey.key.debugName}) -> $keyState");
-
     // Check `keysPressed` to set the rest of keys to pressed
     for (final key in keysPressed) {
       if (key == logicalKey) {
@@ -295,6 +294,7 @@ class Input {
             BackboneKeyState.pressed,
           );
     }
+    _keyStates.removeWhere((key) => keysPressed.contains(key.key) == false);
   }
 
   void clear() {
