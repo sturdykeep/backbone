@@ -4,6 +4,7 @@ import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:example/bouncer.dart';
+import 'package:example/bouncer_counter.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
 import 'package:flame/events.dart';
@@ -27,6 +28,8 @@ class MainGame extends FlameGame
         .withTrait(BouncerTrait)
         .withTrait(GameResizeTrait)
         .withTrait(TemplateSpawnerTrait)
+        .withTrait(BouncerCounterTrait)
+        .withSystem(bouncerCounterSystem)
         .withSystem(bounceSystem)
         .withSystem(tapSpawnSystem)
         .withSystem(deleteRemoveSystem)
@@ -52,6 +55,7 @@ class MainGame extends FlameGame
       realm.add(bouncer);
     }
     realm.add(TemplateBar(size));
+    realm.add(BouncerCounterNode());
     realm.logPerformanceData = true;
     realmReady = true;
   }
