@@ -187,14 +187,10 @@ class Realm extends Component with HasGameRef {
   R checkOrRunSystem<R>(System system, {bool force = false}) {
     if (force == false) {
       if (systemResults.containsKey(system) == false) {
-        systemResults.putIfAbsent(system, () => system(this));
+        systemResults[system] = system(this);
       }
     } else {
-      if (systemResults.containsKey(system)) {
-        systemResults[system] = system(this);
-      } else {
-        systemResults.putIfAbsent(system, () => system(this));
-      }
+      systemResults[system] = system(this);
     }
     return systemResults[system] as R;
   }

@@ -66,7 +66,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragStart(event);
     }
-    super.onDragStart(event);
+    // super.onDragStart(event);
   }
 
   @override
@@ -74,7 +74,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragUpdate(event);
     }
-    super.onDragUpdate(event);
+    // super.onDragUpdate(event);
   }
 
   @override
@@ -82,7 +82,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragEnd(event);
     }
-    super.onDragEnd(event);
+    // super.onDragEnd(event);
   }
 
   @override
