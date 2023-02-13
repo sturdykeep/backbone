@@ -1,6 +1,5 @@
 // ignore_for_file: implementation_imports
 
-import 'package:flame/experimental.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';

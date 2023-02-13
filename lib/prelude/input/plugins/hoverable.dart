@@ -3,7 +3,6 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
-import 'package:flutter/cupertino.dart';
 
 class HoverableTrait extends ATrait {
   final void Function(Pointer pointer)? onHoverEnter;
