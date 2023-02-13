@@ -46,9 +46,9 @@ class SpriteTrait extends ATrait {
     }
   }
 
-  SpriteAnimationData? _animationData;
-  SpriteAnimationData? get animationData => _animationData;
-  set animationData(SpriteAnimationData? data) {
+  SpriteAnimation? _animationData;
+  SpriteAnimation? get animationData => _animationData;
+  set animationData(SpriteAnimation? data) {
     if (_animationData != data) {
       _animationData = data;
       dirty = true;

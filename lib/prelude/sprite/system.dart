@@ -31,14 +31,13 @@ void spriteSystem(Realm realm) {
               node.findChildren<SpriteAnimationComponent>();
           if (animationComponents.isNotEmpty) {
             final component = animationComponents.first;
-            component.animation =
-                SpriteAnimation.fromFrameData(sprite!.image, animation);
+            component.animation = animation;
             component.animation!.onComplete = spriteTrait.onComplete;
             component.animation!.onFrame = spriteTrait.onFrame;
             component.position = spriteTrait.offset;
             component.priority = spriteTrait.priority;
             component.size =
-                transformTrait?.size ?? animation.frames.first.srcSize;
+                transformTrait?.size ?? animation.frames.first.sprite.srcSize;
             component.paint = spriteTrait.paint;
           }
         }
