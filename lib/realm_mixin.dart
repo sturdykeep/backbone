@@ -24,66 +24,9 @@ import 'package:flutter/widgets.dart';
 /// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
 /// It automatically hooks up the input events to the [Realm].
 mixin HasRealm
-    on HasTappableComponents, HasDraggableComponents, KeyboardEvents {
+    on KeyboardEvents {
   late Realm realm;
   bool realmReady = false;
-
-  @override
-  void onTapDown(TapDownEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapDown(event);
-    }
-
-    super.onTapDown(event);
-  }
-
-  @override
-  void onLongTapDown(TapDownEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onLongTapDown(event);
-    }
-    super.onLongTapDown(event);
-  }
-
-  @override
-  void onTapUp(TapUpEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapUp(event);
-    }
-    super.onTapUp(event);
-  }
-
-  @override
-  void onTapCancel(TapCancelEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onTapCancel(event);
-    }
-    super.onTapCancel(event);
-  }
-
-  @override
-  void onDragStart(DragStartEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragStart(event);
-    }
-    super.onDragStart(event);
-  }
-
-  @override
-  void onDragUpdate(DragUpdateEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragUpdate(event);
-    }
-    super.onDragUpdate(event);
-  }
-
-  @override
-  void onDragEnd(DragEndEvent event) {
-    if (realmReady) {
-      realm.getResource<Input>().onDragEnd(event);
-    }
-    super.onDragEnd(event);
-  }
 
   @override
   KeyEventResult onKeyEvent(

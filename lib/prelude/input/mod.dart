@@ -1,4 +1,5 @@
 import 'package:backbone/builders.dart';
+import 'package:backbone/prelude/input/long.dart';
 import 'package:backbone/prelude/input/plugins/drag.dart';
 import 'package:backbone/prelude/input/key.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
@@ -6,7 +7,6 @@ import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:collection/collection.dart';
-import 'package:flame/experimental.dart' as ex;
 import 'package:flame/extensions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -17,6 +17,9 @@ import 'package:flutter/services.dart';
 // https://bevy-cheatbook.github.io/input.html
 
 void inputPlugin(RealmBuilder builder) {
+  builder
+    .withSystem(longDownSystem);
+
   // Hover
   builder
     ..withTrait(HoverableTrait)
@@ -45,22 +48,22 @@ void inputPlugin(RealmBuilder builder) {
 /// Resource which contains all the input data for the current frame.
 class Input {
   // Raw interaction data
-  final _tapDowns = <ex.TapDownEvent>[];
-  final _longTapDowns = <ex.TapDownEvent>[];
-  final _tapUps = <ex.TapUpEvent>[];
-  final _tapCancels = <ex.TapCancelEvent>[];
-  final _dragStarts = <ex.DragStartEvent>[];
-  final _dragUpdates = <ex.DragUpdateEvent>[];
-  final _dragEnds = <ex.DragEndEvent>[];
-  final _hoverEvents = <PointerHoverEvent>[];
-  final _pointerAddedEvents = <PointerAddedEvent>[];
-  final _pointerRemovedEvents = <PointerRemovedEvent>[];
+  final _tapDowns = <PointerStateDown>[];
+  final _longTapDowns = <PointerStateLongDown>[];
+  final _tapUps = <PointerStateUp>[];
+  final _tapCancels = <PointerStateCancelled>[];
+  final _dragStarts = <PointerStateDragStart>[];
+  final _dragUpdates = <PointerStateDragUpdate>[];
+  final _dragEnds = <PointerStateDragEnd>[];
+  final _hoverEvents = <PointerStateHover>[];
+  final _pointerAddedEvents = <PointerStateAdded>[];
+  final _pointerRemovedEvents = <PointerStateRemoved>[];
 
+  final Duration longDownDuration = const Duration(milliseconds: 500);
   /// Enable or disable debug prints
   bool debugMode = false;
   // Processed data
   final _keyStates = <BackboneKey>[];
-  int _lastPointerId = 0;
   final _pointers = <Pointer>[];
   final _pointersGraveyard = <Pointer>[];
   final _pendingHovers = <Pointer>[];
@@ -75,9 +78,7 @@ class Input {
   }
 
   // Input hooks
-  void onHover(PointerHoverEvent event) {
-    _hoverEvents.add(event);
-
+  void onPointerHover(PointerHoverEvent event) {
     // Update an existing hover or update a hover enter
     final pointerHoverStart = _pointers.firstWhereOrNull(
         (p) => p.state is PointerStateAdded && p.pointerId == event.device);
@@ -88,12 +89,14 @@ class Input {
           "PointerAdded:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
     } else {
       final pointerHover = _pointers.firstWhereOrNull(
-          (p) => p.state is PointerStateHover && p.pointerId == event.device);
+          (p) => p.state is PointerStateHover && p.pointerId == event.pointer);
+      final state = PointerStateHover(event);
+      _hoverEvents.add(state);
       if (pointerHover != null) {
-        pointerHover.replaceStateIfIs(PointerStateHover(event));
+        pointerHover.replaceStateIfIs(state);
       } else {
         // Create a new hover
-        final pointer = Pointer.fromHoverEvent(_lastPointerId++, event);
+        final pointer = Pointer(state);
         _pointers.add(pointer);
         _pendingHovers.add(pointer);
         _debugPrint("New Hover:${pointer.id} ${pointer.position}");
@@ -102,165 +105,126 @@ class Input {
   }
 
   void onPointerAdded(PointerAddedEvent event) {
-    _pointerAddedEvents.add(event);
-
     // Create a new pointer
-    final pointer = Pointer.fromAddedEvent(_lastPointerId++, event);
+    final state = PointerStateAdded(event);
+    _pointerAddedEvents.add(state);
+    final pointer = Pointer(state);
     _pointers.add(pointer);
     _pendingHovers.add(pointer);
     _debugPrint("New PointerAdded:${pointer.id} (${pointer.position})");
   }
 
   void onPointerRemoved(PointerRemovedEvent event) {
-    _pointerRemovedEvents.add(event);
     // Update an existing hover or hover enter pointer
     final leavingPointer = _pointers.firstWhere((pointer) =>
         pointer.pointerId == event.pointer &&
         (pointer.state is PointerStateHover ||
             pointer.state is PointerStateAdded));
-    leavingPointer.pushState(PointerStateRemoved(event));
+    final state = PointerStateRemoved(event);
+    _pointerRemovedEvents.add(state);
+    leavingPointer.pushState(state);
     _pendingHovers.remove(leavingPointer);
     _debugPrint(
         "${leavingPointer.history.last is PointerStateHover ? "Hover" : "PointerAdded"}:${leavingPointer.id} -> PointerRemoved (${event.position.toVector2()})");
   }
 
-  void onTapDown(ex.TapDownEvent event) {
-    _tapDowns.add(event);
-
+  void onPointerDown(PointerDownEvent event) {
     // Update or create a pointer
     // First search for hovering pointer with the same position
     final hoveringPointer = _pointers.firstWhereOrNull(
       (pointer) =>
           pointer.isHovering &&
-          _isCloseBy(pointer.position, event.canvasPosition) &&
-          pointer.kind == event.deviceKind,
+          _isCloseBy(pointer.position, event.position.toVector2()) &&
+          pointer.kind == event.kind,
     );
+    final state = PointerStateDown(event);
+    _tapDowns.add(state);
     if (hoveringPointer != null) {
-      hoveringPointer.pushState(PointerStateDown(event));
+      hoveringPointer.pushState(state);
       _pendingHovers.remove(hoveringPointer);
       _debugPrint(
           "Hover:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> Down (${hoveringPointer.position})");
     } else {
       // Create a new pointer
-      final pointer = Pointer.fromTapDownEvent(_lastPointerId++, event);
+      final pointer = Pointer(state);
       _pointers.add(pointer);
-      _debugPrint("New Down:${pointer.id} (${pointer.position})");
+      _debugPrint("New PointerDown:${pointer.id} (${pointer.position})");
     }
   }
 
-  void onLongTapDown(ex.TapDownEvent event) {
-    _longTapDowns.add(event);
-
-    // Update existing pointer or throw if not found
-    final pointer = _pointers.firstWhere(
-      (pointer) =>
-          pointer.state is PointerStateDown &&
-          pointer.pointerId == event.pointerId,
-      orElse: () => throw Exception(
-          "Long tap down event received for a pointer that is not already registered as down"),
-    );
-    pointer.pushState(PointerStateLongDown(event));
-    _debugPrint("Down:${pointer.id} -> LongDown (${event.canvasPosition})");
-  }
-
-  void onTapUp(ex.TapUpEvent event) {
-    _tapUps.add(event);
-
-    // Update existing pointer or throw if not found
-    final pointer = _pointers.firstWhere(
+  void onPointerUp(PointerUpEvent event) {
+    // Update a down or longdown pointer, or
+    // finish a drag
+    final pointer = _pointers.firstWhereOrNull(
       (pointer) =>
           (pointer.state is PointerStateDown &&
-              pointer.pointerId == event.pointerId) ||
+              pointer.pointerId == event.pointer) ||
           (pointer.state is PointerStateLongDown &&
-              pointer.pointerId == event.pointerId),
-      orElse: () => throw Exception(
-          "Tap up event received for a pointer that is not already registered as down"),
+              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateDragStart &&
+              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateDragUpdate &&
+              pointer.pointerId == event.pointer),
     );
-    pointer.pushState(PointerStateUp(event));
-    _debugPrint(
-        "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> Up (${event.canvasPosition})");
-  }
-
-  void onTapCancel(ex.TapCancelEvent event) {
-    _tapCancels.add(event);
-
-    // Update existing pointer or throw if not found
-    final pointer = _pointers.firstWhere(
-      (pointer) =>
-          (pointer.state is PointerStateDown &&
-              pointer.pointerId == event.pointerId) ||
-          (pointer.state is PointerStateLongDown &&
-              pointer.pointerId == event.pointerId),
-      orElse: () => throw Exception(
-          "Tap cancel event received for a pointer that is not already registered as down"),
-    );
-    pointer.pushState(PointerStateCancelled(event));
-    _debugPrint(
-        "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> Cancelled (${pointer.position})");
-  }
-
-  void onDragStart(ex.DragStartEvent event) {
-    _dragStarts.add(event);
-
-    // Update an existing cancelled pointer or throw if not found
-    final pointer = _pointers.firstWhere(
-        (pointer) =>
-            pointer.state is PointerStateCancelled &&
-            _isCloseBy(pointer.position, event.canvasPosition), orElse: () {
-      // Generate a map on fly key distance to event : value the pointer
-      final map = {
-        for (var pointer in _pointers
-            .where((pointer) => pointer.state is PointerStateCancelled))
-          pointer.position.distanceToSquared(event.canvasPosition): pointer
-      };
-      final fallbackPointer = map[map.keys.min]!;
-      _debugPrint(
-          'onDragStart fallback pointer distance was above 10px took pointer at ${fallbackPointer.position} for event at ${event.canvasPosition}');
-      return fallbackPointer;
-    });
-    pointer.pushState(PointerStateDragStart(event));
-    _debugPrint(
-        "Cancelled:${pointer.id} -> DragStart (${event.canvasPosition})");
-  }
-
-  void onDragUpdate(ex.DragUpdateEvent event) {
-    _dragUpdates.add(event);
-
-    // Update an existing pointer or throw if not found
-    final pointer = _pointers.firstWhere(
-      (pointer) =>
-          (pointer.state is PointerStateDragStart ||
-              pointer.state is PointerStateDragUpdate) &&
-          pointer.pointerId == event.pointerId,
-      orElse: () => throw Exception(
-          "Drag update event received for a pointer that is not already registered as drag-started or drag-updated"),
-    );
-
-    // Either push a new state is DragStart or replace the last state if DragUpdate
-    if (pointer.state is PointerStateDragStart) {
-      pointer.pushState(PointerStateDragUpdate(event));
-      _debugPrint(
-          "DragStart:${pointer.id} -> DragUpdate (${event.canvasPosition})");
+    if (pointer != null) {
+      if (pointer.state is PointerStateDragStart ||
+          pointer.state is PointerStateDragUpdate) {
+        final state = PointerStateDragEnd(event);
+        _dragEnds.add(state);
+        pointer.pushState(state);
+        _debugPrint(
+            "${pointer.state.debugName}:${pointer.id} -> DragEnd (${event.position.toVector2()})");
+      } else {
+        final state = PointerStateUp(event);
+        _tapUps.add(state);
+        pointer.pushState(state);
+        _debugPrint(
+            "${pointer.history.last.debugName}:${pointer.id} -> Up (${event.position.toVector2()})");
+      }
     } else {
-      pointer.replaceStateIfIs(PointerStateDragUpdate(event));
+      throw Exception(
+          "Up event received for a pointer that is not already registered as down, long down or drag");
     }
   }
 
-  void onDragEnd(ex.DragEndEvent event) {
-    _dragEnds.add(event);
-
-    // Update an existing pointer or throw if not found
-    final pointer = _pointers.firstWhere(
+  void onPointerMove(PointerMoveEvent event) {
+    // Starts a drag if the pointer is down or long down
+    // or updates a drag if the pointer is already dragging
+    final pointer = _pointers.firstWhereOrNull(
       (pointer) =>
-          (pointer.state is PointerStateDragStart ||
-              pointer.state is PointerStateDragUpdate) &&
-          pointer.pointerId == event.pointerId,
-      orElse: () => throw Exception(
-          "Drag end event received for a pointer that is not already registered as drag-started or drag-updated"),
+          (pointer.state is PointerStateDown &&
+              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateLongDown &&
+              pointer.pointerId == event.pointer),
     );
-    pointer.pushState(PointerStateDragEnd(event));
-    _debugPrint(
-        "${pointer.history.last is PointerStateDragStart ? "DragStart" : "DragUpdate"}:${pointer.id} -> DragEnd (${pointer.position})");
+    final dragPointer = _pointers.firstWhereOrNull(
+      (pointer) =>
+          (pointer.state is PointerStateDragStart &&
+              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateDragUpdate &&
+              pointer.pointerId == event.pointer),
+    );
+    if (pointer != null) {
+      final state = PointerStateDragStart(event);
+      _dragStarts.add(state);
+      pointer.pushState(state);
+      _debugPrint(
+          "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> DragStart (${event.position})");
+    } else if (dragPointer != null) {
+      final state = PointerStateDragUpdate(event);
+      if (dragPointer.state is PointerStateDragStart) {
+        _dragUpdates.add(state);
+        dragPointer.pushState(state);
+        _debugPrint(
+            "DragStart:${dragPointer.id} -> DragUpdate (${event.position})");
+      } else {
+        _dragUpdates.add(state);
+        dragPointer.replaceStateIfIs(state);
+      }
+    } else {
+      throw Exception(
+          "Move event received for a pointer that is not already registered as down or long down");
+    }
   }
 
   void onKeyEvent(
@@ -273,28 +237,30 @@ class Input {
     if (containsEventKey == false) {
       _keyStates.add(BackboneKey(logicalKey));
     }
-    final keyState = event is RawKeyDownEvent
-        ? BackboneKeyState.justPressed
-        : event is RawKeyUpEvent
-            ? BackboneKeyState.justReleased
-            : BackboneKeyState.pressed;
     final existingKey = _keyStates.firstWhere((key) => key.key == logicalKey);
-    existingKey.updateState(keyState);
-    _debugPrint("Key (${existingKey.key.debugName}) -> $keyState");
-    // Check `keysPressed` to set the rest of keys to pressed
-    for (final key in keysPressed) {
-      if (key == logicalKey) {
-        continue;
+
+    // Based on the existing state of the key, change it to `justPressed`, `pressed` or `justReleased`
+    if (event is RawKeyDownEvent) {
+      if (existingKey.state == BackboneKeyState.justReleased) {
+        existingKey.updateState(BackboneKeyState.justPressed);
+        _debugPrint(
+            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justPressed} from ${event.runtimeType}");
+      } else if (existingKey.state == BackboneKeyState.justPressed) {
+        existingKey.updateState(BackboneKeyState.pressed);
+        _debugPrint(
+            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.pressed} from ${event.runtimeType}");
       }
-      final containsPressedKey = _keyStates.any((key) => key.key == logicalKey);
-      if (containsPressedKey == false) {
-        _keyStates.add(BackboneKey(key));
+    } else if (event is RawKeyUpEvent) {
+      if (existingKey.state == BackboneKeyState.justPressed) {
+        existingKey.updateState(BackboneKeyState.justReleased);
+        _debugPrint(
+            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justReleased} from ${event.runtimeType}");
+      } else if (existingKey.state == BackboneKeyState.pressed) {
+        existingKey.updateState(BackboneKeyState.justReleased);
+        _debugPrint(
+            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justReleased} from ${event.runtimeType}");
       }
-      _keyStates.firstWhere((key) => key.key == logicalKey).updateState(
-            BackboneKeyState.pressed,
-          );
     }
-    _keyStates.removeWhere((key) => keysPressed.contains(key.key) == false);
   }
 
   void clear() {

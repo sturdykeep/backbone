@@ -3,6 +3,7 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flutter/cupertino.dart';
 
 class HoverableTrait extends ATrait {
   final void Function(Pointer pointer)? onHoverEnter;
@@ -21,6 +22,13 @@ void hoverableSystem(Realm realm) {
   final hovers = input.justHoverPointers();
   final hoverLeaves = input.justHoverLeavePointers();
   final pendingHovers = input.pendingHoverPointers();
+
+  // Debug all pointers and their states
+  // String stateString = '------------------\n';
+  // for (final pointer in input.pointers()) {
+  //   stateString += 'Pointer ${pointer.id} has state: ${pointer.state}\n';
+  // }
+  // debugPrint(stateString);
 
   final foundHoverEnters = [];
   final foundHoverExits = [];

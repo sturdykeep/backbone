@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/message_systems.dart';
@@ -52,7 +53,8 @@ class MainGame extends FlameGame
       realm.add(bouncer);
     }
     realm.add(TemplateBar(size));
-    realm.logPerformanceData = true;
+    realm.logPerformanceData = false;
+    realm.getResource<Input>().debugMode = true;
     realmReady = true;
   }
 
