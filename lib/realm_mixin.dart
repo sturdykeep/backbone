@@ -1,3 +1,5 @@
+// ignore_for_file: must_call_super
+
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/events.dart';
