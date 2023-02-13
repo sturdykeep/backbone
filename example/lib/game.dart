@@ -53,8 +53,6 @@ class MainGame extends FlameGame
       realm.add(bouncer);
     }
     realm.add(TemplateBar(size));
-    realm.logPerformanceData = false;
-    realm.getResource<Input>().debugMode = true;
     realmReady = true;
   }
 
