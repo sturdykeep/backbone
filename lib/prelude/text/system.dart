@@ -10,6 +10,7 @@ import 'package:flame/components.dart';
 void textSystem(Realm realm) {
   final query = realm.query(Has([TextTrait, TransformTrait]));
   final cameraZoom = realm.gameRef.camera.zoom;
+  // If requested by the trait the text will zoom to 1 aka unzoom any current zoom
   final counterZoom = Vector2.all(cameraZoom + (-2.0 * (cameraZoom - 1.0)));
 
   for (var node in query) {
