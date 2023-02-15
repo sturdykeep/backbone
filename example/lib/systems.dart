@@ -1,12 +1,14 @@
 import 'dart:math';
 
 import 'package:backbone/filter.dart';
+import 'package:backbone/position_node.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/plugins/selectable.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:example/bouncer.dart';
+import 'package:example/dash.dart';
 import 'package:example/messages.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/services.dart';
@@ -26,25 +28,26 @@ void bounceSystem(Realm realm) {
       dragBarTransform.position.x == 0 ? TemplateBar.space : 0);
   final gameSizeWithoutDragBar = realm.gameRef.canvasSize - dragBarSize;
   for (final node in realmQuery) {
-    final bouncerNode = node as BouncerNode;
-    final transform = bouncerNode.transformTrait;
+    final bounceTrait = node.get<BouncerTrait>();
+
+    final transform = node.get<TransformTrait>();
 
     // Move them in the direction at the speed of `speed` pixels per second
     transform.position +=
-        bouncerNode.direction.normalized() * time.delta * node.speed;
+        bounceTrait.direction.normalized() * time.delta * bounceTrait.speed;
 
     // Now bounce them from edges
     if (transform.position.x < 0) {
-      bouncerNode.direction.x = bouncerNode.direction.x.abs();
+      bounceTrait.direction.x = bounceTrait.direction.x.abs();
     }
     if (transform.position.x + transform.size.x > gameSizeWithoutDragBar.x) {
-      bouncerNode.direction.x = -bouncerNode.direction.x.abs();
+      bounceTrait.direction.x = -bounceTrait.direction.x.abs();
     }
     if (transform.position.y < 0) {
-      bouncerNode.direction.y = bouncerNode.direction.y.abs();
+      bounceTrait.direction.y = bounceTrait.direction.y.abs();
     }
     if (transform.position.y + transform.size.y > gameSizeWithoutDragBar.y) {
-      bouncerNode.direction.y = -bouncerNode.direction.y.abs();
+      bounceTrait.direction.y = -bounceTrait.direction.y.abs();
     }
   }
 }
@@ -56,16 +59,25 @@ void tapSpawnSystem(Realm realm) {
   final pointers = input.justReleasedPointers();
   for (var pointer in pointers) {
     if (pointer.handled == false) {
-      final bouncer = BouncerNode(
-          Vector2.all(50.0 + 50.0 * rng.nextDouble()),
-          Color.fromARGB(
-              255,
-              (rng.nextDouble() * 255.0).toInt(),
-              (rng.nextDouble() * 255.0).toInt(),
-              (rng.nextDouble() * 255.0).toInt()),
-          (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
-          200.0 + 200.0 * rng.nextDouble());
-      bouncer.transformTrait.position = pointer.position;
+      late final PositionNode bouncer;
+      if (rng.nextBool()) {
+        bouncer = DashNode(
+          direction: (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
+          speed: 200.0 + 200.0 * rng.nextDouble(),
+        );
+      } else {
+        bouncer = BouncerNode(
+            Vector2.all(50.0 + 50.0 * rng.nextDouble()),
+            Color.fromARGB(
+                255,
+                (rng.nextDouble() * 255.0).toInt(),
+                (rng.nextDouble() * 255.0).toInt(),
+                (rng.nextDouble() * 255.0).toInt()),
+            (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
+            200.0 + 200.0 * rng.nextDouble());
+      }
+
+      bouncer.get<TransformTrait>().position = pointer.position;
       realm.add(bouncer);
     }
   }

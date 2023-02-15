@@ -1,3 +1,5 @@
+// ignore_for_file: must_call_super
+
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/events.dart';
@@ -66,7 +68,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragStart(event);
     }
-    super.onDragStart(event);
+    // super.onDragStart(event);
   }
 
   @override
@@ -74,7 +76,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragUpdate(event);
     }
-    super.onDragUpdate(event);
+    // super.onDragUpdate(event);
   }
 
   @override
@@ -82,7 +84,7 @@ mixin HasRealm
     if (realmReady) {
       realm.getResource<Input>().onDragEnd(event);
     }
-    super.onDragEnd(event);
+    // super.onDragEnd(event);
   }
 
   @override
