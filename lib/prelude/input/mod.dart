@@ -17,8 +17,7 @@ import 'package:flutter/services.dart';
 // https://bevy-cheatbook.github.io/input.html
 
 void inputPlugin(RealmBuilder builder) {
-  builder
-    .withSystem(longDownSystem);
+  builder.withSystem(longDownSystem);
 
   // Hover
   builder
@@ -60,6 +59,7 @@ class Input {
   final _pointerRemovedEvents = <PointerStateRemoved>[];
 
   final Duration longDownDuration = const Duration(milliseconds: 500);
+
   /// Enable or disable debug prints
   bool debugMode = false;
   // Processed data
@@ -182,7 +182,7 @@ class Input {
             "${pointer.history.last.debugName}:${pointer.id} -> Up (${event.position.toVector2()})");
       }
     } else {
-      throw Exception(
+      assert(pointer != null,
           "Up event received for a pointer that is not already registered as down, long down or drag");
     }
   }
@@ -222,7 +222,7 @@ class Input {
         dragPointer.replaceStateIfIs(state);
       }
     } else {
-      throw Exception(
+      assert(pointer != null || dragPointer != null,
           "Move event received for a pointer that is not already registered as down or long down");
     }
   }
