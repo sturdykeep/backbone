@@ -56,7 +56,6 @@ class MainGame extends FlameGame
     }
     realm.add(TemplateBar(size));
     realm.add(BouncerCounterNode());
-    realm.logPerformanceData = true;
     realmReady = true;
   }
 

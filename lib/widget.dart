@@ -84,9 +84,15 @@ class _BackboneGameWidgetState<T extends HasRealm>
     if (event is PointerAddedEvent) {
       widget.game.realm.getResource<Input>().onPointerAdded(event);
     } else if (event is PointerHoverEvent) {
-      widget.game.realm.getResource<Input>().onHover(event);
+      widget.game.realm.getResource<Input>().onPointerHover(event);
     } else if (event is PointerRemovedEvent) {
       widget.game.realm.getResource<Input>().onPointerRemoved(event);
+    } else if (event is PointerDownEvent) {
+      widget.game.realm.getResource<Input>().onPointerDown(event);
+    } else if (event is PointerMoveEvent) {
+      widget.game.realm.getResource<Input>().onPointerMove(event);
+    } else if (event is PointerUpEvent) {
+      widget.game.realm.getResource<Input>().onPointerUp(event);
     }
   }
 

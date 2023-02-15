@@ -22,6 +22,13 @@ void hoverableSystem(Realm realm) {
   final hoverLeaves = input.justHoverLeavePointers();
   final pendingHovers = input.pendingHoverPointers();
 
+  // Debug all pointers and their states
+  // String stateString = '------------------\n';
+  // for (final pointer in input.pointers()) {
+  //   stateString += 'Pointer ${pointer.id} has state: ${pointer.state}\n';
+  // }
+  // debugPrint(stateString);
+
   final foundHoverEnters = [];
   final foundHoverExits = [];
   final foundHoverMoves = [];
