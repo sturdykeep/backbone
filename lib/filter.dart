@@ -1,12 +1,12 @@
 import 'package:backbone/archetype.dart';
 
 /// Base class for any filter in realms
-abstract class AFilter {
+abstract class Filter {
   bool matches(Archetype archetype);
 }
 
 /// Checks if all types are included
-class Has extends AFilter {
+class Has extends Filter {
   final List<Type> components;
   late final List<int> componentsAsIndices;
   Has(this.components) {
@@ -18,7 +18,7 @@ class Has extends AFilter {
 }
 
 /// Check if at least one type is inlcuded
-class HasAny extends AFilter {
+class HasAny extends Filter {
   final List<Type> components;
   late final List<int> componentsAsIndices;
   HasAny(this.components) {
@@ -30,7 +30,7 @@ class HasAny extends AFilter {
 }
 
 /// Check that none of the types are included
-class Without extends AFilter {
+class Without extends Filter {
   final List<Type> components;
   late final List<int> componentsAsIndices;
   Without(this.components) {
@@ -42,8 +42,8 @@ class Without extends AFilter {
 }
 
 /// Logical and multiple filters together
-class And extends AFilter {
-  final List<AFilter> filters;
+class And extends Filter {
+  final List<Filter> filters;
   And(this.filters);
   @override
   bool matches(Archetype archetype) {
@@ -59,8 +59,8 @@ class And extends AFilter {
 }
 
 /// Logical Or multiple filters together
-class Or extends AFilter {
-  final List<AFilter> filters;
+class Or extends Filter {
+  final List<Filter> filters;
   Or(this.filters);
   @override
   bool matches(Archetype archetype) {

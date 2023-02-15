@@ -9,13 +9,13 @@ import 'package:backbone/trait.dart';
 import 'package:flame/extensions.dart';
 
 class DraggablePointerPayload {
-  final ANode initiator;
+  final Node initiator;
   final dynamic data;
 
   DraggablePointerPayload(this.initiator, this.data);
 }
 
-class DraggableTrait extends ATrait {
+class DraggableTrait extends Trait {
   final DraggablePointerPayload? Function(Pointer pointer, Vector2 offset)?
       onStart;
   final void Function(Pointer pointer)? onUpdate;
@@ -24,7 +24,7 @@ class DraggableTrait extends ATrait {
   DraggableTrait({this.onStart, this.onUpdate, this.onEnd});
 }
 
-class DragReceiverTrait extends ATrait {
+class DragReceiverTrait extends Trait {
   final void Function(Pointer pointer, DraggablePointerPayload? payload)
       onReceive;
 

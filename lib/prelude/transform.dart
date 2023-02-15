@@ -12,16 +12,20 @@ import 'package:flame/extensions.dart';
 /// - angle
 /// - size
 /// - anchor
+/// - priority
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
 }
 
-class TransformTrait extends ATrait {
+class TransformTrait extends Trait {
+  Node? node;
+
   Vector2 _position = Vector2.zero();
   Vector2 _scale = Vector2.all(1.0);
   Vector2 _size = Vector2.zero();
   double _rotation = 0.0;
   Anchor _anchor = Anchor.topLeft;
+  int _priority = 0;
 
   // -- position
   Vector2 get position => _position;
@@ -78,11 +82,43 @@ class TransformTrait extends ATrait {
     }
   }
 
-  Rect get rect => Rect.fromLTWH(position.x - anchor.x * size.x,
-      position.y - anchor.y * size.y, size.x, size.y);
+  // -- priority
+  int get priority => _priority;
+  set priority(int value) {
+    if (_priority != value) {
+      _priority = value;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).priority = value;
+      }
+    }
+  }
+
+  // Utilities
+  Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
+
+  /// Transform matrix, that takes anchor into account for scaling and rotation.
+  Matrix4 get transformMatrix {
+    final origin = anchor.toVector2()..multiply(size);
+    return Matrix4.identity()
+      ..translate(position.x, position.y)
+      ..translate(origin.x, origin.y)
+      ..rotateZ(rotation)
+      ..scale(scale.x, scale.y)
+      ..translate(-origin.x, -origin.y);
+  }
+  Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
+
+  bool containsPoint(Vector2 point) {
+    final localPoint = inverseTransformMatrix.transform2(point);
+    return localRect.contains(localPoint.toOffset());
+  }
+
+  int compareToOnPriority(TransformTrait other) {
+    return priority.compareTo(other.priority);
+  }
 
   // Convert current local position to global (world) coordinate space.
-  Vector2 absolutePosition(ANode node) {
+  Vector2 absolutePosition(Node node) {
     // Find the first parent, which is a PositionComponent
     var parent = node.parent;
     while (parent != null) {
@@ -95,13 +131,17 @@ class TransformTrait extends ATrait {
   }
 
   @override
-  void onAdd(ANode node) {
-    if (node is PositionNode) {
-      node.position = position;
-      node.scale = scale;
-      node.angle = rotation;
-      node.size = size;
-      node.anchor = anchor;
+  void onAdd() {
+    node = entity.tryGet<NodeTrait>()?.node;
+
+    if (node != null && node is PositionNode) {
+      final positionNode = node as PositionNode;
+      positionNode.position = position;
+      positionNode.scale = scale;
+      positionNode.angle = rotation;
+      positionNode.size = size;
+      positionNode.anchor = anchor;
+      positionNode.priority = priority;
     }
   }
 }

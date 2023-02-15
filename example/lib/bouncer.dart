@@ -11,7 +11,7 @@ import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
 
 /// Marker trait for entities that can be bounced.
-class BouncerTrait extends ATrait {
+class BouncerTrait extends Trait {
   final Vector2 direction;
   final double speed;
 

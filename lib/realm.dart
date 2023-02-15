@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
+import 'package:backbone/entity.dart';
 import 'package:backbone/iterable.dart';
 import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
@@ -9,7 +10,6 @@ import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/message.dart';
-import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
@@ -17,24 +17,24 @@ import 'package:flutter/cupertino.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
-/// Realm is the main entry point for all backbone systems
-/// You can have multiple realm in your game
+/// Realm is the main entry point for all backbone systems.
+/// You can have multiple realm in your game.
 class Realm extends Component with HasGameRef {
   int nextUniqueId = 0;
 
-  /// Get a unique id for this wolrd instance
-  /// ID's are only unqiue by realm
+  /// Get a unique id for this world instance.
+  /// IDs are only unqiue within a realm.
   int getNextUniqueId() => nextUniqueId++;
 
-  /// All type of trais registered in this Realm
+  /// All registered trait types within this realm.
   late final HashSet<Type> registeredTraits;
 
-  /// Nodes sorted into lists by their archetype
-  late final HashMap<Archetype, List<ANode>> archetypeBuckets;
+  /// Entities sorted into buckets based on their archetype.
+  late final HashMap<Archetype, List<Entity>> archetypeBuckets;
   late final List<Archetype> archetypeBucketsKeys;
-  late final List<List<ANode>> archetypeBucketsValues;
+  late final List<List<Entity>> archetypeBucketsValues;
   final List<Archetype> nonEmptyBucketKeys = [];
-  final List<List<ANode>> nonEmptyBucketValues = [];
+  final List<List<Entity>> nonEmptyBucketValues = [];
 
   /// List of all registered systems
   late final List<System> systems;
@@ -45,9 +45,6 @@ class Realm extends Component with HasGameRef {
 
   /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
-
-  /// Map of nodes sorted by their type
-  final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
 
   /// Current frame number being processed
   int frame = 0;
@@ -203,38 +200,34 @@ class Realm extends Component with HasGameRef {
         force: force);
   }
 
-  // Traits and nodes
-  /// Remove a node from a bucket
-  void removeNodeFromBuckets(ANode node) {
+  // Traits and entities
+  /// Remove an entity from a bucket
+  void removeFromBuckets(Entity entity) {
     // Remove the trait from the existing archetype storage
-    final currentBucket = node.bucket;
-    if (currentBucket != null) {
-      final currentBucketList = archetypeBuckets[currentBucket]!;
-      currentBucketList.remove(node);
-      node.bucket = null;
+    final currentBucket = entity.archetype;
+    final currentBucketList = archetypeBuckets[currentBucket]!;
+    currentBucketList.remove(entity);
 
-      // also remove from the non-emmpty bucket cache
-      final index = nonEmptyBucketKeys.indexOf(currentBucket);
-      if (index != -1) {
-        // check if it's actually empty now
-        if (nonEmptyBucketValues[index].isEmpty) {
-          nonEmptyBucketKeys.removeAt(index);
-          nonEmptyBucketValues.removeAt(index);
-        }
+    // also remove from the non-empty bucket cache
+    final index = nonEmptyBucketKeys.indexOf(currentBucket);
+    if (index != -1) {
+      // check if it's actually empty now
+      if (nonEmptyBucketValues[index].isEmpty) {
+        nonEmptyBucketKeys.removeAt(index);
+        nonEmptyBucketValues.removeAt(index);
       }
     }
   }
 
-  /// Push a node into an existing archetype
-  void putNodeIntoBucket(ANode node) {
+  /// Push an entity into an existing archetype
+  void putIntoBucket(Entity entity) {
     // Add the trait to the new archetype storage
-    final archetype = node.archetype;
+    final archetype = entity.archetype;
     if (archetype.length > 0) {
       if (archetypeBuckets.containsKey(archetype) == false) {
         throw Exception('Archetype $archetype is not registered');
       }
-      archetypeBuckets[archetype]!.add(node);
-      node.bucket = archetype;
+      archetypeBuckets[archetype]!.add(entity);
 
       // if necessary add to the non-empty bucket cache
       final index = nonEmptyBucketKeys.indexOf(archetype);
@@ -245,72 +238,64 @@ class Realm extends Component with HasGameRef {
     }
   }
 
-  /// Add a node to a Realm
-  void registerNode<N extends ANode>(N node) {
-    assert(node.isBackboneMounted == true,
-        'Add the node to the realm via add or addAll. Do not call registerNode');
-    final type = node.runtimeType;
-    if (nodesByType.containsKey(type) == false) {
-      nodesByType[type] = HashSet();
-    }
-    nodesByType[type]!.add(node);
-    putNodeIntoBucket(node);
+  /// Allocate a new entity.
+  /// This entity will be added to the realm.
+  Entity newEntity() {
+    return Entity(this);
   }
 
-  /// Remove an existing node from the realm
-  void removeNode<N extends ANode>(N node) {
-    final type = node.runtimeType;
-    if (!nodesByType.containsKey(type)) {
-      throw Exception('No nodes of type $type were ever added');
+  /// Remove an entity from the realm.
+  bool removeEntity(Entity entity) {
+    if (entity.realm == this) {
+      removeFromBuckets(entity);
+      return true;
     }
-    nodesByType[type]!.remove(node);
-    node.realm = this;
-
-    removeNodeFromBuckets(node);
+    return false;
   }
 
-  /// Addd a trait to an existing node
-  void addTraitToNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.realm != this) {
+  /// Add a trait to an existing entity.
+  void addTrait<C extends Trait>(C trait, Entity entity) {
+    if (entity.realm != this) {
       throw Exception(
-          'Node $node is not in this realm. It was added to another realm');
+          'Entity $entity doesn\'t exist in this realm.');
     }
-    if (trait.node != null && trait.node != node) {
+    if (trait.entity != entity) {
       throw Exception(
-          'Trait $trait is already added to another node ${trait.node}');
+          'Trait $trait is already added to another entity ${trait.entity}');
     }
 
-    removeNodeFromBuckets(node);
-    putNodeIntoBucket(node);
+    removeFromBuckets(entity);
+    entity.traits.add(trait);
+    putIntoBucket(entity);
+    trait.entity = entity;
+    trait.onAdd();
   }
 
-  /// Remove a trait from an existing node
-  void removeTraitFromNode<C extends ATrait, N extends ANode>(C trait, N node) {
-    if (node.realm != this) {
+  /// Remove a trait from an existing entity.
+  void removeTrait<C extends Trait>(C trait, Entity entity) {
+    if (entity.realm != this) {
       throw Exception(
-          'Node $node is not in this realm. It was added to another realm');
+          'Entity $entity doesn\'t exist in this realm.');
     }
 
-    removeNodeFromBuckets(node);
-    putNodeIntoBucket(node);
+    removeFromBuckets(entity);
+    entity.traits.remove(trait);
+    putIntoBucket(entity);
+    trait.onRemove();
   }
 
   // Query
-  /// Query the realm for a list of nodes
-  MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
-      {bool onlyLoaded = false}) {
-    List<List<ANode>> result = [];
+  /// Query the realm for a list of entities that match the filter.
+  /// This operation is O(n) where n is the number of Archetypes (combination of possible traits).
+  MultiIterableView<Entity> query<F extends Filter>(F filter) {
+    List<List<Entity>> result = [];
     final length = nonEmptyBucketKeys.length;
     for (var i = 0; i < length; i++) {
       final archetype = nonEmptyBucketKeys[i];
-      final nodes = nonEmptyBucketValues[i];
+      final entities = nonEmptyBucketValues[i];
 
-      if (nodes.isNotEmpty && filter.matches(archetype)) {
-        if (onlyLoaded) {
-          result.add(nodes.where((node) => node.isLoaded).toList());
-        } else {
-          result.add(nodes);
-        }
+      if (entities.isNotEmpty && filter.matches(archetype)) {
+        result.add(entities);
       }
     }
     return MultiIterableView(result);

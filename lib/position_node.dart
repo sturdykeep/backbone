@@ -7,10 +7,16 @@ import 'package:flame/components.dart';
 /// child components or nodes to be placed relative to the parent.
 /// Using this node requires you to register TransformTrait with your
 /// realm!
-class PositionNode extends PositionComponent with HasGameRef, ANode {
-  TransformTrait get transformTrait => get<TransformTrait>();
+class PositionNode extends PositionComponent with HasGameRef, Node {
+  late TransformTrait transformTrait;
 
   PositionNode({TransformTrait? transformTrait}) {
-    addTrait(transformTrait ?? TransformTrait());
+    this.transformTrait = transformTrait ?? TransformTrait();
+  }
+
+  @override
+  void onMount() {
+    super.onMount();
+    entity!.add(transformTrait);
   }
 }

@@ -9,7 +9,7 @@ import 'package:backbone/trait.dart';
 import 'package:example/bouncer.dart';
 import 'package:flame/components.dart';
 
-class BouncerCounterTrait extends ATrait {}
+class BouncerCounterTrait extends Trait {}
 
 class BouncerCounterNode extends PositionNode {
   BouncerCounterNode()

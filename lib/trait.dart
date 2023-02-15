@@ -1,12 +1,11 @@
-import 'package:backbone/node.dart';
+import 'package:backbone/entity.dart';
 
 /// Basic class for all traits.
-abstract class ATrait {
-  ANode? node;
+abstract class Trait {
+  late Entity entity;
 
-  /// Called when the trait is added to a node
-  void onAdd(ANode node) {}
-
-  /// Called when the trait is removed from a node
-  void onRemove(ANode node) {}
+  /// Called when the trait is added to an entity.
+  void onAdd() {}
+  /// Called when the trait is removed from an entity.
+  void onRemove() {}
 }

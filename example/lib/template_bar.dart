@@ -7,13 +7,13 @@ import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
 
 /// Used to react on game resize events
-class GameResizeTrait extends ATrait {
+class GameResizeTrait extends Trait {
   final VoidCallback resized;
   GameResizeTrait(this.resized);
 }
 
 /// Used to find nodes that spawn dragBoxes, like a tag
-class TemplateSpawnerTrait extends ATrait {}
+class TemplateSpawnerTrait extends Trait {}
 
 class TemplateBar extends PositionNode {
   static const double space = 80;

@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
+import 'package:backbone/entity.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:backbone/realm.dart';
@@ -45,7 +46,7 @@ class RealmBuilder {
 
   Realm build() {
     var possibleArchetypes = Archetype.allCombinations(registeredTraits);
-    var archetypeBuckets = HashMap<Archetype, List<ANode>>();
+    var archetypeBuckets = HashMap<Archetype, List<Entity>>();
     for (var archetype in possibleArchetypes) {
       archetypeBuckets[archetype] = [];
     }

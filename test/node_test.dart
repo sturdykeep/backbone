@@ -10,12 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'test_game.dart';
 
-class IntComponent extends ATrait {
+class IntComponent extends Trait {
   final int value;
   IntComponent(this.value);
 }
 
-class StringTrait extends ATrait {
+class StringTrait extends Trait {
   final String value;
   StringTrait(this.value);
 }
@@ -151,11 +151,11 @@ void main() {
       final anotherrealmsNodeTrait = StringTrait('SturdyKeep rocks!');
       anotherrealmsNode.addTrait(anotherrealmsNodeTrait);
       expect(
-          () => realm.addTraitToNode<IntComponent, TestNode>(
+          () => realm.addTrait<IntComponent, TestNode>(
               IntComponent(5), anotherrealmsNode),
           throwsA(isA<Exception>()));
       expect(
-          () => realm.removeTraitFromNode<StringTrait, TestNode>(
+          () => realm.removeTrait<StringTrait, TestNode>(
               anotherrealmsNodeTrait, anotherrealmsNode),
           throwsA(isA<Exception>()));
       expect(node.traits.isEmpty, true);

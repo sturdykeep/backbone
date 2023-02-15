@@ -10,13 +10,13 @@ class TestNode extends ComponentNode {
   TestNode() : super();
 }
 
-class TestComponentA extends ATrait {}
+class TestComponentA extends Trait {}
 
-class TestComponentB extends ATrait {}
+class TestComponentB extends Trait {}
 
-class TestComponentC extends ATrait {}
+class TestComponentC extends Trait {}
 
-class TestComponentD extends ATrait {}
+class TestComponentD extends Trait {}
 
 void main() {
   group('Query', () {
@@ -220,7 +220,7 @@ void main() {
       result = realm.query(Has([TestComponentA]));
       expect(result.length, 1);
       final multiIterator =
-          (result.iterator as MultiIterableViewIterator<ANode>);
+          (result.iterator as MultiIterableViewIterator<Node>);
       expect(multiIterator.totalLength, 1);
       result = realm.query(HasAny([TestComponentA, TestComponentC]));
       expect(result.length, 1);

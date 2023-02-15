@@ -13,11 +13,11 @@ class Selection {
   bool Function(Pointer pointer)? onGlobalDeslect;
 
   /// The currently selected nodes.
-  final List<ANode> nodes = [];
+  final List<Node> nodes = [];
 
   /// Adds a node to the selection.
   /// Returns true, if the node was successfuly selected.
-  bool add(ANode node, {Pointer? pointer}) {
+  bool add(Node node, {Pointer? pointer}) {
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
       if (trait.selected == false) {
@@ -35,7 +35,7 @@ class Selection {
   /// Removes a node from the selection.
   /// Returns true if the node was removed, false otherwise.
   /// If the node was not in the selection, it will return false.
-  bool remove(ANode node, {Pointer? pointer}) {
+  bool remove(Node node, {Pointer? pointer}) {
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
       if (trait.selected == true) {
@@ -59,8 +59,8 @@ class Selection {
 
   /// Replace the current selection with a new selection.
   /// Returns true if the selection was successfuly replaced.
-  bool replace(List<ANode> newSelection, {Pointer? pointer}) {
-    final newSelectionResults = <ANode>[];
+  bool replace(List<Node> newSelection, {Pointer? pointer}) {
+    final newSelectionResults = <Node>[];
     for (final node in newSelection) {
       final trait = node.tryGet<SelectableTrait>();
       if (trait != null) {
@@ -89,7 +89,7 @@ class Selection {
   }
 }
 
-class SelectableTrait extends ATrait {
+class SelectableTrait extends Trait {
   /// Whether this node is currently selected.
   bool selected = false;
 
@@ -104,7 +104,7 @@ class SelectableTrait extends ATrait {
 
 /// A system to ensure SelectableTrait nodes also have a TappableTrait.
 void ensureSelectableNodesAreTappable(Realm realm) {
-  final toChange = <ANode>[];
+  final toChange = <Node>[];
   final query = realm.query(And([
     Has([SelectableTrait]),
     Without([TappableTrait])
@@ -131,7 +131,7 @@ void selectableSystem(Realm realm) {
       input.pressed(LogicalKeyboardKey.metaRight);
   bool somethingGotSelected = false;
   for (final event in tappable.justReleased) {
-    final node = event.node;
+    final node = event.transform;
     final trait = node.tryGet<SelectableTrait>();
     if (trait != null) {
       if (ctrlPressed) {

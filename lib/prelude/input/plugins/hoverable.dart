@@ -4,7 +4,7 @@ import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 
-class HoverableTrait extends ATrait {
+class HoverableTrait extends Trait {
   final void Function(Pointer pointer)? onHoverEnter;
   final void Function(Pointer pointer)? onHoverExit;
   final void Function(Pointer pointer)? onHoverMove;
