@@ -1,3 +1,5 @@
+// ignore_for_file: must_call_super
+
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/events.dart';
@@ -22,8 +24,7 @@ import 'package:flutter/widgets.dart';
 
 /// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
 /// It automatically hooks up the input events to the [Realm].
-mixin HasRealm
-    on KeyboardEvents {
+mixin HasRealm on KeyboardEvents {
   late Realm realm;
   bool realmReady = false;
 

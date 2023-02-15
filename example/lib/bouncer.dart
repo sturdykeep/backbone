@@ -11,12 +11,16 @@ import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
 
 /// Marker trait for entities that can be bounced.
-class BouncerTrait extends ATrait {}
+class BouncerTrait extends ATrait {
+  final Vector2 direction;
+  final double speed;
+
+  BouncerTrait(this.direction, this.speed);
+}
 
 class BouncerNode extends PositionNode {
   final Color color;
-  final Vector2 direction;
-  final double speed;
+
   var oldColor = Colors.white;
   var hovered = false;
   var selected = false;
@@ -36,8 +40,8 @@ class BouncerNode extends PositionNode {
   BouncerNode(
     Vector2 size,
     this.color,
-    this.direction,
-    this.speed,
+    Vector2 direction,
+    double speed,
   ) : super(
           transformTrait: TransformTrait()..size = size,
         ) {
@@ -82,7 +86,10 @@ class BouncerNode extends PositionNode {
     );
     addTrait(selectableTrait);
 
-    addTrait(BouncerTrait());
+    addTrait(BouncerTrait(
+      direction,
+      speed,
+    ));
   }
 
   @override
