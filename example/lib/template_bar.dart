@@ -45,8 +45,8 @@ class TemplateBar extends PositionNode {
   }
 
   TemplateBar(Vector2 screenSize) {
-    addTrait(GameResizeTrait(setPositionAndSize));
-    addTrait(TemplateSpawnerTrait());
+    entity.add(GameResizeTrait(setPositionAndSize));
+    entity.add(TemplateSpawnerTrait());
     setPositionAndSize(screenSize: screenSize);
   }
 

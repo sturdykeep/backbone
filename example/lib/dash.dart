@@ -14,8 +14,8 @@ class DashNode extends PositionNode {
           transformTrait: TransformTrait()..size = Vector2(35, 35),
         ) {
     final spriteTrait = SpriteTrait();
-    addTrait(spriteTrait);
-    addTrait(BouncerTrait(
+    entity.add(spriteTrait);
+    entity.add(BouncerTrait(
       direction,
       speed,
     ));
@@ -23,7 +23,7 @@ class DashNode extends PositionNode {
 
   @override
   FutureOr<void> onLoad() async {
-    final spriteTrait = get<SpriteTrait>();
+    final spriteTrait = entity.get<SpriteTrait>();
     spriteTrait.sprite = await gameRef.loadSprite('dash.png');
     add(SpriteComponent(sprite: spriteTrait.sprite));
     return super.onLoad();

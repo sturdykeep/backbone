@@ -2,12 +2,12 @@ import 'dart:math';
 
 import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/bouncer_counter.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
-import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +16,7 @@ import 'template_bar.dart';
 import 'messages.dart';
 
 class MainGame extends FlameGame
-    with
-        HasTappableComponents,
-        HasDraggableComponents,
-        KeyboardEvents,
-        HasRealm {
+    with HasTappableComponents, HasDraggableComponents, HasRealm {
   @override
   Future<void> onLoad() async {
     realm = RealmBuilder()
@@ -56,6 +52,7 @@ class MainGame extends FlameGame
     }
     realm.add(TemplateBar(size));
     realm.add(BouncerCounterNode());
+    realm.getResource<Input>().debugMode = true;
     realmReady = true;
   }
 

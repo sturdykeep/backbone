@@ -77,7 +77,7 @@ void tapSpawnSystem(Realm realm) {
             200.0 + 200.0 * rng.nextDouble());
       }
 
-      bouncer.get<TransformTrait>().position = pointer.position;
+      bouncer.transformTrait.position = pointer.position;
       realm.add(bouncer);
     }
   }

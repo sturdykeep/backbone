@@ -45,6 +45,7 @@ void hoverableSystem(Realm realm) {
         hoverable.pointers.add(hoverEnter);
         foundHoverEnters.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': hoverEnter,
         });
@@ -58,6 +59,7 @@ void hoverableSystem(Realm realm) {
         hoverable.pointers.add(hover);
         foundHoverEnters.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': hover,
         });
@@ -70,6 +72,7 @@ void hoverableSystem(Realm realm) {
         hoverable.pointers.remove(hoverLeave);
         foundHoverExits.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': hoverLeave,
         });
@@ -85,6 +88,7 @@ void hoverableSystem(Realm realm) {
           (pointer.isPointerAdded || pointer.isHovering)) {
         foundHoverMoves.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': pointer,
         });
@@ -92,6 +96,7 @@ void hoverableSystem(Realm realm) {
         hoverable.pointers.remove(pointer);
         foundHoverExits.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': pointer,
         });
@@ -106,6 +111,7 @@ void hoverableSystem(Realm realm) {
         hoverable.pointers.add(pendingHover);
         foundHoverEnters.add({
           'entity': entity,
+          'transform': transformTrait,
           'hoverable': hoverable,
           'pointer': pendingHover,
         });
@@ -115,7 +121,7 @@ void hoverableSystem(Realm realm) {
 
   // Call the callbacks based on the node's priority
   final foundHoverEntersSorted = (foundHoverEnters.toList()
-        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+        ..sort((a, b) => a["transform"].compareToOnPriority(b["transform"])))
       .reversed;
   for (final found in foundHoverEntersSorted) {
     final hoverable = found["hoverable"];
@@ -123,7 +129,7 @@ void hoverableSystem(Realm realm) {
   }
 
   final foundHoverExitsSorted = (foundHoverExits.toList()
-        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+        ..sort((a, b) => a["transform"].compareToOnPriority(b["transform"])))
       .reversed;
   for (final found in foundHoverExitsSorted) {
     final hoverable = found["hoverable"];
@@ -131,7 +137,7 @@ void hoverableSystem(Realm realm) {
   }
 
   final foundHoverMovesSorted = (foundHoverMoves.toList()
-        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+        ..sort((a, b) => a["transform"].compareToOnPriority(b["transform"])))
       .reversed;
   for (final found in foundHoverMovesSorted) {
     final hoverable = found["hoverable"];

@@ -24,17 +24,14 @@ import 'package:flutter/widgets.dart';
 
 /// A mixin that allows you to add a SINGLE [Realm] to your [FlameGame].
 /// It automatically hooks up the input events to the [Realm].
-mixin HasRealm on KeyboardEvents {
+mixin HasRealm on FlameGame {
   late Realm realm;
   bool realmReady = false;
 
-  @override
-  KeyEventResult onKeyEvent(
-      RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+  bool onKeyEvent(KeyEvent event) {
     if (realmReady) {
-      realm.getResource<Input>().onKeyEvent(event, keysPressed);
+      return realm.getResource<Input>().onKeyEvent(event);
     }
-    super.onKeyEvent(event, keysPressed);
-    return KeyEventResult.handled;
+    return false;
   }
 }

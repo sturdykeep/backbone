@@ -2,6 +2,7 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class BackboneGameWidget<T extends HasRealm> extends StatefulWidget {
@@ -71,12 +72,14 @@ class _BackboneGameWidgetState<T extends HasRealm>
     extends State<BackboneGameWidget<T>> {
   _BackboneGameWidgetState() {
     GestureBinding.instance.pointerRouter.addGlobalRoute(_handleEvent);
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   @override
   void dispose() {
     super.dispose();
     GestureBinding.instance.pointerRouter.removeGlobalRoute(_handleEvent);
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   void _handleEvent(PointerEvent event) {
@@ -94,6 +97,11 @@ class _BackboneGameWidgetState<T extends HasRealm>
     } else if (event is PointerUpEvent) {
       widget.game.realm.getResource<Input>().onPointerUp(event);
     }
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (widget.game.realmReady == false) return false;
+    return widget.game.onKeyEvent(event);
   }
 
   @override

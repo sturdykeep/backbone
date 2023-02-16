@@ -11,10 +11,13 @@ import 'package:flame/components.dart';
 mixin Node on HasGameRef {
   /// Realm of the node, null if not yet added to a realm.
   Realm? realm;
+
   /// Entity of the node, null if not yet added to a realm.
-  Entity? entity;
+  final Entity entity = Entity();
+
   /// Archetype of the underlying entity.
   Archetype get archetype => entity?.archetype ?? Archetype([]);
+
   /// Whether the node is mounted to a realm.
   bool get isMountedToRealm => realm != null;
 
@@ -24,15 +27,14 @@ mixin Node on HasGameRef {
     super.onMount();
     realm = findRealmParent();
     assert(realm != null, 'Node must be a child of a realm');
-    entity = realm!.newEntity();
-    entity!.add(NodeTrait(this));
+    realm!.addEntity(entity);
+    entity.add(NodeTrait(this));
   }
 
   @override
   void onRemove() {
     super.onRemove();
-    realm!.removeEntity(entity!);
-    entity = null;
+    realm!.removeEntity(entity);
   }
 
   // Methods

@@ -98,16 +98,16 @@ void draggableSystem(Realm realm) {
 
   // Call the callbacks based on the node's priority
   final foundDragStartsSorted = (foundDragStarts.toList()
-        ..sort((a, b) => a["node"].compareToOnPriority(b["node"])))
+        ..sort((a, b) => a["entity"].compareToOnPriority(b["entity"])))
       .reversed;
   for (final dragStart in foundDragStartsSorted) {
-    final node = dragStart["node"];
-    final draggable = node.get<DraggableTrait>();
+    final Entity entity = dragStart["entity"];
+    final draggable = entity.get<DraggableTrait>();
     final pointer = dragStart["pointer"];
     if (pointer.handled) continue; // Otherwise we would override the
     final offset = dragStart["offset"];
     final payload = draggable.onStart!(pointer, offset);
-    assert(payload == null || (pointer.handled && payload != null),
+    assert(payload == null || pointer.handled,
         'You need to mark the pointer as handled to use it, if you provide a payload. Set pointer.handled = true!');
     if (pointer.handled) {
       pointer.payload = payload;

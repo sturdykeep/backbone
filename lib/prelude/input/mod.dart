@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 
 void inputPlugin(RealmBuilder builder) {
   builder.withSystem(longDownSystem);
+  builder.withSystem(keyboardSystem);
 
   // Hover
   builder
@@ -227,9 +228,8 @@ class Input {
     }
   }
 
-  void onKeyEvent(
-    RawKeyEvent event,
-    Set<LogicalKeyboardKey> keysPressed,
+  bool onKeyEvent(
+    KeyEvent event,
   ) {
     // Check `event` to create or update the key state
     final logicalKey = event.logicalKey;
@@ -240,27 +240,22 @@ class Input {
     final existingKey = _keyStates.firstWhere((key) => key.key == logicalKey);
 
     // Based on the existing state of the key, change it to `justPressed`, `pressed` or `justReleased`
-    if (event is RawKeyDownEvent) {
-      if (existingKey.state == BackboneKeyState.justReleased) {
+    if (event is KeyDownEvent) {
+      if (existingKey.state == BackboneKeyState.dead ||
+          existingKey.state == BackboneKeyState.justReleased) {
         existingKey.updateState(BackboneKeyState.justPressed);
         _debugPrint(
             "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justPressed} from ${event.runtimeType}");
-      } else if (existingKey.state == BackboneKeyState.justPressed) {
-        existingKey.updateState(BackboneKeyState.pressed);
-        _debugPrint(
-            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.pressed} from ${event.runtimeType}");
       }
-    } else if (event is RawKeyUpEvent) {
-      if (existingKey.state == BackboneKeyState.justPressed) {
-        existingKey.updateState(BackboneKeyState.justReleased);
-        _debugPrint(
-            "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justReleased} from ${event.runtimeType}");
-      } else if (existingKey.state == BackboneKeyState.pressed) {
+    } else if (event is KeyUpEvent) {
+      if (existingKey.state == BackboneKeyState.pressed ||
+          existingKey.state == BackboneKeyState.justPressed) {
         existingKey.updateState(BackboneKeyState.justReleased);
         _debugPrint(
             "Key (${existingKey.key.debugName}) -> ${BackboneKeyState.justReleased} from ${event.runtimeType}");
       }
     }
+    return true;
   }
 
   void clear() {
@@ -303,6 +298,10 @@ class Input {
   }
 
   // Keyboard API
+  List<BackboneKey> keys() {
+    return _keyStates;
+  }
+
   bool justPressed(LogicalKeyboardKey key) {
     if (_keyStates.any((keyState) => keyState.key == key) == false) {
       return false;

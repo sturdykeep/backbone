@@ -29,7 +29,7 @@ class Template extends PositionNode {
         startingPosition = transformTrait.position;
         dragOffset = offset;
         pointer.handled = true;
-        return DraggablePointerPayload(this, null);
+        return DraggablePointerPayload(entity!, null);
       },
       onUpdate: (pointer) {
         PositionComponent? parentAsPosition;
@@ -57,7 +57,7 @@ class Template extends PositionNode {
         pointer.handled = true;
       },
     );
-    addTrait(draggableTrait);
+    entity.add(draggableTrait);
   }
 
   @override

@@ -1,4 +1,3 @@
-
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:flame/components.dart';
@@ -17,6 +16,6 @@ class PositionNode extends PositionComponent with HasGameRef, Node {
   @override
   void onMount() {
     super.onMount();
-    entity!.add(transformTrait);
+    entity.add(transformTrait);
   }
 }

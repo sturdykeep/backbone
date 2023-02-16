@@ -14,8 +14,8 @@ class BouncerCounterTrait extends Trait {}
 class BouncerCounterNode extends PositionNode {
   BouncerCounterNode()
       : super(transformTrait: TransformTrait()..position = Vector2(10, 10)) {
-    addTrait(TextTrait());
-    addTrait(BouncerCounterTrait());
+    entity.add(TextTrait());
+    entity.add(BouncerCounterTrait());
   }
 
   @override

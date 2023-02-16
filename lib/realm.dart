@@ -238,10 +238,14 @@ class Realm extends Component with HasGameRef {
     }
   }
 
-  /// Allocate a new entity.
-  /// This entity will be added to the realm.
-  Entity newEntity() {
-    return Entity(this);
+  /// Register an entity in the realm.
+  /// You cannot register an entity twice.
+  void addEntity(Entity entity) {
+    if (entity.realm != null) {
+      throw Exception('Entity $entity is already registered in a realm.');
+    }
+    entity.realm = this;
+    putIntoBucket(entity);
   }
 
   /// Remove an entity from the realm.
@@ -255,9 +259,9 @@ class Realm extends Component with HasGameRef {
 
   /// Add a trait to an existing entity.
   void addTrait<C extends Trait>(C trait, Entity entity) {
+    trait.entity = entity;
     if (entity.realm != this) {
-      throw Exception(
-          'Entity $entity doesn\'t exist in this realm.');
+      throw Exception('Entity $entity doesn\'t exist in this realm.');
     }
     if (trait.entity != entity) {
       throw Exception(
@@ -267,15 +271,13 @@ class Realm extends Component with HasGameRef {
     removeFromBuckets(entity);
     entity.traits.add(trait);
     putIntoBucket(entity);
-    trait.entity = entity;
     trait.onAdd();
   }
 
   /// Remove a trait from an existing entity.
   void removeTrait<C extends Trait>(C trait, Entity entity) {
     if (entity.realm != this) {
-      throw Exception(
-          'Entity $entity doesn\'t exist in this realm.');
+      throw Exception('Entity $entity doesn\'t exist in this realm.');
     }
 
     removeFromBuckets(entity);

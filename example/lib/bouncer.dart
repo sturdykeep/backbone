@@ -53,7 +53,7 @@ class BouncerNode extends PositionNode {
         }
       },
     );
-    addTrait(tappableTrait);
+    entity.add(tappableTrait);
 
     oldColor = color;
     // Receive hover
@@ -67,7 +67,7 @@ class BouncerNode extends PositionNode {
         currentPaint.color = colorFromFlags();
       },
     );
-    addTrait(hoverableTrait);
+    entity.add(hoverableTrait);
 
     // Selectable trait
     final selectableTrait = SelectableTrait(
@@ -84,9 +84,9 @@ class BouncerNode extends PositionNode {
         return true;
       },
     );
-    addTrait(selectableTrait);
+    entity.add(selectableTrait);
 
-    addTrait(BouncerTrait(
+    entity.add(BouncerTrait(
       direction,
       speed,
     ));
