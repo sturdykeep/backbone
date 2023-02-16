@@ -82,15 +82,15 @@ class Input {
   void onPointerHover(PointerHoverEvent event) {
     // Update an existing hover or update a hover enter
     final pointerHoverStart = _pointers.firstWhereOrNull(
-        (p) => p.state is PointerStateAdded && p.pointerId == event.device);
+        (p) => p.state is PointerStateAdded && p.deviceId == event.device);
     if (pointerHoverStart != null) {
       pointerHoverStart.pushState(PointerStateHover(event));
 
       _debugPrint(
-          "PointerAdded:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
+          "${pointerHoverStart.history.last.debugName}:${pointerHoverStart.id} -> Hover (${pointerHoverStart.position})");
     } else {
       final pointerHover = _pointers.firstWhereOrNull(
-          (p) => p.state is PointerStateHover && p.pointerId == event.pointer);
+          (p) => p.state is PointerStateHover && p.id == event.pointer);
       final state = PointerStateHover(event);
       _hoverEvents.add(state);
       if (pointerHover != null) {
@@ -100,7 +100,8 @@ class Input {
         final pointer = Pointer(state);
         _pointers.add(pointer);
         _pendingHovers.add(pointer);
-        _debugPrint("New Hover:${pointer.id} ${pointer.position}");
+        _debugPrint(
+            "New ${pointer.state.debugName}:${pointer.id} ${pointer.position}");
       }
     }
   }
@@ -112,13 +113,14 @@ class Input {
     final pointer = Pointer(state);
     _pointers.add(pointer);
     _pendingHovers.add(pointer);
-    _debugPrint("New PointerAdded:${pointer.id} (${pointer.position})");
+    _debugPrint(
+        "New ${pointer.state.debugName}:${pointer.id} (${pointer.position})");
   }
 
   void onPointerRemoved(PointerRemovedEvent event) {
     // Update an existing hover or hover enter pointer
     final leavingPointer = _pointers.firstWhere((pointer) =>
-        pointer.pointerId == event.pointer &&
+        pointer.id == event.pointer &&
         (pointer.state is PointerStateHover ||
             pointer.state is PointerStateAdded));
     final state = PointerStateRemoved(event);
@@ -126,7 +128,7 @@ class Input {
     leavingPointer.pushState(state);
     _pendingHovers.remove(leavingPointer);
     _debugPrint(
-        "${leavingPointer.history.last is PointerStateHover ? "Hover" : "PointerAdded"}:${leavingPointer.id} -> PointerRemoved (${event.position.toVector2()})");
+        "${leavingPointer.history.last.debugName}:${leavingPointer.id} -> ${leavingPointer.state.debugName} (${event.position.toVector2()})");
   }
 
   void onPointerDown(PointerDownEvent event) {
@@ -144,12 +146,13 @@ class Input {
       hoveringPointer.pushState(state);
       _pendingHovers.remove(hoveringPointer);
       _debugPrint(
-          "Hover:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> Down (${hoveringPointer.position})");
+          "${hoveringPointer.history.last.debugName}:${hoveringPointer.id} (${(hoveringPointer.history.last as PointerStateHover).raw.position}) -> ${hoveringPointer.state.debugName} (${hoveringPointer.position})");
     } else {
       // Create a new pointer
       final pointer = Pointer(state);
       _pointers.add(pointer);
-      _debugPrint("New PointerDown:${pointer.id} (${pointer.position})");
+      _debugPrint(
+          "New ${pointer.state.debugName}:${pointer.id} (${pointer.position})");
     }
   }
 
@@ -158,14 +161,13 @@ class Input {
     // finish a drag
     final pointer = _pointers.firstWhereOrNull(
       (pointer) =>
-          (pointer.state is PointerStateDown &&
-              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateDown && pointer.id == event.pointer) ||
           (pointer.state is PointerStateLongDown &&
-              pointer.pointerId == event.pointer) ||
+              pointer.id == event.pointer) ||
           (pointer.state is PointerStateDragStart &&
-              pointer.pointerId == event.pointer) ||
+              pointer.id == event.pointer) ||
           (pointer.state is PointerStateDragUpdate &&
-              pointer.pointerId == event.pointer),
+              pointer.id == event.pointer),
     );
     if (pointer != null) {
       if (pointer.state is PointerStateDragStart ||
@@ -174,13 +176,13 @@ class Input {
         _dragEnds.add(state);
         pointer.pushState(state);
         _debugPrint(
-            "${pointer.state.debugName}:${pointer.id} -> DragEnd (${event.position.toVector2()})");
+            "${pointer.history.last.debugName}:${pointer.id} -> ${pointer.state.debugName} (${event.position.toVector2()})");
       } else {
         final state = PointerStateUp(event);
         _tapUps.add(state);
         pointer.pushState(state);
         _debugPrint(
-            "${pointer.history.last.debugName}:${pointer.id} -> Up (${event.position.toVector2()})");
+            "${pointer.history.last.debugName}:${pointer.id} -> ${pointer.state.debugName} (${event.position.toVector2()})");
       }
     } else {
       assert(pointer != null,
@@ -193,31 +195,30 @@ class Input {
     // or updates a drag if the pointer is already dragging
     final pointer = _pointers.firstWhereOrNull(
       (pointer) =>
-          (pointer.state is PointerStateDown &&
-              pointer.pointerId == event.pointer) ||
+          (pointer.state is PointerStateDown && pointer.id == event.pointer) ||
           (pointer.state is PointerStateLongDown &&
-              pointer.pointerId == event.pointer),
+              pointer.id == event.pointer),
     );
     final dragPointer = _pointers.firstWhereOrNull(
       (pointer) =>
           (pointer.state is PointerStateDragStart &&
-              pointer.pointerId == event.pointer) ||
+              pointer.id == event.pointer) ||
           (pointer.state is PointerStateDragUpdate &&
-              pointer.pointerId == event.pointer),
+              pointer.id == event.pointer),
     );
     if (pointer != null) {
       final state = PointerStateDragStart(event);
       _dragStarts.add(state);
       pointer.pushState(state);
       _debugPrint(
-          "${pointer.history.last is PointerStateDown ? "Down" : "LongDown"}:${pointer.id} -> DragStart (${event.position})");
+          "${pointer.history.last.debugName}:${pointer.id} -> ${pointer.state.debugName} (${event.position})");
     } else if (dragPointer != null) {
       final state = PointerStateDragUpdate(event);
       if (dragPointer.state is PointerStateDragStart) {
         _dragUpdates.add(state);
         dragPointer.pushState(state);
         _debugPrint(
-            "DragStart:${dragPointer.id} -> DragUpdate (${event.position})");
+            "${dragPointer.history.last.debugName}:${dragPointer.id} -> ${dragPointer.state.debugName} (${event.position})");
       } else {
         _dragUpdates.add(state);
         dragPointer.replaceStateIfIs(state);
@@ -415,7 +416,7 @@ class Input {
     final tapDowns = _tapDowns;
     return _pointers.where((pointer) =>
         pointer.isDown &&
-        tapDowns.any((tapDown) => tapDown.pointerId == pointer.pointerId));
+        tapDowns.any((tapDown) => tapDown.pointerId == pointer.id));
   }
 
   bool pointerJustDown(int id) {
@@ -424,7 +425,7 @@ class Input {
 
   void clearJustDownPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _tapDowns.removeWhere((tapDown) => tapDown.pointerId == pointer.pointerId);
+    _tapDowns.removeWhere((tapDown) => tapDown.pointerId == pointer.id);
   }
 
   // - LongTapDown
@@ -432,8 +433,7 @@ class Input {
     final longTapDowns = _longTapDowns;
     return _pointers.where((pointer) =>
         pointer.isLongDown &&
-        longTapDowns
-            .any((longTapDown) => longTapDown.pointerId == pointer.pointerId));
+        longTapDowns.any((longTapDown) => longTapDown.pointerId == pointer.id));
   }
 
   bool pointerJustLongDown(int id) {
@@ -442,16 +442,15 @@ class Input {
 
   void clearJustLongDownPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _longTapDowns.removeWhere(
-        (longTapDown) => longTapDown.pointerId == pointer.pointerId);
+    _longTapDowns
+        .removeWhere((longTapDown) => longTapDown.pointerId == pointer.id);
   }
 
   // - TapUp
   Iterable<Pointer> justTapUpPointers() {
     final tapUps = _tapUps;
     return _pointers.where((pointer) =>
-        pointer.isUp &&
-        tapUps.any((tapUp) => tapUp.pointerId == pointer.pointerId));
+        pointer.isUp && tapUps.any((tapUp) => tapUp.pointerId == pointer.id));
   }
 
   bool pointerJustUp(int id) {
@@ -460,7 +459,7 @@ class Input {
 
   void clearJustUpPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _tapUps.removeWhere((tapUp) => tapUp.pointerId == pointer.pointerId);
+    _tapUps.removeWhere((tapUp) => tapUp.pointerId == pointer.id);
   }
 
   // - TapCancel
@@ -468,8 +467,7 @@ class Input {
     final tapCancels = _tapCancels;
     return _pointers.where((pointer) =>
         pointer.isUp &&
-        tapCancels
-            .any((tapCancel) => tapCancel.pointerId == pointer.pointerId));
+        tapCancels.any((tapCancel) => tapCancel.pointerId == pointer.id));
   }
 
   bool pointerJustCancel(int id) {
@@ -478,8 +476,7 @@ class Input {
 
   void clearJustCancelPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _tapCancels
-        .removeWhere((tapCancel) => tapCancel.pointerId == pointer.pointerId);
+    _tapCancels.removeWhere((tapCancel) => tapCancel.pointerId == pointer.id);
   }
 
   // - HoverEnter
@@ -488,7 +485,7 @@ class Input {
     return _pointers.where((pointer) =>
         pointer.isPointerAdded &&
         hoverEnters
-            .any((hoverEnter) => hoverEnter.device == pointer.pointerId));
+            .any((hoverEnter) => hoverEnter.deviceId == pointer.deviceId));
   }
 
   bool pointerJustHoverEnter(int id) {
@@ -498,7 +495,7 @@ class Input {
   void clearJustHoverEnterPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
     _pointerAddedEvents
-        .removeWhere((hoverEnter) => hoverEnter.device == pointer.pointerId);
+        .removeWhere((hoverEnter) => hoverEnter.deviceId == pointer.deviceId);
   }
 
   // - Hover
@@ -506,7 +503,7 @@ class Input {
     final hovers = _hoverEvents;
     return _pointers.where((pointer) =>
         pointer.isHovering &&
-        hovers.any((hover) => hover.device == pointer.pointerId));
+        hovers.any((hover) => hover.deviceId == pointer.deviceId));
   }
 
   bool pointerJustHover(int id) {
@@ -515,7 +512,7 @@ class Input {
 
   void clearJustHoverPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _hoverEvents.removeWhere((hover) => hover.device == pointer.pointerId);
+    _hoverEvents.removeWhere((hover) => hover.deviceId == pointer.deviceId);
   }
 
   // - HoverLeave
@@ -524,7 +521,7 @@ class Input {
     return _pointers.where((pointer) =>
         pointer.isPointerRemoved &&
         hoverLeaves
-            .any((hoverLeave) => hoverLeave.device == pointer.pointerId));
+            .any((hoverLeave) => hoverLeave.deviceId == pointer.deviceId));
   }
 
   bool pointerJustHoverLeave(int id) {
@@ -534,7 +531,7 @@ class Input {
   void clearJustHoverLeavePointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
     _pointerRemovedEvents
-        .removeWhere((hoverLeave) => hoverLeave.device == pointer.pointerId);
+        .removeWhere((hoverLeave) => hoverLeave.deviceId == pointer.deviceId);
   }
 
   // - DragStart
@@ -542,8 +539,7 @@ class Input {
     final dragStarts = _dragStarts;
     return _pointers.where((pointer) =>
         (pointer.isDragStart || pointer.wasDragStart) &&
-        dragStarts
-            .any((dragStart) => dragStart.pointerId == pointer.pointerId));
+        dragStarts.any((dragStart) => dragStart.pointerId == pointer.id));
   }
 
   bool pointerJustDragStart(int id) {
@@ -552,8 +548,7 @@ class Input {
 
   void clearJustDragStartPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _dragStarts
-        .removeWhere((dragStart) => dragStart.pointerId == pointer.pointerId);
+    _dragStarts.removeWhere((dragStart) => dragStart.pointerId == pointer.id);
   }
 
   // - DragUpdate
@@ -561,8 +556,7 @@ class Input {
     final dragUpdates = _dragUpdates;
     return _pointers.where((pointer) =>
         pointer.isDragUpdate &&
-        dragUpdates
-            .any((dragUpdate) => dragUpdate.pointerId == pointer.pointerId));
+        dragUpdates.any((dragUpdate) => dragUpdate.pointerId == pointer.id));
   }
 
   bool pointerJustDragUpdate(int id) {
@@ -572,7 +566,7 @@ class Input {
   void clearJustDragUpdatePointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
     _dragUpdates
-        .removeWhere((dragUpdate) => dragUpdate.pointerId == pointer.pointerId);
+        .removeWhere((dragUpdate) => dragUpdate.pointerId == pointer.id);
   }
 
   // - DragEnd
@@ -580,7 +574,7 @@ class Input {
     final dragEnds = _dragEnds;
     return _pointers.where((pointer) =>
         pointer.isDragEnd &&
-        dragEnds.any((dragEnd) => dragEnd.pointerId == pointer.pointerId));
+        dragEnds.any((dragEnd) => dragEnd.pointerId == pointer.id));
   }
 
   bool pointerJustDragEnd(int id) {
@@ -589,7 +583,7 @@ class Input {
 
   void clearJustDragEndPointer(int id) {
     final pointer = _pointers.firstWhere((pointer) => pointer.id == id);
-    _dragEnds.removeWhere((dragEnd) => dragEnd.pointerId == pointer.pointerId);
+    _dragEnds.removeWhere((dragEnd) => dragEnd.pointerId == pointer.id);
   }
 
   // High-level Pointer API

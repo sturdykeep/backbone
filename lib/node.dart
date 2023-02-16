@@ -16,7 +16,7 @@ mixin Node on HasGameRef {
   final Entity entity = Entity();
 
   /// Archetype of the underlying entity.
-  Archetype get archetype => entity?.archetype ?? Archetype([]);
+  Archetype get archetype => entity.archetype;
 
   /// Whether the node is mounted to a realm.
   bool get isMountedToRealm => realm != null;

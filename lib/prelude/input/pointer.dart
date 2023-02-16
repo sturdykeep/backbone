@@ -9,9 +9,15 @@ import 'package:flutter/gestures.dart';
 class Pointer {
   PointerState state;
   // Grab from current state, or last state that has an underlaying event
-  int get id => state.pointerId ?? history.lastWhere((s) => s.pointerId != null).pointerId!;
-  Vector2 get startPosition => history.isNotEmpty ? history.first.position! : state.position!;
-  PointerDeviceKind get kind => state.kind ?? history.lastWhere((s) => s.kind != null).kind!;
+  int get id =>
+      state.pointerId ??
+      history.lastWhere((s) => s.pointerId != null).pointerId!;
+  Vector2 get startPosition =>
+      history.isNotEmpty ? history.first.position! : state.position!;
+  PointerDeviceKind get kind =>
+      state.kind ?? history.lastWhere((s) => s.kind != null).kind!;
+  int get deviceId =>
+      state.deviceId ?? history.lastWhere((s) => s.deviceId != null).deviceId!;
   final List<PointerState> history = [];
   dynamic payload;
 
@@ -74,26 +80,6 @@ class Pointer {
     return game.camera.screenToWorld(afterViewport);
   }
 
-  /// Internal representation of a Flame or Flutter pointers.
-  int get pointerId {
-    if (state is PointerStateTimeout) {
-      // Search for the last hover or pointer add event
-      if (history.any((state) => state is PointerStateHover)) {
-        return (history.lastWhere((state) => state is PointerStateHover)
-                as PointerStateHover)
-            .pointerId!;
-      } else if (history.any((state) => state is PointerStateAdded)) {
-        return (history.lastWhere((state) => state is PointerStateAdded)
-                as PointerStateAdded)
-            .pointerId!;
-      } else {
-        return id;
-      }
-    } else {
-      return id;
-    }
-  }
-
   bool get handled {
     return state.handled;
   }
@@ -141,10 +127,9 @@ class PointerState {
   final PointerEvent? rawPointerEvent;
   final DateTime timestamp = DateTime.now();
 
-  Vector2? get position =>
-      rawPointerEvent?.position.toVector2();
+  Vector2? get position => rawPointerEvent?.position.toVector2();
   int? get pointerId => rawPointerEvent?.pointer;
-  int? get device => rawPointerEvent?.device;
+  int? get deviceId => rawPointerEvent?.device;
   PointerDeviceKind? get kind => rawPointerEvent?.kind;
 
   // Handled
@@ -156,44 +141,37 @@ class PointerState {
 }
 
 class PointerStateDown extends PointerState {
-  PointerStateDown(PointerDownEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateDown(PointerDownEvent raw) : super(rawPointerEvent: raw);
   PointerDownEvent get raw => rawPointerEvent as PointerDownEvent;
 }
 
 class PointerStateLongDown extends PointerState {
-  PointerStateLongDown(PointerDownEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateLongDown(PointerDownEvent raw) : super(rawPointerEvent: raw);
   PointerDownEvent get raw => rawPointerEvent as PointerDownEvent;
 }
 
 class PointerStateUp extends PointerState {
-  PointerStateUp(PointerUpEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateUp(PointerUpEvent raw) : super(rawPointerEvent: raw);
   PointerUpEvent get raw => rawPointerEvent as PointerUpEvent;
 }
 
 class PointerStateCancelled extends PointerState {
-  PointerStateCancelled(PointerCancelEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateCancelled(PointerCancelEvent raw) : super(rawPointerEvent: raw);
   PointerCancelEvent get raw => rawPointerEvent as PointerCancelEvent;
 }
 
 class PointerStateDragStart extends PointerState {
-  PointerStateDragStart(PointerMoveEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateDragStart(PointerMoveEvent raw) : super(rawPointerEvent: raw);
   PointerMoveEvent get raw => rawPointerEvent as PointerMoveEvent;
 }
 
 class PointerStateDragUpdate extends PointerState {
-  PointerStateDragUpdate(PointerMoveEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateDragUpdate(PointerMoveEvent raw) : super(rawPointerEvent: raw);
   PointerMoveEvent get raw => rawPointerEvent as PointerMoveEvent;
 }
 
 class PointerStateDragEnd extends PointerState {
-  PointerStateDragEnd(PointerUpEvent raw)
-      : super(rawPointerEvent: raw);
+  PointerStateDragEnd(PointerUpEvent raw) : super(rawPointerEvent: raw);
   PointerUpEvent get raw => rawPointerEvent as PointerUpEvent;
 }
 
