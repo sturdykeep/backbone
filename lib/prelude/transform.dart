@@ -111,12 +111,32 @@ class TransformTrait extends Trait {
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
 
   bool containsPoint(Vector2 point) {
-    final localPoint = inverseTransformMatrix.transform2(point);
-    return localRect.contains(localPoint.toOffset());
+    if (node == null) {
+      final localPoint = inverseTransformMatrix.transform2(point);
+      return localRect.contains(localPoint.toOffset());
+    } else {
+      return node!.containsPoint(point);
+    }
   }
 
   int compareToOnPriority(TransformTrait other) {
     return priority.compareTo(other.priority);
+  }
+
+  Vector2 worldPosition() {
+    if (node == null) {
+      return position;
+    } else {
+      // Find the first parent, which is a PositionComponent
+      var parent = node!.parent;
+      while (parent != null) {
+        if (parent is PositionComponent) {
+          return parent.absolutePositionOf(position);
+        }
+        parent = parent.parent;
+      }
+      return position;
+    }
   }
 
   @override

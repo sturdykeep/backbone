@@ -61,7 +61,7 @@ void draggableSystem(Realm realm) {
         if (draggable.onStart != null) {
           final offset =
               dragStart.worldPosition(realm.gameRef, fromState: state) -
-                  tranform.position;
+                  tranform.worldPosition();
           foundDragStarts.add({
             'entity': entity,
             'draggable': draggable,
