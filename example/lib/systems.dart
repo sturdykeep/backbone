@@ -85,7 +85,7 @@ void tapSpawnSystem(Realm realm) {
 
 void deleteRemoveSystem(Realm realm) {
   final selected = realm.getResource<Selection>();
-  final toRemove = selected.nodes.toList();
+  final toRemove = selected.entities.toList();
   final input = realm.getResource<Input>();
   if (input.justPressed(LogicalKeyboardKey.delete)) {
     for (final node in toRemove) {

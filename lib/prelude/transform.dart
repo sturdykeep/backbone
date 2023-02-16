@@ -1,4 +1,5 @@
 import 'package:backbone/builders.dart';
+import 'package:backbone/entity.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
@@ -106,6 +107,7 @@ class TransformTrait extends Trait {
       ..scale(scale.x, scale.y)
       ..translate(-origin.x, -origin.y);
   }
+
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
 
   bool containsPoint(Vector2 point) {
@@ -115,19 +117,6 @@ class TransformTrait extends Trait {
 
   int compareToOnPriority(TransformTrait other) {
     return priority.compareTo(other.priority);
-  }
-
-  // Convert current local position to global (world) coordinate space.
-  Vector2 absolutePosition(Node node) {
-    // Find the first parent, which is a PositionComponent
-    var parent = node.parent;
-    while (parent != null) {
-      if (parent is PositionComponent) {
-        return parent.absolutePositionOf(position);
-      }
-      parent = parent.parent;
-    }
-    return position;
   }
 
   @override

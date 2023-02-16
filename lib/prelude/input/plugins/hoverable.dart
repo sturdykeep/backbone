@@ -1,6 +1,7 @@
 import 'package:backbone/filter.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
+import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 
@@ -33,15 +34,17 @@ void hoverableSystem(Realm realm) {
   final foundHoverExits = [];
   final foundHoverMoves = [];
 
-  for (final node in query) {
-    final hoverable = node.get<HoverableTrait>();
+  for (final entity in query) {
+    final hoverable = entity.get<HoverableTrait>();
+    final transformTrait = entity.get<TransformTrait>();
 
     // Check hover enters
     for (var hoverEnter in hoverEnters) {
-      if (node.containsPoint(hoverEnter.worldPosition(realm.gameRef))) {
+      if (transformTrait
+          .containsPoint(hoverEnter.worldPosition(realm.gameRef))) {
         hoverable.pointers.add(hoverEnter);
         foundHoverEnters.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': hoverEnter,
         });
@@ -50,11 +53,11 @@ void hoverableSystem(Realm realm) {
 
     // Check hover moves which aren't in the pointer list
     for (var hover in hovers) {
-      if (node.containsPoint(hover.worldPosition(realm.gameRef)) &&
+      if (transformTrait.containsPoint(hover.worldPosition(realm.gameRef)) &&
           hoverable.pointers.contains(hover) == false) {
         hoverable.pointers.add(hover);
         foundHoverEnters.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': hover,
         });
@@ -66,7 +69,7 @@ void hoverableSystem(Realm realm) {
       if (hoverable.pointers.contains(hoverLeave)) {
         hoverable.pointers.remove(hoverLeave);
         foundHoverExits.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': hoverLeave,
         });
@@ -78,17 +81,17 @@ void hoverableSystem(Realm realm) {
     // 2. Check if the pointer not being in the hover mode anymore
     final pointers = hoverable.pointers.toList();
     for (var pointer in pointers) {
-      if (node.containsPoint(pointer.worldPosition(realm.gameRef)) &&
+      if (transformTrait.containsPoint(pointer.worldPosition(realm.gameRef)) &&
           (pointer.isPointerAdded || pointer.isHovering)) {
         foundHoverMoves.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': pointer,
         });
       } else {
         hoverable.pointers.remove(pointer);
         foundHoverExits.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': pointer,
         });
@@ -97,11 +100,12 @@ void hoverableSystem(Realm realm) {
 
     // Check pending hovers for pointers not yet in the list
     for (var pendingHover in pendingHovers) {
-      if (node.containsPoint(pendingHover.worldPosition(realm.gameRef)) &&
+      if (transformTrait
+              .containsPoint(pendingHover.worldPosition(realm.gameRef)) &&
           hoverable.pointers.contains(pendingHover) == false) {
         hoverable.pointers.add(pendingHover);
         foundHoverEnters.add({
-          'node': node,
+          'entity': entity,
           'hoverable': hoverable,
           'pointer': pendingHover,
         });

@@ -53,8 +53,9 @@ class CapturedTappableEvent {
   final Pointer pointer;
   final TransformTrait transform;
   final TappableTrait trait;
+  final Entity entity;
 
-  CapturedTappableEvent(this.pointer, this.transform, this.trait);
+  CapturedTappableEvent(this.pointer, this.transform, this.trait, this.entity);
 }
 
 TappableSystemResult tappableSystem(Realm realm) {
@@ -90,7 +91,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(tapStart.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(tapStart, transform, tappable);
+        final event =
+            CapturedTappableEvent(tapStart, transform, tappable, entity);
         foundTapStarts.add(event);
       }
       if (found == false) {
@@ -103,7 +105,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(longTapStart.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(longTapStart, transform, tappable);
+        final event =
+            CapturedTappableEvent(longTapStart, transform, tappable, entity);
         foundLongTapStarts.add(event);
       }
       if (found == false) {
@@ -116,7 +119,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(tapEnd.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(tapEnd, transform, tappable);
+        final event =
+            CapturedTappableEvent(tapEnd, transform, tappable, entity);
         foundTapEnds.add(event);
       }
       if (found == false) {
@@ -129,7 +133,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(tapCancel.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(tapCancel, transform, tappable);
+        final event =
+            CapturedTappableEvent(tapCancel, transform, tappable, entity);
         foundTapCancels.add(event);
       }
       if (found == false) {
@@ -142,7 +147,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(pressed.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(pressed, transform, tappable);
+        final event =
+            CapturedTappableEvent(pressed, transform, tappable, entity);
         foundJustPressed.add(event);
       }
       if (found == false) {
@@ -155,7 +161,7 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(press.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(press, transform, tappable);
+        final event = CapturedTappableEvent(press, transform, tappable, entity);
         foundPressed.add(event);
       }
       if (found == false) {
@@ -168,7 +174,8 @@ TappableSystemResult tappableSystem(Realm realm) {
       bool found = false;
       if (transform.containsPoint(released.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(released, transform, tappable);
+        final event =
+            CapturedTappableEvent(released, transform, tappable, entity);
         foundJustReleased.add(event);
       }
       if (found == false) {

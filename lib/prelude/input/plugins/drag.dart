@@ -1,3 +1,4 @@
+import 'package:backbone/entity.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
@@ -9,7 +10,7 @@ import 'package:backbone/trait.dart';
 import 'package:flame/extensions.dart';
 
 class DraggablePointerPayload {
-  final Node initiator;
+  final Entity initiator;
   final dynamic data;
 
   DraggablePointerPayload(this.initiator, this.data);
@@ -44,9 +45,9 @@ void draggableSystem(Realm realm) {
   final query = realm.query(Has([DraggableTrait]));
   final foundDragStarts = [];
 
-  for (final node in query) {
-    final draggable = node.get<DraggableTrait>();
-    final tranform = node.tryGet<TransformTrait>();
+  for (final entity in query) {
+    final draggable = entity.get<DraggableTrait>();
+    final tranform = entity.get<TransformTrait>();
 
     // Check drag starts
     for (var dragStart in dragStarts) {
@@ -56,14 +57,13 @@ void draggableSystem(Realm realm) {
           orElse: () =>
               throw 'Tap down event not found for the drag start position correction');
       final point = dragStart.worldPosition(realm.gameRef, fromState: state);
-      if (node.containsPoint(point)) {
+      if (tranform.containsPoint(point)) {
         if (draggable.onStart != null) {
-          final offset = tranform != null
-              ? dragStart.worldPosition(realm.gameRef, fromState: state) -
-                  tranform.absolutePosition(node)
-              : Vector2.zero();
+          final offset =
+              dragStart.worldPosition(realm.gameRef, fromState: state) -
+                  tranform.position;
           foundDragStarts.add({
-            'node': node,
+            'entity': entity,
             'draggable': draggable,
             'pointer': dragStart,
             'offset': offset,
@@ -76,7 +76,8 @@ void draggableSystem(Realm realm) {
     for (var dragUpdate in dragUpdates) {
       if (dragUpdate.payload == null) continue;
 
-      if ((dragUpdate.payload as DraggablePointerPayload?)?.initiator == node) {
+      if ((dragUpdate.payload as DraggablePointerPayload?)?.initiator ==
+          entity) {
         if (draggable.onUpdate != null) {
           draggable.onUpdate!(dragUpdate);
         }
@@ -87,7 +88,7 @@ void draggableSystem(Realm realm) {
     for (var dragEnd in dragEnds) {
       if (dragEnd.payload == null) continue;
 
-      if ((dragEnd.payload as DraggablePointerPayload?)?.initiator == node) {
+      if ((dragEnd.payload as DraggablePointerPayload?)?.initiator == entity) {
         if (draggable.onEnd != null) {
           draggable.onEnd!(dragEnd);
         }
@@ -123,12 +124,13 @@ void dragReceiverSystem(Realm realm) {
   if (dragEnds.isEmpty) return;
   final query = realm.query(Has([DragReceiverTrait]));
 
-  for (final node in query) {
-    final dragReceiver = node.get<DragReceiverTrait>();
+  for (final entity in query) {
+    final transform = entity.get<TransformTrait>();
+    final dragReceiver = entity.get<DragReceiverTrait>();
 
     // Check drag ends
     for (var dragEnd in dragEnds) {
-      if (node.containsPoint(dragEnd.worldPosition(realm.gameRef))) {
+      if (transform.containsPoint(dragEnd.worldPosition(realm.gameRef))) {
         final payload = dragEnd.payload as DraggablePointerPayload?;
         dragReceiver.onReceive(dragEnd, payload);
       }

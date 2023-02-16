@@ -1,3 +1,4 @@
+import 'package:backbone/entity.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
@@ -7,24 +8,24 @@ import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flutter/services.dart';
 
-/// Resource that holds a reference to [SelectableTrait] nodes, which
+/// Resource that holds a reference to [SelectableTrait] entities, which
 /// are currently selected.
 class Selection {
   bool Function(Pointer pointer)? onGlobalDeslect;
 
-  /// The currently selected nodes.
-  final List<Node> nodes = [];
+  /// The currently selected entities.
+  final List<Entity> entities = [];
 
-  /// Adds a node to the selection.
-  /// Returns true, if the node was successfuly selected.
-  bool add(Node node, {Pointer? pointer}) {
-    final trait = node.tryGet<SelectableTrait>();
+  /// Adds an entity to the selection.
+  /// Returns true, if the entity was successfuly selected.
+  bool add(Entity entity, {Pointer? pointer}) {
+    final trait = entity.tryGet<SelectableTrait>();
     if (trait != null) {
       if (trait.selected == false) {
         final shouldGetSelected = trait.onSelected?.call(pointer);
         if (shouldGetSelected == true) {
           trait.selected = true;
-          nodes.add(node);
+          entities.add(entity);
           return true;
         }
       }
@@ -32,17 +33,17 @@ class Selection {
     return false;
   }
 
-  /// Removes a node from the selection.
-  /// Returns true if the node was removed, false otherwise.
-  /// If the node was not in the selection, it will return false.
-  bool remove(Node node, {Pointer? pointer}) {
-    final trait = node.tryGet<SelectableTrait>();
+  /// Removes an entity from the selection.
+  /// Returns true if the entity was removed, false otherwise.
+  /// If the entity was not in the selection, it will return false.
+  bool remove(Entity entity, {Pointer? pointer}) {
+    final trait = entity.tryGet<SelectableTrait>();
     if (trait != null) {
       if (trait.selected == true) {
         final shouldGetDeselected = trait.onDeselected?.call(pointer);
         if (shouldGetDeselected == true) {
           trait.selected = false;
-          nodes.remove(node);
+          entities.remove(entity);
           return true;
         }
       }
@@ -52,37 +53,37 @@ class Selection {
 
   /// Clears the selection.
   void clear({Pointer? pointer}) {
-    for (final node in nodes.toList()) {
-      remove(node, pointer: pointer);
+    for (final entity in entities.toList()) {
+      remove(entity, pointer: pointer);
     }
   }
 
   /// Replace the current selection with a new selection.
   /// Returns true if the selection was successfuly replaced.
-  bool replace(List<Node> newSelection, {Pointer? pointer}) {
-    final newSelectionResults = <Node>[];
-    for (final node in newSelection) {
-      final trait = node.tryGet<SelectableTrait>();
+  bool replace(List<Entity> newSelection, {Pointer? pointer}) {
+    final newSelectionResults = <Entity>[];
+    for (final entity in newSelection) {
+      final trait = entity.tryGet<SelectableTrait>();
       if (trait != null) {
         if (trait.selected == false) {
           final shouldGetSelected = trait.onSelected?.call(pointer);
           if (shouldGetSelected == true) {
-            newSelectionResults.add(node);
+            newSelectionResults.add(entity);
           }
         }
       }
     }
 
-    // Deselect all nodes.
+    // Deselect all.
     if (newSelectionResults.isNotEmpty) {
       clear(pointer: pointer);
     }
 
-    // Select the new nodes.
-    for (final node in newSelectionResults) {
-      final trait = node.tryGet<SelectableTrait>()!;
+    // Select the new ones.
+    for (final entity in newSelectionResults) {
+      final trait = entity.tryGet<SelectableTrait>()!;
       trait.selected = true;
-      nodes.add(node);
+      entities.add(entity);
     }
 
     return newSelectionResults.isNotEmpty;
@@ -104,17 +105,17 @@ class SelectableTrait extends Trait {
 
 /// A system to ensure SelectableTrait nodes also have a TappableTrait.
 void ensureSelectableNodesAreTappable(Realm realm) {
-  final toChange = <Node>[];
+  final toChange = <Entity>[];
   final query = realm.query(And([
     Has([SelectableTrait]),
     Without([TappableTrait])
   ]));
-  for (final node in query) {
-    toChange.add(node);
+  for (final entity in query) {
+    toChange.add(entity);
   }
 
-  for (final node in toChange) {
-    node.addTrait(TappableTrait());
+  for (final entity in toChange) {
+    entity.add(TappableTrait());
   }
 }
 
@@ -131,18 +132,18 @@ void selectableSystem(Realm realm) {
       input.pressed(LogicalKeyboardKey.metaRight);
   bool somethingGotSelected = false;
   for (final event in tappable.justReleased) {
-    final node = event.transform;
-    final trait = node.tryGet<SelectableTrait>();
+    final entity = event.entity;
+    final trait = entity.tryGet<SelectableTrait>();
     if (trait != null) {
       if (ctrlPressed) {
         if (trait.selected) {
-          selection.remove(node, pointer: event.pointer);
+          selection.remove(entity, pointer: event.pointer);
         } else {
-          somethingGotSelected = selection.add(node, pointer: event.pointer);
+          somethingGotSelected = selection.add(entity, pointer: event.pointer);
         }
       } else {
         somethingGotSelected =
-            selection.replace([node], pointer: event.pointer);
+            selection.replace([entity], pointer: event.pointer);
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'package:backbone/filter.dart';
+import 'package:backbone/node.dart';
 import 'package:backbone/prelude/sprite/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -6,15 +7,16 @@ import 'package:flame/components.dart';
 
 /// Render Sprite- and SpriteAnimationComponent
 void spriteSystem(Realm realm) {
-  final realmQuery = realm.query(Has([SpriteTrait]), onlyLoaded: true);
+  final realmQuery = realm.query(Has([SpriteTrait]));
 
-  for (final node in realmQuery) {
-    final spriteTrait = node.get<SpriteTrait>();
+  for (final entity in realmQuery) {
+    final spriteTrait = entity.get<SpriteTrait>();
+    final node = entity.tryGet<NodeTrait>()?.node;
     if (spriteTrait.dirty) {
       final sprite = spriteTrait.sprite;
       final animation = spriteTrait.animationData;
-      if (sprite != null || animation != null) {
-        final transformTrait = node.tryGet<TransformTrait>();
+      if (node != null && (sprite != null || animation != null)) {
+        final transformTrait = entity.tryGet<TransformTrait>();
         // Search for a SpriteComponent in the tree
         if (animation == null) {
           final spriteComponents = node.findChildren<SpriteComponent>();

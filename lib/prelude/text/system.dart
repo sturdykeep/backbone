@@ -1,4 +1,5 @@
 import 'package:backbone/filter.dart';
+import 'package:backbone/node.dart';
 import 'package:backbone/prelude/text/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -13,9 +14,11 @@ void textSystem(Realm realm) {
   // If requested by the trait the text will zoom to 1 aka unzoom any current zoom
   final counterZoom = Vector2.all(cameraZoom + (-2.0 * (cameraZoom - 1.0)));
 
-  for (var node in query) {
-    final trait = node.get<TextTrait>();
-    if (trait.dirty) {
+  for (var entity in query) {
+    final node = entity.tryGet<NodeTrait>()?.node;
+    final trait = entity.get<TextTrait>();
+
+    if (node != null && trait.dirty) {
       final textChildList = node.findChildren<TextComponent>();
       if (textChildList.isNotEmpty) {
         final textChild = textChildList.first;
@@ -28,7 +31,7 @@ void textSystem(Realm realm) {
         }
 
         //Just transform
-        final transformTrait = node.get<TransformTrait>();
+        final transformTrait = entity.get<TransformTrait>();
         centerX() =>
             textChild.position.x = ((transformTrait.size.x - textSize.x) / 2);
         centerY() =>
