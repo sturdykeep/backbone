@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:backbone/builders.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/position_node.dart';
@@ -12,6 +14,7 @@ import 'package:flame/extensions.dart';
 /// - angle
 /// - size
 /// - anchor
+/// - priority
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
 }
@@ -19,21 +22,21 @@ void transformPlugin(RealmBuilder builder) {
 class TransformTrait extends Trait {
   Node? node;
 
-  Vector3 _position = Vector3.zero();
+  Vector2 _position = Vector2.zero();
   Vector2 _scale = Vector2.all(1.0);
   Vector2 _size = Vector2.zero();
   double _rotation = 0.0;
   Anchor _anchor = Anchor.topLeft;
+  int _priority = 0;
 
   // -- position
-  Vector3 get position => _position;
-  set position(Vector3 value) {
+  Vector2 get position => _position;
+  set position(Vector2 value) {
     if (_position != value) {
       _position = value;
       if (node != null && node is PositionNode) {
         final positionNode = node as PositionNode;
-        positionNode.position = value.xy;
-        positionNode.priority = value.z.toInt();
+        positionNode.position = value;
       }
     }
   }
@@ -82,6 +85,17 @@ class TransformTrait extends Trait {
     }
   }
 
+  // -- priority
+  int get priority => _priority;
+  set priority(int value) {
+    if (_priority != value) {
+      _priority = value;
+      if (node != null && node is PositionNode) {
+        (node as PositionNode).priority = value;
+      }
+    }
+  }
+
   // Utilities
   Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
 
@@ -97,6 +111,18 @@ class TransformTrait extends Trait {
   }
 
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
+
+  RSTransform get rstTransform {
+    final origin = anchor.toVector2()..multiply(size);
+    return RSTransform.fromComponents(
+      rotation: rotation,
+      scale: scale.x,
+      anchorX: origin.x * size.x,
+      anchorY: origin.y * size.y,
+      translateX: position.x,
+      translateY: position.y,
+    );
+  }
 
   Vector2 toLocal(Vector2 point) {
     final transforms = entity.findAllReverse<TransformTrait>();
@@ -124,23 +150,7 @@ class TransformTrait extends Trait {
   }
 
   int compareToOnPriority(TransformTrait other) {
-    return position.z.compareTo(other.position.z);
-  }
-
-  Vector2 worldPosition() {
-    if (node == null) {
-      return toWorld(position.xy);
-    } else {
-      // Find the first parent, which is a PositionComponent
-      var parent = node!.parent;
-      while (parent != null) {
-        if (parent is PositionComponent) {
-          return Vector3(parent.absolutePositionOf(position.xy));
-        }
-        parent = parent.parent;
-      }
-      return position;
-    }
+    return priority.compareTo(other.priority);
   }
 
   @override

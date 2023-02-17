@@ -61,7 +61,7 @@ void textSystem(Realm realm) {
           centerY();
           right();
         }
-        transformTrait.position += trait.padding.xyy;
+        transformTrait.position += trait.padding;
         transformTrait.scale = counterZoom;
       }
       trait.dirty = false;

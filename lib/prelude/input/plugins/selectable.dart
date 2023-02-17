@@ -1,6 +1,5 @@
 import 'package:backbone/entity.dart';
 import 'package:backbone/filter.dart';
-import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
