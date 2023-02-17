@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:backbone/builders.dart';
 import 'package:backbone/entity.dart';
 import 'package:backbone/pool.dart';
+import 'package:backbone/prelude/render/rectangle.dart';
 import 'package:backbone/prelude/render/system.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/transform.dart';
@@ -19,14 +20,18 @@ Short Explanation on Rendering
 ============================== */
 
 void renderPlugin(RealmBuilder builder) {
-  builder.withResource(PipelineRenderer, PipelineRenderer()..renderers = []);
+  final pipeline = PipelineRenderer()..renderers = [
+    RectangleRenderer(),
+  ];
+  builder.withResource(PipelineRenderer, pipeline);
   builder.withTrait(RenderTrait);
+  builder.withTrait(RectangleTrait);
   builder.withRenderSystem(pipelineRenderSystem);
 }
 
 /// Resource that includes the state of rendering.
 class PipelineRenderer {
-  late List<Renderer> renderers;
+  List<Renderer> renderers = [];
   Pool<Renderee> rendereePool = Pool<Renderee>(Renderee.empty, Renderee.reset);
 }
 

@@ -8,6 +8,7 @@ import 'package:example/bouncer.dart';
 import 'package:example/bouncer_counter.dart';
 import 'package:example/message_systems.dart';
 import 'package:example/systems.dart';
+import 'package:example/template.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class MainGame extends FlameGame
         .withTrait(BouncerTrait)
         .withTrait(GameResizeTrait)
         .withTrait(TemplateSpawnerTrait)
+        .withTrait(TemplateTrait)
         .withTrait(BouncerCounterTrait)
         .withSystem(bouncerCounterSystem)
         .withSystem(bounceSystem)

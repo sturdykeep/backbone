@@ -51,9 +51,9 @@ class TemplateBar extends PositionNode {
   }
 
   @override
-  FutureOr<void> onLoad() {
-    add(Template(getChildStartingPosition()));
-    return super.onLoad();
+  void onMount() {
+    super.onMount();
+    buildTemplate(realm!, this, getChildStartingPosition());
   }
 
   @override

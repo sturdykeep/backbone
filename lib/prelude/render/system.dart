@@ -42,7 +42,8 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // Now do rendering in batches until all renderees are rendered
   while (renderees.isNotEmpty) {
     final renderer = renderees.first.renderer!;
-    final batch = renderees.takeWhile((renderee) => renderee.renderer == renderer);
+    final batch = renderees.takeWhile((renderee) => renderee.renderer == renderer)
+      .toList();
     renderer.render(batch, realm, canvas);
     
     // Remove and free the renderees that were rendered
