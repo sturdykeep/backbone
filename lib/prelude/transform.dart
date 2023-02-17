@@ -1,5 +1,4 @@
 import 'package:backbone/builders.dart';
-import 'package:backbone/entity.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
@@ -13,7 +12,6 @@ import 'package:flame/extensions.dart';
 /// - angle
 /// - size
 /// - anchor
-/// - priority
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(TransformTrait);
 }
@@ -21,20 +19,21 @@ void transformPlugin(RealmBuilder builder) {
 class TransformTrait extends Trait {
   Node? node;
 
-  Vector2 _position = Vector2.zero();
+  Vector3 _position = Vector3.zero();
   Vector2 _scale = Vector2.all(1.0);
   Vector2 _size = Vector2.zero();
   double _rotation = 0.0;
   Anchor _anchor = Anchor.topLeft;
-  int _priority = 0;
 
   // -- position
-  Vector2 get position => _position;
-  set position(Vector2 value) {
+  Vector3 get position => _position;
+  set position(Vector3 value) {
     if (_position != value) {
       _position = value;
       if (node != null && node is PositionNode) {
-        (node as PositionNode).position = value;
+        final positionNode = node as PositionNode;
+        positionNode.position = value.xy;
+        positionNode.priority = value.z.toInt();
       }
     }
   }
@@ -83,17 +82,6 @@ class TransformTrait extends Trait {
     }
   }
 
-  // -- priority
-  int get priority => _priority;
-  set priority(int value) {
-    if (_priority != value) {
-      _priority = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).priority = value;
-      }
-    }
-  }
-
   // Utilities
   Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
 
@@ -110,28 +98,44 @@ class TransformTrait extends Trait {
 
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
 
-  bool containsPoint(Vector2 point) {
-    if (node == null) {
-      final localPoint = inverseTransformMatrix.transform2(point);
-      return localRect.contains(localPoint.toOffset());
-    } else {
-      return node!.containsPoint(point);
+  Vector2 toLocal(Vector2 point) {
+    final transforms = entity.findAllReverse<TransformTrait>();
+    final localPoint = point;
+    for (final transform in transforms) {
+      final inverse = transform.inverseTransformMatrix;
+      localPoint.setFrom(inverse.transform2(localPoint));
     }
+    return localPoint;
+  }
+
+  Vector2 toWorld(Vector2 point) {
+    final transforms = entity.findAll<TransformTrait>();
+    final worldPoint = point;
+    for (final transform in transforms) {
+      final matrix = transform.transformMatrix;
+      worldPoint.setFrom(matrix.transform2(worldPoint));
+    }
+    return worldPoint;
+  }
+
+  bool containsPoint(Vector2 point) {
+    final localPoint = toLocal(point);
+    return localRect.contains(localPoint.toOffset());
   }
 
   int compareToOnPriority(TransformTrait other) {
-    return priority.compareTo(other.priority);
+    return position.z.compareTo(other.position.z);
   }
 
   Vector2 worldPosition() {
     if (node == null) {
-      return position;
+      return toWorld(position.xy);
     } else {
       // Find the first parent, which is a PositionComponent
       var parent = node!.parent;
       while (parent != null) {
         if (parent is PositionComponent) {
-          return parent.absolutePositionOf(position);
+          return Vector3(parent.absolutePositionOf(position.xy));
         }
         parent = parent.parent;
       }

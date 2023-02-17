@@ -43,6 +43,9 @@ class Realm extends Component with HasGameRef {
   /// List of all messages systems
   late final List<MessageSystem> messageSystems;
 
+  // List of all render systems
+  final List<RenderSystem> renderSystems;
+
   /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
 
@@ -54,7 +57,7 @@ class Realm extends Component with HasGameRef {
 
   /// Create a new Realm and provide the traids, ???, systems, messages and resources
   Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
-      this.messageSystems, this.resources) {
+      this.messageSystems, this.renderSystems, this.resources) {
     archetypeBucketsKeys = archetypeBuckets.keys.toList();
     archetypeBucketsValues = archetypeBuckets.values.toList();
     addResource(Time());
@@ -392,6 +395,15 @@ class Realm extends Component with HasGameRef {
     if (logPerformanceData) {
       Log.logPerformance('Render',
           DateTime.now().difference(renderStart).inMilliseconds.toString());
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    // Render the systems
+    for (final system in renderSystems) {
+      system(this, canvas);
     }
   }
 }

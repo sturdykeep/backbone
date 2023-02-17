@@ -1,0 +1,2 @@
+Texture - just a 2D image, that will be mapped on a surface or drawn directly. You load textures from disk and apply them to sprites.
+Sprite - an in-game object that can be drawn on the screen. It can be a simple rectangle, or a complex object with many vertices. A texture or a shader is usually applied to a sprite.

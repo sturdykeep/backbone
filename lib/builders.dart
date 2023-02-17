@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/entity.dart';
-import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:backbone/realm.dart';
 
@@ -21,6 +20,7 @@ class RealmBuilder {
   // Systems
   final List<System> systems = [];
   final List<MessageSystem> messageSystems = [];
+  final List<RenderSystem> renderSystems = [];
   RealmBuilder withSystem(System system) {
     systems.add(system);
     return this;
@@ -28,6 +28,11 @@ class RealmBuilder {
 
   RealmBuilder withMessageSystem(MessageSystem system) {
     messageSystems.add(system);
+    return this;
+  }
+
+  RealmBuilder withRenderSystem(RenderSystem system) {
+    renderSystems.add(system);
     return this;
   }
 
@@ -56,6 +61,7 @@ class RealmBuilder {
       archetypeBuckets,
       systems,
       messageSystems,
+      renderSystems,
       resources,
     );
   }
