@@ -3,9 +3,11 @@ import 'dart:math';
 
 import 'package:charts_painter/chart.dart';
 import 'package:flutter/material.dart';
-import 'package:prefmon/core/backbone_worker.dart';
+import 'package:prefmon/core/debug_data_model.dart';
 import 'package:prefmon/globals.dart';
+import 'package:prefmon/model/prefmon_events.dart';
 import 'package:prefmon/widget/simple_state.dart';
+import 'package:provider/provider.dart';
 
 class Statistics extends StatefulWidget {
   const Statistics({Key? key}) : super(key: key);
@@ -66,8 +68,8 @@ class _StatisticsState extends State<Statistics> {
   final List<int> _renderTimes = [];
   @override
   void initState() {
-    Globals.worker.callback = _events;
     Globals.worker.logCallback = _logs;
+    context.read<DebugDataHandler>().callbacks.add(_events);
     super.initState();
   }
 
