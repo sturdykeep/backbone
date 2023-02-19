@@ -1,38 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:prefmon/core/debug_data_model.dart';
+import 'package:prefmon/core/prefmon_data_mapper.dart';
 import 'package:prefmon/core/settings.dart';
-
-abstract class PrefMonEvent {}
-
-class PrefMonDataEvent extends PrefMonEvent {
-  final String category;
-  final String data;
-
-  PrefMonDataEvent(this.category, this.data);
-
-  @override
-  String toString() {
-    return "$category->$data";
-  }
-}
-
-class Starting extends PrefMonEvent {}
-
-class Stopped extends PrefMonEvent {}
-
-typedef PrefMonMessageCallback = void Function(PrefMonEvent event);
-typedef LogCallback = void Function(String message);
+import 'package:prefmon/model/prefmon_events.dart';
 
 class BackboneWorker {
   final _settings = Settings();
   late Process _flutterRunner;
-  PrefMonMessageCallback? callback;
   LogCallback? logCallback;
   static const String startTag = 'prefmon:';
   static const String endTag = ':prefmon';
+  final DebugDataHandler dataHandler;
 
-  BackboneWorker();
+  BackboneWorker(this.dataHandler);
 
   void start() async {
     final pathToYaml = File(_settings.pathToProject!);
@@ -45,36 +27,36 @@ class BackboneWorker {
       workingDirectory: workingDir,
       runInShell: Platform.isWindows || Platform.isLinux,
     );
-    _flutterRunner.exitCode.then((value) => callback?.call(Stopped()));
+    _flutterRunner.exitCode.then((value) {
+      for (var callback in dataHandler.callbacks) {
+        callback.call(Stopped());
+      }
+    });
     final encoding = utf8.decoder;
-    callback?.call(Starting());
+    log(Starting(), force: true);
     _flutterRunner.stdout.listen((event) {
       final messages = encoding.convert(event);
-      LineSplitter ls = const LineSplitter();
-      for (var message in ls.convert(messages)) {
-        final start = message.indexOf(startTag);
-        if (start >= 0) {
-          final end = message.lastIndexOf(endTag);
-          if (end >= 0) {
-            final prefMonData = message.substring(start + startTag.length, end);
-            final parts = prefMonData.split('->');
-            final category = parts.first;
-            final data = parts.last;
-            callback?.call(PrefMonDataEvent(category, data));
-          }
-        } else {
-          logCallback?.call(message);
-        }
+      final dataEvent = PrefmonDataMapper.parse(messages);
+      if (dataEvent != null) {
+        log(dataEvent);
       }
     });
     _flutterRunner.stderr.listen((event) {
       final message = encoding.convert(event);
-      logCallback?.call('ERROR:$message');
+      logCallback?.call('ERROR: $message');
     });
+  }
+
+  void log(PrefMonEvent data, {bool force = false}) {
+    if (force || dataHandler.source == DataSource.console) {
+      for (var callback in dataHandler.callbacks) {
+        callback.call(data);
+      }
+    }
   }
 
   void stop() {
     _flutterRunner.kill();
-    callback?.call(Stopped());
+    log(Stopped(), force: true);
   }
 }
