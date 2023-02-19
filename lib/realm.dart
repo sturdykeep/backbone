@@ -381,10 +381,18 @@ class Realm extends Component with HasGameRef {
         }
       }
     }
-
+    final cleanInputStart = DateTime.now();
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
+    if (logPerformanceData) {
+      Log.logSystemPerformance(
+        "cleanInput",
+        null,
+        DateTime.now().difference(cleanInputStart).inMilliseconds,
+      );
+    }
+
     // Update the frame count
     frame += 1;
     if (logPerformanceData) {
