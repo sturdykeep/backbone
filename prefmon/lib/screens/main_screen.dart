@@ -56,9 +56,6 @@ class _MainScreenState extends State<MainScreen>
               onPressed: () {
                 if (_settings.flutterCommand != null &&
                     _settings.pathToProject != null) {
-                  //TODO parse yaml file
-                  //TODO start project via isolat
-                  //TODO render times for system and messages
                   _toggleState();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(

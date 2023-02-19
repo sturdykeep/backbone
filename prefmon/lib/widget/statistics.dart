@@ -225,8 +225,11 @@ class _StatisticsState extends State<Statistics> {
     }
     if (_noData()) {
       return const SimpleState(
-          text: 'Waiting for data', icon: Icons.build_sharp);
+        text: 'Waiting for data',
+        icon: Icons.build_sharp,
+      );
     }
+
     return Stack(
       children: [
         Padding(
@@ -237,10 +240,11 @@ class _StatisticsState extends State<Statistics> {
                 )
               : Chart<ProcessedSystemData>(
                   state: ChartState(
-                    ChartData.fromList(
+                    data: ChartData.fromList(
                         _avgTimesBySystem()
                             .map((e) => ChartItem<ProcessedSystemData>(
-                                e, 0, e.avg.toDouble()))
+                                e.avg.toDouble(),
+                                value: e))
                             .toList(),
                         axisMin: 0,
                         axisMax: _lastData
@@ -250,11 +254,14 @@ class _StatisticsState extends State<Statistics> {
                             10),
                     itemOptions: BarItemOptions(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      radius: const BorderRadius.vertical(
-                        top: Radius.circular(32.0),
-                      ),
-                      colorForKey: (item, index) =>
-                          item.value.parent == null ? Colors.red : Colors.grey,
+                      barItemBuilder: (data) {
+                        return const BarItem(
+                          radius: BorderRadius.vertical(
+                            top: Radius.circular(32.0),
+                          ),
+                          color: Colors.red,
+                        );
+                      },
                     ),
                     backgroundDecorations: [
                       GridDecoration(
