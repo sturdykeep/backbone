@@ -1,6 +1,8 @@
 import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
+import 'package:backbone/logging/log.dart';
+import 'package:backbone/logging/no_op_log.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:backbone/realm.dart';
@@ -43,7 +45,9 @@ class RealmBuilder {
     return this;
   }
 
-  Realm build() {
+  Realm build({
+    Log? realmLogger,
+  }) {
     var possibleArchetypes = Archetype.allCombinations(registeredTraits);
     var archetypeBuckets = HashMap<Archetype, List<ANode>>();
     for (var archetype in possibleArchetypes) {
@@ -56,6 +60,7 @@ class RealmBuilder {
       systems,
       messageSystems,
       resources,
+      realmLogger ?? NoOpLog(),
     );
   }
 }
