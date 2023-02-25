@@ -196,7 +196,7 @@ class Realm extends Component with HasGameRef {
       final systemName = getSystemName(system);
       log.startTrace(systemName);
       systemResults[system] = system(this);
-      log.endTrace(systemName);
+      log.endTrace(systemName, frame: frame);
     }
     return systemResults[system] as R;
   }
@@ -332,7 +332,6 @@ class Realm extends Component with HasGameRef {
       globalFrame = frame;
     }
 
-    final updateStart = DateTime.now();
     // Update the time
     getResource<Time>().delta = dt;
 
@@ -373,10 +372,8 @@ class Realm extends Component with HasGameRef {
           break;
         }
       }
-      log.endTrace("messsage_system");
 
       // Debug code for development
-
       final messageExecutionTime =
           DateTime.now().difference(messageProcessTimeStart);
       if (messageExecutionTime.inMilliseconds >= messageSystemTimeBudget) {
@@ -387,9 +384,11 @@ class Realm extends Component with HasGameRef {
           "msg_sys_long",
           payload:
               "${currentMessage.runtimeType}:${messageExecutionTime.inMilliseconds}",
+          frame: frame,
         );
       }
     }
+    log.endTrace("messsage_system", frame: frame);
 
     // Clear the inputs
     final input = getResource<Input>();
@@ -397,21 +396,20 @@ class Realm extends Component with HasGameRef {
 
     // Update the frame count
     frame += 1;
-    log.endTrace("realm_update");
+    log.endTrace("realm_update", frame: frame);
   }
 
   @override
   void onMount() {
-    log.addEvent(
-      'Running',
-      payload: (DateTime.now().millisecondsSinceEpoch / 1000).toString(),
-    );
+    log.addEvent('Running',
+        payload: (DateTime.now().millisecondsSinceEpoch / 1000).toString(),
+        frame: frame);
   }
 
   @override
   void renderTree(Canvas canvas) {
     log.startTrace("realm_renderTree");
     super.renderTree(canvas);
-    log.endTrace("realm_renderTree");
+    log.endTrace("realm_renderTree", frame: frame);
   }
 }
