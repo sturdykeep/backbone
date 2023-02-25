@@ -11,6 +11,7 @@ import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:perfmon_logger/perfmon_logger.dart';
 
 import 'template_bar.dart';
 import 'messages.dart';
@@ -35,7 +36,7 @@ class MainGame extends FlameGame
         .withSystem(deleteRemoveSystem)
         .withMessageSystem(removeBounceMessageSystem)
         .withMessageSystem(resizeMessageSystem)
-        .build();
+        .build(realmLogger: PerfMonLog(host: "ws://192.168.178.59:8080"));
     add(realm);
 
     // Generate some bouncers
