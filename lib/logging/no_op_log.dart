@@ -2,7 +2,7 @@ import 'package:backbone/logging/log.dart';
 
 class NoOpLog extends Log {
   @override
-  void addSample(String key, double milliseconds) {
+  void addSample(String key, int milliseconds) {
     //Do nothing
   }
 
