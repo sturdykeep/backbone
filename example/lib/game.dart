@@ -36,7 +36,7 @@ class MainGame extends FlameGame
         .withSystem(deleteRemoveSystem)
         .withMessageSystem(removeBounceMessageSystem)
         .withMessageSystem(resizeMessageSystem)
-        .build(realmLogger: PerfMonLog(host: "ws://192.168.178.59:8080"));
+        .build(realmLogger: PerfmonLogger());
     add(realm);
 
     // Generate some bouncers
