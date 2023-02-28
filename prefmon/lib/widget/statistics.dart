@@ -3,9 +3,11 @@ import 'dart:math';
 
 import 'package:charts_painter/chart.dart';
 import 'package:flutter/material.dart';
-import 'package:prefmon/core/backbone_worker.dart';
+import 'package:prefmon/core/debug_data_model.dart';
 import 'package:prefmon/globals.dart';
+import 'package:prefmon/model/prefmon_events.dart';
 import 'package:prefmon/widget/simple_state.dart';
+import 'package:provider/provider.dart';
 
 class Statistics extends StatefulWidget {
   const Statistics({Key? key}) : super(key: key);
@@ -66,8 +68,8 @@ class _StatisticsState extends State<Statistics> {
   final List<int> _renderTimes = [];
   @override
   void initState() {
-    Globals.worker.callback = _events;
     Globals.worker.logCallback = _logs;
+    context.read<DebugDataHandler>().callbacks.add(_events);
     super.initState();
   }
 
@@ -225,8 +227,11 @@ class _StatisticsState extends State<Statistics> {
     }
     if (_noData()) {
       return const SimpleState(
-          text: 'Waiting for data', icon: Icons.build_sharp);
+        text: 'Waiting for data',
+        icon: Icons.build_sharp,
+      );
     }
+
     return Stack(
       children: [
         Padding(
@@ -237,10 +242,11 @@ class _StatisticsState extends State<Statistics> {
                 )
               : Chart<ProcessedSystemData>(
                   state: ChartState(
-                    ChartData.fromList(
+                    data: ChartData.fromList(
                         _avgTimesBySystem()
                             .map((e) => ChartItem<ProcessedSystemData>(
-                                e, 0, e.avg.toDouble()))
+                                e.avg.toDouble(),
+                                value: e))
                             .toList(),
                         axisMin: 0,
                         axisMax: _lastData
@@ -250,11 +256,14 @@ class _StatisticsState extends State<Statistics> {
                             10),
                     itemOptions: BarItemOptions(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      radius: const BorderRadius.vertical(
-                        top: Radius.circular(32.0),
-                      ),
-                      colorForKey: (item, index) =>
-                          item.value.parent == null ? Colors.red : Colors.grey,
+                      barItemBuilder: (data) {
+                        return const BarItem(
+                          radius: BorderRadius.vertical(
+                            top: Radius.circular(32.0),
+                          ),
+                          color: Colors.red,
+                        );
+                      },
                     ),
                     backgroundDecorations: [
                       GridDecoration(

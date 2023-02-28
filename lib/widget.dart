@@ -1,3 +1,4 @@
+import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:flame/game.dart';
@@ -84,6 +85,8 @@ class _BackboneGameWidgetState<T extends HasRealm>
 
   void _handleEvent(PointerEvent event) {
     if (widget.game.realmReady == false) return;
+    final start = DateTime.now();
+
     if (event is PointerAddedEvent) {
       widget.game.realm.getResource<Input>().onPointerAdded(event);
     } else if (event is PointerHoverEvent) {
@@ -96,6 +99,10 @@ class _BackboneGameWidgetState<T extends HasRealm>
       widget.game.realm.getResource<Input>().onPointerMove(event);
     } else if (event is PointerUpEvent) {
       widget.game.realm.getResource<Input>().onPointerUp(event);
+    }
+    if (widget.game.realm.logPerformanceData) {
+      Log.logSystemPerformance("pointerRouter", null,
+          DateTime.now().difference(start).inMilliseconds);
     }
   }
 

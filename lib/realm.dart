@@ -185,12 +185,16 @@ class Realm extends Component with HasGameRef {
   /// Make sure the system was run this frame, or run it.
   /// Returns the result of the system.
   R checkOrRunSystem<R>(System system, {bool force = false}) {
-    if (force == false) {
-      if (systemResults.containsKey(system) == false) {
-        systemResults[system] = system(this);
-      }
-    } else {
+    if (force || systemResults.containsKey(system) == false) {
+      final systemStart = DateTime.now();
       systemResults[system] = system(this);
+      if (logPerformanceData) {
+        Log.logSystemPerformance(
+          getSystemName(system),
+          null,
+          DateTime.now().difference(systemStart).inMilliseconds,
+        );
+      }
     }
     return systemResults[system] as R;
   }
@@ -367,10 +371,18 @@ class Realm extends Component with HasGameRef {
         }
       }
     }
-
+    final cleanInputStart = DateTime.now();
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
+    if (logPerformanceData) {
+      Log.logSystemPerformance(
+        "cleanInput",
+        null,
+        DateTime.now().difference(cleanInputStart).inMilliseconds,
+      );
+    }
+
     // Update the frame count
     frame += 1;
     if (logPerformanceData) {
