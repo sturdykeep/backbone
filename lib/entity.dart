@@ -15,7 +15,7 @@ class Entity {
   Entity? get parent => _parent;
   set parent(Entity? value) {
     if (_parent != value) {
-      parent?.addChild(this);
+      value?.addChild(this);
     }
   }
 
@@ -79,6 +79,7 @@ class Entity {
   }
 
   /// Gather all traits of a given type by walking up the entity tree.
+  /// Returned order is from the entity itself to the root.
   List<T> findAll<T extends Trait>({bool includeSelf = true}) {
     final traits = <T>[];
     if (includeSelf) {
@@ -87,12 +88,12 @@ class Entity {
         traits.add(trait);
       }
     }
-    for (var child in _children) {
-      traits.addAll(child.findAll<T>(includeSelf: true));
-    }
+    traits.addAll(parent?.findAll<T>(includeSelf: true) ?? []);
     return traits;
   }
 
+  /// Gather all traits of a given type by walking up the entity tree.
+  /// Returned order is from the root to the entity itself.
   List<T> findAllReverse<T extends Trait>({bool includeSelf = true}) {
     return findAll<T>(includeSelf: includeSelf).reversed.toList();
   }

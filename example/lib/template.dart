@@ -38,21 +38,33 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   // Create callbacks for drag events
   final draggableTrait = DraggableTrait(
     onStart: (pointer, offset) {
+      // DEBUG
+      debugPrint('DraggableTrait.onStart');
+      debugPrint('  offset: $offset');
+      debugPrint('  pointer.position: ${pointer.position}');
+      debugPrint('  transformTrait.position: ${transformTrait.position}');
+      debugPrint(
+          '  transformTrait.toLocal(pointer.position): ${transformTrait.toLocal(pointer.position)}');
+      debugPrint(
+          '  transformTrait.toLocal(pointer.position) - offset: ${transformTrait.toLocal(pointer.position) - offset}');
+      // END DEBUG
+
       templateTrait.startingPosition = transformTrait.position;
       templateTrait.dragOffset = offset;
       pointer.handled = true;
       return DraggablePointerPayload(entity, null);
     },
     onUpdate: (pointer) {
-      transformTrait.position = transformTrait.toLocal(pointer.position) -
-          templateTrait.dragOffset;
+      transformTrait.position =
+          entity.parent!.get<TransformTrait>().toLocal(pointer.position) -
+              templateTrait.dragOffset;
     },
     onEnd: (pointer) {
       final bouncer = BouncerNode(
-        Vector2.all(50.0 + 50.0 * rng.nextDouble()),
-        color,
-        (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
-        200.0 + 200.0 * rng.nextDouble());
+          Vector2.all(50.0 + 50.0 * rng.nextDouble()),
+          color,
+          (Vector2.all(-1.0) + Vector2.random(rng) * 2.0),
+          200.0 + 200.0 * rng.nextDouble());
       bouncer.transformTrait.position = pointer.position;
       realm.add(bouncer);
       transformTrait.position = templateTrait.startingPosition!;

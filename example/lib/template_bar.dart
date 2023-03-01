@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:backbone/position_node.dart';
+import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:example/template.dart';
 import 'package:flame/extensions.dart';
@@ -31,8 +32,14 @@ class TemplateBar extends PositionNode {
       transformTrait.size = Vector2(space, screenSize.y);
       landscapeMode = false;
     }
+
+    // Update children
     if (hasChildren) {
       (findNodeChildren().first as PositionNode).transformTrait.position =
+          getChildStartingPosition();
+    }
+    if (entity.children.length > 1) {
+      entity.children.first.tryGet<TransformTrait>()!.position =
           getChildStartingPosition();
     }
   }
@@ -58,13 +65,13 @@ class TemplateBar extends PositionNode {
 
   @override
   void render(Canvas canvas) {
-    canvas.drawRect(
-        Rect.fromLTWH(
-          0,
-          0,
-          transformTrait.size.x,
-          transformTrait.size.y,
-        ),
-        barBorderPaint);
+    // canvas.drawRect(
+    //     Rect.fromLTWH(
+    //       0,
+    //       0,
+    //       transformTrait.size.x,
+    //       transformTrait.size.y,
+    //     ),
+    //     barBorderPaint);
   }
 }

@@ -4,6 +4,7 @@ import 'package:backbone/entity.dart';
 import 'package:backbone/prelude/render/mod.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flutter/rendering.dart';
 
 class RectangleRenderer extends Renderer {
   @override
@@ -20,7 +21,7 @@ class RectangleRenderer extends Renderer {
       if (transformTrait != null) {
         final paint = Paint()..color = rectangleTrait.color;
         canvas.save();
-        canvas.transform(transformTrait.transformMatrix.storage);
+        canvas.transform(transformTrait.globalTransformMatrix.storage);
         canvas.drawRect(transformTrait.localRect, paint);
         canvas.restore();
       }

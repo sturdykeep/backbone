@@ -8,6 +8,7 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/extensions.dart';
+import 'package:flutter/cupertino.dart';
 
 class DraggablePointerPayload {
   final Entity initiator;
@@ -47,21 +48,19 @@ void draggableSystem(Realm realm) {
 
   for (final entity in query) {
     final draggable = entity.get<DraggableTrait>();
-    final tranform = entity.get<TransformTrait>();
+    final transform = entity.get<TransformTrait>();
 
     // Check drag starts
     for (var dragStart in dragStarts) {
-      // Find a state which existed right before the tap cancell
+      // Find a state which existed right before the tap cancel
       final state = dragStart.history.lastWhere(
           (state) => state is PointerStateDown || state is PointerStateLongDown,
           orElse: () =>
               throw 'Tap down event not found for the drag start position correction');
       final point = dragStart.worldPosition(realm.gameRef, fromState: state);
-      if (tranform.containsPoint(point)) {
+      if (transform.containsPoint(point)) {
         if (draggable.onStart != null) {
-          final offset =
-              dragStart.worldPosition(realm.gameRef, fromState: state) -
-                  tranform.toWorld(tranform.position);
+          final offset = point - transform.toWorld(Vector2(0.0, 0.0));
           foundDragStarts.add({
             'entity': entity,
             'draggable': draggable,

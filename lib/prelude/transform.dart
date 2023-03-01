@@ -124,22 +124,35 @@ class TransformTrait extends Trait {
     );
   }
 
-  Vector2 toLocal(Vector2 point) {
+  /// Transform matrix, that takes parent transforms into account.
+  Matrix4 get globalTransformMatrix {
     final transforms = entity.findAllReverse<TransformTrait>();
-    final localPoint = point;
+    final matrix = Matrix4.identity();
+    for (final transform in transforms) {
+      matrix.multiply(transform.transformMatrix);
+    }
+    return matrix;
+  }
+
+  Matrix4 get globalInverseTransformMatrix =>
+      globalTransformMatrix.clone()..invert();
+
+  Vector2 toLocal(Vector2 point) {
+    final transforms = entity.findAll<TransformTrait>();
+    var localPoint = point;
     for (final transform in transforms) {
       final inverse = transform.inverseTransformMatrix;
-      localPoint.setFrom(inverse.transform2(localPoint));
+      localPoint = inverse.transform2(localPoint);
     }
     return localPoint;
   }
 
   Vector2 toWorld(Vector2 point) {
-    final transforms = entity.findAll<TransformTrait>();
-    final worldPoint = point;
+    final transforms = entity.findAllReverse<TransformTrait>();
+    var worldPoint = point;
     for (final transform in transforms) {
       final matrix = transform.transformMatrix;
-      worldPoint.setFrom(matrix.transform2(worldPoint));
+      worldPoint = matrix.transform2(worldPoint);
     }
     return worldPoint;
   }
