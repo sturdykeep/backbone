@@ -62,6 +62,10 @@ class Realm extends Component with HasGameRef {
     archetypeBucketsValues = archetypeBuckets.values.toList();
     addResource(Time());
     addResource(Input());
+
+    const int minInt =
+        (double.infinity is int) ? -double.infinity as int : (-1 << 63);
+    priority = (double.infinity is int) ? double.infinity as int : ~minInt;
   }
 
   /// Used for debugging
@@ -404,18 +408,13 @@ class Realm extends Component with HasGameRef {
   void renderTree(Canvas canvas) {
     final renderStart = DateTime.now();
     super.renderTree(canvas);
-    if (logPerformanceData) {
-      Log.logPerformance('Render',
-          DateTime.now().difference(renderStart).inMilliseconds.toString());
-    }
-  }
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
     // Render the systems
     for (final system in renderSystems) {
       system(this, canvas);
+    }
+    if (logPerformanceData) {
+      Log.logPerformance('Render',
+          DateTime.now().difference(renderStart).inMilliseconds.toString());
     }
   }
 }

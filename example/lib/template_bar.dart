@@ -65,13 +65,13 @@ class TemplateBar extends PositionNode {
 
   @override
   void render(Canvas canvas) {
-    // canvas.drawRect(
-    //     Rect.fromLTWH(
-    //       0,
-    //       0,
-    //       transformTrait.size.x,
-    //       transformTrait.size.y,
-    //     ),
-    //     barBorderPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(
+          0,
+          0,
+          transformTrait.size.x,
+          transformTrait.size.y,
+        ),
+        barBorderPaint);
   }
 }
