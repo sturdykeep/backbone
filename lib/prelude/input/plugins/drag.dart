@@ -58,9 +58,16 @@ void draggableSystem(Realm realm) {
           orElse: () =>
               throw 'Tap down event not found for the drag start position correction');
       final point = dragStart.worldPosition(realm.gameRef, fromState: state);
+
+      // DEBUG
+      // `debugPrint` the data which might help to identify why `containsPoint` is not working
+      debugPrint(
+          'DraggableSystem: ${transform.containsPoint(point)} ${transform.toWorld(Vector2(0.0, 0.0))} ${transform.origin} ${point} ${transform.position} ${transform.size} ${transform.scale} ${transform.rotation} ${transform.anchor}');
+
       if (transform.containsPoint(point)) {
         if (draggable.onStart != null) {
-          final offset = point - transform.toWorld(Vector2(0.0, 0.0));
+          final offset =
+              point - transform.toWorld(Vector2(0.0, 0.0)) - transform.origin;
           foundDragStarts.add({
             'entity': entity,
             'draggable': draggable,

@@ -38,7 +38,7 @@ class TemplateBar extends PositionNode {
       (findNodeChildren().first as PositionNode).transformTrait.position =
           getChildStartingPosition();
     }
-    if (entity.children.length > 1) {
+    if (entity.children.isNotEmpty) {
       entity.children.first.tryGet<TransformTrait>()!.position =
           getChildStartingPosition();
     }
@@ -65,6 +65,11 @@ class TemplateBar extends PositionNode {
 
   @override
   void render(Canvas canvas) {
+    // Rotate the template
+    final template = entity.children.first;
+    final templateTransform = template.tryGet<TransformTrait>()!;
+    templateTransform.rotation += 0.01;
+
     canvas.drawRect(
         Rect.fromLTWH(
           0,

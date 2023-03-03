@@ -5,43 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "backbone",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "backbone (profile mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "backbone (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
-            "name": "benchmark",
-            "cwd": "benchmark",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "benchmark (profile mode)",
-            "cwd": "benchmark",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "benchmark (release mode)",
-            "cwd": "benchmark",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        },
-        {
             "name": "example",
             "cwd": "example",
             "request": "launch",
@@ -62,21 +25,21 @@
             "flutterMode": "release"
         },
         {
-            "name": "prefmon",
-            "cwd": "prefmon",
+            "name": "playground",
+            "cwd": "playground",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "prefmon (profile mode)",
-            "cwd": "prefmon",
+            "name": "playground (profile mode)",
+            "cwd": "playground",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "prefmon (release mode)",
-            "cwd": "prefmon",
+            "name": "playground (release mode)",
+            "cwd": "playground",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

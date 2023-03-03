@@ -97,14 +97,13 @@ class TransformTrait extends Trait {
   }
 
   // Utilities
+  Vector2 get origin => anchor.toVector2()..multiply(size);
   Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
 
   /// Transform matrix, that takes anchor into account for scaling and rotation.
   Matrix4 get transformMatrix {
-    final origin = anchor.toVector2()..multiply(size);
     return Matrix4.identity()
       ..translate(position.x, position.y)
-      ..translate(origin.x, origin.y)
       ..rotateZ(rotation)
       ..scale(scale.x, scale.y)
       ..translate(-origin.x, -origin.y);
@@ -113,7 +112,6 @@ class TransformTrait extends Trait {
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
 
   RSTransform get rstTransform {
-    final origin = anchor.toVector2()..multiply(size);
     return RSTransform.fromComponents(
       rotation: rotation,
       scale: scale.x,
@@ -154,6 +152,7 @@ class TransformTrait extends Trait {
       final matrix = transform.transformMatrix;
       worldPoint = matrix.transform2(worldPoint);
     }
+
     return worldPoint;
   }
 

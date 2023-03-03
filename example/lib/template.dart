@@ -38,17 +38,6 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   // Create callbacks for drag events
   final draggableTrait = DraggableTrait(
     onStart: (pointer, offset) {
-      // DEBUG
-      debugPrint('DraggableTrait.onStart');
-      debugPrint('  offset: $offset');
-      debugPrint('  pointer.position: ${pointer.position}');
-      debugPrint('  transformTrait.position: ${transformTrait.position}');
-      debugPrint(
-          '  transformTrait.toLocal(pointer.position): ${transformTrait.toLocal(pointer.position)}');
-      debugPrint(
-          '  transformTrait.toLocal(pointer.position) - offset: ${transformTrait.toLocal(pointer.position) - offset}');
-      // END DEBUG
-
       templateTrait.startingPosition = transformTrait.position;
       templateTrait.dragOffset = offset;
       pointer.handled = true;
