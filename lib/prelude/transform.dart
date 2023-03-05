@@ -156,20 +156,26 @@ class Transform extends Trait {
       globalTransformMatrix.clone()..invert();
 
   Vector2 toLocal(Vector2 point) {
-    final transforms = entity.findAll<Transform>();
+    final transforms = entity.findAllReverse<Transform>();
     var localPoint = point;
     for (final transform in transforms) {
-      final inverse = transform.inverseTransformMatrix;
+      final last = transform == transforms.last;
+      final inverse = last
+          ? transform.inverseTransformMatrix
+          : transform.inverseTransformMatrixWithoutOrigin;
       localPoint = inverse.transform2(localPoint);
     }
     return localPoint;
   }
 
   Vector2 toWorld(Vector2 point) {
-    final transforms = entity.findAllReverse<Transform>();
+    final transforms = entity.findAll<Transform>();
     var worldPoint = point;
     for (final transform in transforms) {
-      final matrix = transform.transformMatrix;
+      final first = transform == transforms.first;
+      final matrix = first
+          ? transform.transformMatrix
+          : transform.transformMatrixWithoutOrigin;
       worldPoint = matrix.transform2(worldPoint);
     }
 

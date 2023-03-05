@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:backbone/builders.dart';
 import 'package:backbone/entity.dart';
+import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/mod.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -25,6 +26,15 @@ Entity buildRectangle({Entity? parent, Color? color}) {
 
   final rectangle = RectangleVisual(color ?? Colors.blue);
   renderTrait.visual = rectangle;
+
+  Color oldColor = rectangle.color;
+  final hoverable = Hoverable(onHoverEnter: (p) {
+    oldColor = rectangle.color;
+    rectangle.color = Colors.red;
+  }, onHoverExit: (p) {
+    rectangle.color = oldColor;
+  });
+  entity.add(hoverable);
 
   return entity;
 }
