@@ -1,5 +1,6 @@
 // ignore_for_file: implementation_imports
 
+import 'package:backbone/realm_mixin.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';

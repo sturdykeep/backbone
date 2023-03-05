@@ -11,7 +11,7 @@ class DashNode extends PositionNode {
     required Vector2 direction,
     required double speed,
   }) : super(
-          transformTrait: TransformTrait()..size = Vector2(35, 35),
+          transformTrait: Transform()..size = Vector2(35, 35),
         ) {
     final spriteTrait = SpriteTrait();
     entity.add(spriteTrait);

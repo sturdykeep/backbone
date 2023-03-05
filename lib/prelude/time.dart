@@ -1,4 +1,4 @@
-/// Build in resource that tracks frame times reported by flame
+/// Build in resource that tracks frame times.
 class Time {
   double delta = 0.0;
 }

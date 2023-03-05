@@ -2,9 +2,7 @@
 
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/realm.dart';
-import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 // Notes about the Flame input system:

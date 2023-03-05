@@ -1,6 +1,5 @@
 import 'package:backbone/entity.dart';
 import 'package:backbone/filter.dart';
-import 'package:backbone/node.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/pointer.dart';
@@ -8,7 +7,7 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/extensions.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/rendering.dart' show debugPrint;
 
 class DraggablePointerPayload {
   final Entity initiator;
@@ -17,20 +16,20 @@ class DraggablePointerPayload {
   DraggablePointerPayload(this.initiator, this.data);
 }
 
-class DraggableTrait extends Trait {
+class Draggable extends Trait {
   final DraggablePointerPayload? Function(Pointer pointer, Vector2 offset)?
       onStart;
   final void Function(Pointer pointer)? onUpdate;
   final void Function(Pointer pointer)? onEnd;
 
-  DraggableTrait({this.onStart, this.onUpdate, this.onEnd});
+  Draggable({this.onStart, this.onUpdate, this.onEnd});
 }
 
-class DragReceiverTrait extends Trait {
+class DragReceiver extends Trait {
   final void Function(Pointer pointer, DraggablePointerPayload? payload)
       onReceive;
 
-  DragReceiverTrait({required this.onReceive});
+  DragReceiver({required this.onReceive});
 }
 
 void draggableSystem(Realm realm) {
@@ -43,12 +42,12 @@ void draggableSystem(Realm realm) {
   final dragEnds = input.justDragEndPointers();
   if (dragStarts.isEmpty && dragUpdates.isEmpty && dragEnds.isEmpty) return;
 
-  final query = realm.query(Has([DraggableTrait]));
+  final query = realm.query(Has([Draggable]));
   final foundDragStarts = [];
 
   for (final entity in query) {
-    final draggable = entity.get<DraggableTrait>();
-    final transform = entity.get<TransformTrait>();
+    final draggable = entity.get<Draggable>();
+    final transform = entity.get<Transform>();
 
     // Check drag starts
     for (var dragStart in dragStarts) {
@@ -108,7 +107,7 @@ void draggableSystem(Realm realm) {
       .reversed;
   for (final dragStart in foundDragStartsSorted) {
     final Entity entity = dragStart["entity"];
-    final draggable = entity.get<DraggableTrait>();
+    final draggable = entity.get<Draggable>();
     final pointer = dragStart["pointer"];
     if (pointer.handled) continue; // Otherwise we would override the
     final offset = dragStart["offset"];
@@ -128,11 +127,11 @@ void dragReceiverSystem(Realm realm) {
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
   if (dragEnds.isEmpty) return;
-  final query = realm.query(Has([DragReceiverTrait]));
+  final query = realm.query(Has([DragReceiver]));
 
   for (final entity in query) {
-    final transform = entity.get<TransformTrait>();
-    final dragReceiver = entity.get<DragReceiverTrait>();
+    final transform = entity.get<Transform>();
+    final dragReceiver = entity.get<DragReceiver>();
 
     // Check drag ends
     for (var dragEnd in dragEnds) {

@@ -16,7 +16,7 @@ void spriteSystem(Realm realm) {
       final sprite = spriteTrait.sprite;
       final animation = spriteTrait.animationData;
       if (node != null && (sprite != null || animation != null)) {
-        final transformTrait = entity.tryGet<TransformTrait>();
+        final transformTrait = entity.tryGet<Transform>();
         // Search for a SpriteComponent in the tree
         if (animation == null) {
           final spriteComponents = node.findChildren<SpriteComponent>();

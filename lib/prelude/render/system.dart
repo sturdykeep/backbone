@@ -9,18 +9,18 @@ import 'package:backbone/realm.dart';
 void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // TODO: I am sure this can be optimized, a lot.
   final pipeline = realm.getResource<PipelineRenderer>();
-  final query = realm.query(Has([RenderTrait]));
+  final query = realm.query(Has([Renderable]));
 
   final List<Renderee> renderees = [];
   for (final entity in query) {
-    final renderTrait = entity.get<RenderTrait>();
-    final transformTrait = entity.tryGet<TransformTrait>();
+    final renderTrait = entity.get<Renderable>();
+    final transformTrait = entity.tryGet<Transform>();
 
     final renderee = pipeline.rendereePool.get();
     renderee.entity = entity;
     renderee.renderTrait = renderTrait;
     renderee.transformTrait = transformTrait;
-    renderee.matchedTrait = null;
+    renderee.matchedVisual = null;
     renderees.add(renderee);
   }
 
@@ -30,9 +30,9 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // Fill the matched renderer and trait for each renderee
   for (final renderee in renderees) {
     for (final renderer in pipeline.renderers) {
-      final trait = renderer.matches(renderee.entity!);
-      if (trait != null) {
-        renderee.matchedTrait = trait;
+      final visual = renderer.matches(renderee.entity!);
+      if (visual != null) {
+        renderee.matchedVisual = visual;
         renderee.renderer = renderer;
         break;
       }
@@ -42,10 +42,11 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // Now do rendering in batches until all renderees are rendered
   while (renderees.isNotEmpty) {
     final renderer = renderees.first.renderer!;
-    final batch = renderees.takeWhile((renderee) => renderee.renderer == renderer)
-      .toList();
+    final batch = renderees
+        .takeWhile((renderee) => renderee.renderer == renderer)
+        .toList();
     renderer.render(batch, realm, canvas);
-    
+
     // Remove and free the renderees that were rendered
     for (var r in batch) {
       renderees.remove(r);

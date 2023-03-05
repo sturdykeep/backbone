@@ -13,7 +13,7 @@ class BouncerCounterTrait extends Trait {}
 
 class BouncerCounterNode extends PositionNode {
   BouncerCounterNode()
-      : super(transformTrait: TransformTrait()..position = Vector2(10, 10)) {
+      : super(transformTrait: Transform()..position = Vector2(10, 10)) {
     entity.add(TextTrait());
     entity.add(BouncerCounterTrait());
   }

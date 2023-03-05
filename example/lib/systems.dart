@@ -18,11 +18,11 @@ import 'template_bar.dart';
 /// System that bounces boxes off screen edges
 void bounceSystem(Realm realm) {
   final time = realm.getResource<Time>();
-  final realmQuery = realm.query(Has([TransformTrait, BouncerTrait]));
+  final realmQuery = realm.query(Has([Transform, BouncerTrait]));
   // or
   // final realmQuery = realm.query(And([Has([TransformTrait]), Has([BouncerTrait])]));
-  final dragBarQuery = realm.query(Has([TemplateSpawnerTrait, TransformTrait]));
-  final dragBarTransform = dragBarQuery.first.get<TransformTrait>();
+  final dragBarQuery = realm.query(Has([TemplateSpawnerTrait, Transform]));
+  final dragBarTransform = dragBarQuery.first.get<Transform>();
   final dragBarSize = Vector2(
       dragBarTransform.position.y == 0 ? TemplateBar.space : 0,
       dragBarTransform.position.x == 0 ? TemplateBar.space : 0);
@@ -30,7 +30,7 @@ void bounceSystem(Realm realm) {
   for (final node in realmQuery) {
     final bounceTrait = node.get<BouncerTrait>();
 
-    final transform = node.get<TransformTrait>();
+    final transform = node.get<Transform>();
 
     // Move them in the direction at the speed of `speed` pixels per second
     transform.position +=

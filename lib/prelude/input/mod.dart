@@ -9,7 +9,7 @@ import 'package:backbone/prelude/input/pointer.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter/rendering.dart' show debugPrint;
 import 'package:flutter/services.dart';
 
 // References
@@ -22,25 +22,25 @@ void inputPlugin(RealmBuilder builder) {
 
   // Hover
   builder
-    ..withTrait(HoverableTrait)
+    ..withTrait(Hoverable)
     ..withSystem(hoverableSystem);
 
   // Drag
   builder
-    ..withTrait(DraggableTrait)
-    ..withTrait(DragReceiverTrait)
+    ..withTrait(Draggable)
+    ..withTrait(DragReceiver)
     ..withSystem(draggableSystem)
     ..withSystem(dragReceiverSystem);
 
   // Taps
   builder
-    ..withTrait(TappableTrait)
+    ..withTrait(Tappable)
     ..withSystem(tappableSystem);
 
   // Selection
   builder
     ..withResource(Selection, Selection())
-    ..withTrait(SelectableTrait)
+    ..withTrait(Selectable)
     ..withSystem(ensureSelectableNodesAreTappable)
     ..withSystem(selectableSystem);
 }
@@ -60,6 +60,7 @@ class Input {
   final _pointerRemovedEvents = <PointerStateRemoved>[];
 
   final Duration longDownDuration = const Duration(milliseconds: 500);
+  Offset widgetOffset = Offset.zero;
 
   /// Enable or disable debug prints
   bool debugMode = false;

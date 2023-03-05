@@ -7,7 +7,7 @@ import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flutter/services.dart';
 
-/// Resource that holds a reference to [SelectableTrait] entities, which
+/// Resource that holds a reference to [Selectable] entities, which
 /// are currently selected.
 class Selection {
   bool Function(Pointer pointer)? onGlobalDeslect;
@@ -18,7 +18,7 @@ class Selection {
   /// Adds an entity to the selection.
   /// Returns true, if the entity was successfuly selected.
   bool add(Entity entity, {Pointer? pointer}) {
-    final trait = entity.tryGet<SelectableTrait>();
+    final trait = entity.tryGet<Selectable>();
     if (trait != null) {
       if (trait.selected == false) {
         final shouldGetSelected = trait.onSelected?.call(pointer);
@@ -36,7 +36,7 @@ class Selection {
   /// Returns true if the entity was removed, false otherwise.
   /// If the entity was not in the selection, it will return false.
   bool remove(Entity entity, {Pointer? pointer}) {
-    final trait = entity.tryGet<SelectableTrait>();
+    final trait = entity.tryGet<Selectable>();
     if (trait != null) {
       if (trait.selected == true) {
         final shouldGetDeselected = trait.onDeselected?.call(pointer);
@@ -62,7 +62,7 @@ class Selection {
   bool replace(List<Entity> newSelection, {Pointer? pointer}) {
     final newSelectionResults = <Entity>[];
     for (final entity in newSelection) {
-      final trait = entity.tryGet<SelectableTrait>();
+      final trait = entity.tryGet<Selectable>();
       if (trait != null) {
         if (trait.selected == false) {
           final shouldGetSelected = trait.onSelected?.call(pointer);
@@ -80,7 +80,7 @@ class Selection {
 
     // Select the new ones.
     for (final entity in newSelectionResults) {
-      final trait = entity.tryGet<SelectableTrait>()!;
+      final trait = entity.tryGet<Selectable>()!;
       trait.selected = true;
       entities.add(entity);
     }
@@ -89,7 +89,7 @@ class Selection {
   }
 }
 
-class SelectableTrait extends Trait {
+class Selectable extends Trait {
   /// Whether this node is currently selected.
   bool selected = false;
 
@@ -99,22 +99,22 @@ class SelectableTrait extends Trait {
   /// Callback when this node is deselected.
   final bool Function(Pointer? pointer)? onDeselected;
 
-  SelectableTrait({this.onSelected, this.onDeselected});
+  Selectable({this.onSelected, this.onDeselected});
 }
 
 /// A system to ensure SelectableTrait nodes also have a TappableTrait.
 void ensureSelectableNodesAreTappable(Realm realm) {
   final toChange = <Entity>[];
   final query = realm.query(And([
-    Has([SelectableTrait]),
-    Without([TappableTrait])
+    Has([Selectable]),
+    Without([Tappable])
   ]));
   for (final entity in query) {
     toChange.add(entity);
   }
 
   for (final entity in toChange) {
-    entity.add(TappableTrait());
+    entity.add(Tappable());
   }
 }
 
@@ -132,7 +132,7 @@ void selectableSystem(Realm realm) {
   bool somethingGotSelected = false;
   for (final event in tappable.justReleased) {
     final entity = event.entity;
-    final trait = entity.tryGet<SelectableTrait>();
+    final trait = entity.tryGet<Selectable>();
     if (trait != null) {
       if (ctrlPressed) {
         if (trait.selected) {

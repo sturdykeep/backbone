@@ -77,6 +77,20 @@ class _BackboneGameWidgetState<T extends HasRealm>
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(_getWidgetInfo);
+  }
+
+  void _getWidgetInfo(_) {
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    if (widget.game.realmReady) {
+      widget.game.realm.getResource<Input>().widgetOffset =
+          renderBox.localToGlobal(Offset.zero);
+    }
+  }
+
+  @override
   void dispose() {
     super.dispose();
     GestureBinding.instance.pointerRouter.removeGlobalRoute(_handleEvent);

@@ -43,10 +43,10 @@ class BouncerNode extends PositionNode {
     Vector2 direction,
     double speed,
   ) : super(
-          transformTrait: TransformTrait()..size = size,
+          transformTrait: Transform()..size = size,
         ) {
     // Receive tap ups
-    final tappableTrait = TappableTrait(
+    final tappableTrait = Tappable(
       onJustReleased: (pointer) {
         if (pointer.handled == false) {
           debugPrint('Bouncer tapped');
@@ -57,7 +57,7 @@ class BouncerNode extends PositionNode {
 
     oldColor = color;
     // Receive hover
-    final hoverableTrait = HoverableTrait(
+    final hoverableTrait = Hoverable(
       onHoverEnter: (pointer) {
         hovered = true;
         currentPaint.color = colorFromFlags();
@@ -70,7 +70,7 @@ class BouncerNode extends PositionNode {
     entity.add(hoverableTrait);
 
     // Selectable trait
-    final selectableTrait = SelectableTrait(
+    final selectableTrait = Selectable(
       onSelected: (pointer) {
         selected = true;
         currentPaint.color = colorFromFlags();

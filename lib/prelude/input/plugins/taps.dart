@@ -7,7 +7,7 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 
-class TappableTrait extends Trait {
+class Tappable extends Trait {
   // Basic
   final void Function(Pointer pointer)? onTapDown;
   final void Function(Pointer pointer)? onLongTapDown;
@@ -19,7 +19,7 @@ class TappableTrait extends Trait {
   final void Function(Pointer pointer)? onPressed;
   final void Function(Pointer pointer)? onJustReleased;
 
-  TappableTrait(
+  Tappable(
       {this.onTapDown,
       this.onLongTapDown,
       this.onTapUp,
@@ -51,8 +51,8 @@ class TappableSystemResult {
 
 class CapturedTappableEvent {
   final Pointer pointer;
-  final TransformTrait transform;
-  final TappableTrait trait;
+  final Transform transform;
+  final Tappable trait;
   final Entity entity;
 
   CapturedTappableEvent(this.pointer, this.transform, this.trait, this.entity);
@@ -62,7 +62,7 @@ TappableSystemResult tappableSystem(Realm realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(dragReceiverSystem);
 
-  final query = realm.query(Has([TappableTrait]));
+  final query = realm.query(Has([Tappable]));
   final result = TappableSystemResult();
 
   final input = realm.getResource<Input>();
@@ -83,8 +83,8 @@ TappableSystemResult tappableSystem(Realm realm) {
 
   // Search for entities matching the events
   for (final entity in query) {
-    final transform = entity.get<TransformTrait>();
-    final tappable = entity.get<TappableTrait>();
+    final transform = entity.get<Transform>();
+    final tappable = entity.get<Tappable>();
 
     // Check tap starts
     for (var tapStart in tapStarts) {

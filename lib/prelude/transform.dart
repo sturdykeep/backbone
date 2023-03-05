@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:backbone/builders.dart';
@@ -16,10 +17,10 @@ import 'package:flame/extensions.dart';
 /// - anchor
 /// - priority
 void transformPlugin(RealmBuilder builder) {
-  builder.withTrait(TransformTrait);
+  builder.withTrait(Transform);
 }
 
-class TransformTrait extends Trait {
+class Transform extends Trait {
   Node? node;
 
   Vector2 _position = Vector2.zero();
@@ -61,6 +62,12 @@ class TransformTrait extends Trait {
         (node as PositionNode).angle = value;
       }
     }
+  }
+
+  // -- rotation in degrees
+  double get rotationDegrees => _rotation * 180.0 / pi;
+  set rotationDegrees(double value) {
+    rotation = value * pi / 180.0;
   }
 
   // -- size
@@ -124,7 +131,7 @@ class TransformTrait extends Trait {
 
   /// Transform matrix, that takes parent transforms into account.
   Matrix4 get globalTransformMatrix {
-    final transforms = entity.findAllReverse<TransformTrait>();
+    final transforms = entity.findAllReverse<Transform>();
     final matrix = Matrix4.identity();
     for (final transform in transforms) {
       matrix.multiply(transform.transformMatrix);
@@ -136,7 +143,7 @@ class TransformTrait extends Trait {
       globalTransformMatrix.clone()..invert();
 
   Vector2 toLocal(Vector2 point) {
-    final transforms = entity.findAll<TransformTrait>();
+    final transforms = entity.findAll<Transform>();
     var localPoint = point;
     for (final transform in transforms) {
       final inverse = transform.inverseTransformMatrix;
@@ -146,7 +153,7 @@ class TransformTrait extends Trait {
   }
 
   Vector2 toWorld(Vector2 point) {
-    final transforms = entity.findAllReverse<TransformTrait>();
+    final transforms = entity.findAllReverse<Transform>();
     var worldPoint = point;
     for (final transform in transforms) {
       final matrix = transform.transformMatrix;
@@ -161,7 +168,7 @@ class TransformTrait extends Trait {
     return localRect.contains(localPoint.toOffset());
   }
 
-  int compareToOnPriority(TransformTrait other) {
+  int compareToOnPriority(Transform other) {
     return priority.compareTo(other.priority);
   }
 

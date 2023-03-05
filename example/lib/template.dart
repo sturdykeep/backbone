@@ -26,7 +26,7 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   // Create a random color
   final color = Color((rng.nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
 
-  final transformTrait = TransformTrait();
+  final transformTrait = Transform();
   transformTrait.size = fixedSize;
   transformTrait.position = position;
   transformTrait.anchor = Anchor.center;
@@ -36,7 +36,7 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   entity.add(templateTrait);
 
   // Create callbacks for drag events
-  final draggableTrait = DraggableTrait(
+  final draggableTrait = Draggable(
     onStart: (pointer, offset) {
       templateTrait.startingPosition = transformTrait.position;
       templateTrait.dragOffset = offset;
@@ -45,7 +45,7 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
     },
     onUpdate: (pointer) {
       transformTrait.position =
-          entity.parent!.get<TransformTrait>().toLocal(pointer.position) -
+          entity.parent!.get<Transform>().toLocal(pointer.position) -
               templateTrait.dragOffset;
     },
     onEnd: (pointer) {
@@ -64,11 +64,9 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   entity.add(draggableTrait);
 
   // Rendering
-  final renderTrait = RenderTrait();
+  final visual = RectangleVisual(color);
+  final renderTrait = Renderable(visual: visual);
   entity.add(renderTrait);
-
-  final rectangleTrait = RectangleTrait(color);
-  entity.add(rectangleTrait);
 
   realm.addEntity(entity);
   entity.parent = bar.entity;

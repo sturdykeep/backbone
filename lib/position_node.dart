@@ -7,10 +7,10 @@ import 'package:flame/components.dart';
 /// Using this node requires you to register TransformTrait with your
 /// realm!
 class PositionNode extends PositionComponent with HasGameRef, Node {
-  late TransformTrait transformTrait;
+  late Transform transformTrait;
 
-  PositionNode({TransformTrait? transformTrait}) {
-    this.transformTrait = transformTrait ?? TransformTrait();
+  PositionNode({Transform? transformTrait}) {
+    this.transformTrait = transformTrait ?? Transform();
   }
 
   @override

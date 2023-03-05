@@ -5,18 +5,18 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 
-class HoverableTrait extends Trait {
+class Hoverable extends Trait {
   final void Function(Pointer pointer)? onHoverEnter;
   final void Function(Pointer pointer)? onHoverExit;
   final void Function(Pointer pointer)? onHoverMove;
 
   Set<Pointer> pointers = {};
 
-  HoverableTrait({this.onHoverEnter, this.onHoverExit, this.onHoverMove});
+  Hoverable({this.onHoverEnter, this.onHoverExit, this.onHoverMove});
 }
 
 void hoverableSystem(Realm realm) {
-  final query = realm.query(Has([HoverableTrait]));
+  final query = realm.query(Has([Hoverable]));
   final input = realm.getResource<Input>();
   final hoverEnters = input.justHoverEnterPointers();
   final hovers = input.justHoverPointers();
@@ -35,8 +35,8 @@ void hoverableSystem(Realm realm) {
   final foundHoverMoves = [];
 
   for (final entity in query) {
-    final hoverable = entity.get<HoverableTrait>();
-    final transformTrait = entity.get<TransformTrait>();
+    final hoverable = entity.get<Hoverable>();
+    final transformTrait = entity.get<Transform>();
 
     // Check hover enters
     for (var hoverEnter in hoverEnters) {
