@@ -30,7 +30,6 @@ jobs:
       - name: Restore packages
         run: | 
           flutter pub get
-          flutter pub get prefmon
       # Run tests
       - name: Run flutter tests
         run: |
