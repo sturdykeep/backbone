@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:backbone/backbone.dart';
 import 'package:backbone/builders.dart';
+import 'package:backbone/logging/log.dart';
 import 'package:backbone/realm_mixin.dart';
 import 'package:example/bouncer.dart';
 import 'package:example/bouncer_counter.dart';
@@ -10,6 +11,7 @@ import 'package:example/systems.dart';
 import 'package:flame/events.dart';
 import 'package:flame/experimental.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:perfmon_logger/perfmon_logger.dart';
 
@@ -24,6 +26,10 @@ class MainGame extends FlameGame
         HasRealm {
   @override
   Future<void> onLoad() async {
+    Log? logger;
+    if (kProfileMode) {
+      logger = PerfmonLogger();
+    }
     realm = RealmBuilder()
         .withPlugin(defaultPlugin)
         .withTrait(BouncerTrait)
@@ -36,7 +42,7 @@ class MainGame extends FlameGame
         .withSystem(deleteRemoveSystem)
         .withMessageSystem(removeBounceMessageSystem)
         .withMessageSystem(resizeMessageSystem)
-        .build(realmLogger: PerfmonLogger());
+        .build(realmLogger: logger);
     add(realm);
 
     // Generate some bouncers

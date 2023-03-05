@@ -15,7 +15,7 @@ typedef MessageSystem = bool Function(Realm realm, AMessage message);
 final RegExp systemNameMatcher = RegExp('\'(.*?)\'');
 
 String getSystemName(System system) {
-  if (kIsWeb) {
+  if (kIsWeb && kDebugMode) {
     try {
       return system
           .toString()
@@ -25,14 +25,12 @@ String getSystemName(System system) {
           .split("(")[0]
           .trim();
     } catch (ex) {
-      debugPrint("Error getting sysname: $ex");
-    }
-  } else {
-    final match = systemNameMatcher.firstMatch(system.toString());
-    if (match != null) {
-      return match.group(1)!;
+      // Not important fallback below will take care
     }
   }
-
+  final match = systemNameMatcher.firstMatch(system.toString());
+  if (match != null) {
+    return match.group(1)!;
+  }
   return 'Unknown System';
 }
