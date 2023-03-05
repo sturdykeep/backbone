@@ -118,6 +118,16 @@ class Transform extends Trait {
 
   Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
 
+  Matrix4 get transformMatrixWithoutOrigin {
+    return Matrix4.identity()
+      ..translate(position.x, position.y)
+      ..rotateZ(rotation)
+      ..scale(scale.x, scale.y);
+  }
+
+  Matrix4 get inverseTransformMatrixWithoutOrigin =>
+      transformMatrixWithoutOrigin.clone()..invert();
+
   RSTransform get rstTransform {
     return RSTransform.fromComponents(
       rotation: rotation,
@@ -134,7 +144,10 @@ class Transform extends Trait {
     final transforms = entity.findAllReverse<Transform>();
     final matrix = Matrix4.identity();
     for (final transform in transforms) {
-      matrix.multiply(transform.transformMatrix);
+      final last = transform == transforms.last;
+      matrix.multiply(last
+          ? transform.transformMatrix
+          : transform.transformMatrixWithoutOrigin);
     }
     return matrix;
   }

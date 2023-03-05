@@ -92,5 +92,19 @@ class TopdownGame extends PlaygroundGame {
     render.visual = rectangle;
     playerEntity.add(render);
     realm.addEntity(playerEntity);
+
+    // Add a gun that sticks from the player's middle
+    final gunEntity = Entity();
+    final gunTransform = Transform();
+    gunTransform.position = Vector2(0, 0);
+    gunTransform.size = Vector2(100, 20);
+    gunTransform.anchor = Anchor.centerLeft;
+    gunEntity.add(gunTransform);
+    final gunRender = Renderable();
+    final gunRectangle = RectangleVisual(Colors.red);
+    gunRender.visual = gunRectangle;
+    gunEntity.add(gunRender);
+    realm.addEntity(gunEntity);
+    playerEntity.addChild(gunEntity);
   }
 }
