@@ -23,6 +23,7 @@ void renderPlugin(RealmBuilder builder) {
   final pipeline = PipelineRenderer()
     ..renderers = [
       RectangleRenderer(),
+      SpriteRenderer(),
     ];
   builder.withResource(PipelineRenderer, pipeline);
   builder.withTrait(Renderable);

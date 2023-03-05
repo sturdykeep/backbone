@@ -28,14 +28,14 @@ class RectangleRenderer extends Renderer {
   @override
   void render(Iterable<Renderee> renderees, Realm realm, Canvas canvas) {
     for (final renderee in renderees) {
-      final rectangleTrait = renderee.matchedVisual as RectangleVisual;
-      final transformTrait = renderee.transformTrait;
+      final visual = renderee.matchedVisual as RectangleVisual;
+      final transform = renderee.transformTrait;
 
-      if (transformTrait != null) {
-        final paint = Paint()..color = rectangleTrait.color;
+      if (transform != null) {
+        final paint = Paint()..color = visual.color;
         canvas.save();
-        canvas.transform(transformTrait.globalTransformMatrix.storage);
-        canvas.drawRect(transformTrait.localRect, paint);
+        canvas.transform(transform.globalTransformMatrix.storage);
+        canvas.drawRect(transform.localRect, paint);
         canvas.restore();
       }
     }
