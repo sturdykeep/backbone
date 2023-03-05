@@ -24,7 +24,9 @@ String getSystemName(System system) {
           .trim()
           .split("(")[0]
           .trim();
-    } catch (ex) {}
+    } catch (ex) {
+      // Not important fallback below will take care
+    }
   }
   final match = systemNameMatcher.firstMatch(system.toString());
   if (match != null) {
