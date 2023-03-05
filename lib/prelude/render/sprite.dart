@@ -3,16 +3,20 @@ import 'package:backbone/prelude/render/mod.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/render/visual.dart';
 import 'package:backbone/realm.dart';
-import 'package:flame/extensions.dart';
+import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class RectangleVisual extends Visual {
-  Color color;
-
-  RectangleVisual(this.color);
+class SpriteVisual extends Visual {
+  Sprite? sprite;
+  SpriteVisual({this.sprite});
 }
 
-class RectangleRenderer extends Renderer {
+class SpriteAnimationVisual extends Visual {
+  SpriteAnimation? animation;
+  SpriteAnimationVisual({this.animation});
+}
+
+class SpriteRenderer extends Renderer {
   @override
   Visual? matches(Entity entity) {
     final renderTrait = entity.tryGet<Renderable>();

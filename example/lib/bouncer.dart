@@ -1,10 +1,7 @@
 import 'dart:async';
 
 import 'package:backbone/position_node.dart';
-import 'package:backbone/prelude/input/plugins/hoverable.dart';
 import 'package:backbone/prelude/input/plugins/selectable.dart';
-import 'package:backbone/prelude/input/plugins/taps.dart';
-import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
