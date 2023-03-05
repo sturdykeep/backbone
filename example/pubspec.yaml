@@ -14,9 +14,14 @@ dependencies:
   cupertino_icons: ^1.0.2
   flame: 1.6.0
   backbone:
-    path: ../
+    git:
+      url: https://github.com/sturdykeep/backbone.git
+      ref: main
   perfmon_logger:
-    path: ../../backbone_dev_tooling/perfmon_logger
+    git:
+      url: https://github.com/sturdykeep/backbone_dev_tooling.git
+      path: perfmon_logger/
+      ref: main
 
 dev_dependencies:
   flutter_test:
