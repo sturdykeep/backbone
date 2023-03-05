@@ -3,7 +3,7 @@ import 'dart:collection';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/iterable.dart';
-import 'package:backbone/log.dart';
+import 'package:backbone/logging/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/trait.dart';
@@ -53,11 +53,18 @@ class Realm extends Component with HasGameRef {
   int frame = 0;
   static int globalFrame = 0;
 
-  bool logPerformanceData = false;
+  //Logger instance
+  final Log log;
 
   /// Create a new Realm and provide the traids, ???, systems, messages and resources
-  Realm(this.registeredTraits, this.archetypeBuckets, this.systems,
-      this.messageSystems, this.resources) {
+  Realm(
+    this.registeredTraits,
+    this.archetypeBuckets,
+    this.systems,
+    this.messageSystems,
+    this.resources,
+    this.log,
+  ) {
     archetypeBucketsKeys = archetypeBuckets.keys.toList();
     archetypeBucketsValues = archetypeBuckets.values.toList();
     addResource(Time());
@@ -186,15 +193,10 @@ class Realm extends Component with HasGameRef {
   /// Returns the result of the system.
   R checkOrRunSystem<R>(System system, {bool force = false}) {
     if (force || systemResults.containsKey(system) == false) {
-      final systemStart = DateTime.now();
+      final systemName = getSystemName(system);
+      log.startTrace(systemName);
       systemResults[system] = system(this);
-      if (logPerformanceData) {
-        Log.logSystemPerformance(
-          getSystemName(system),
-          null,
-          DateTime.now().difference(systemStart).inMilliseconds,
-        );
-      }
+      log.endTrace(systemName, frame: frame);
     }
     return systemResults[system] as R;
   }
@@ -324,12 +326,12 @@ class Realm extends Component with HasGameRef {
   /// Update all details of the realm, called by Flame
   @override
   void update(double dt) {
+    log.startTrace("realm_update");
     // Globally the frame would be set only once at the beginning of the frame
     if (globalFrame != frame) {
       globalFrame = frame;
     }
 
-    final updateStart = DateTime.now();
     // Update the time
     getResource<Time>().delta = dt;
 
@@ -349,6 +351,7 @@ class Realm extends Component with HasGameRef {
 
     // Proccess the message queue
     // ...and try to keep at least 60 fps
+    log.startTrace("messsage_system");
     final messagesProcessStartTime = DateTime.now();
     while (messageSystemPaused == false) {
       if (messageQueue.isEmpty) break;
@@ -371,52 +374,42 @@ class Realm extends Component with HasGameRef {
       }
 
       // Debug code for development
-      if (logPerformanceData) {
-        final messageExecutionTime =
-            DateTime.now().difference(messageProcessTimeStart);
-        if (messageExecutionTime.inMilliseconds >= messageSystemTimeBudget) {
-          debugPrint(
-              '(Warning) Message ${currentMessage.runtimeType} took too long (${messageExecutionTime.inMilliseconds} ms) to process');
-          slowMessageDebugCallback?.call(currentMessage);
-        }
+      final messageExecutionTime =
+          DateTime.now().difference(messageProcessTimeStart);
+      if (messageExecutionTime.inMilliseconds >= messageSystemTimeBudget) {
+        debugPrint(
+            '(Warning) Message ${currentMessage.runtimeType} took too long (${messageExecutionTime.inMilliseconds} ms) to process');
+        slowMessageDebugCallback?.call(currentMessage);
+        log.addEvent(
+          "msg_sys_long",
+          payload:
+              "${currentMessage.runtimeType}:${messageExecutionTime.inMilliseconds}",
+          frame: frame,
+        );
       }
     }
-    final cleanInputStart = DateTime.now();
+    log.endTrace("messsage_system", frame: frame);
+
     // Clear the inputs
     final input = getResource<Input>();
     input.clear();
-    if (logPerformanceData) {
-      Log.logSystemPerformance(
-        "cleanInput",
-        null,
-        DateTime.now().difference(cleanInputStart).inMilliseconds,
-      );
-    }
 
     // Update the frame count
     frame += 1;
-    if (logPerformanceData) {
-      Log.logPerformance('Update',
-          DateTime.now().difference(updateStart).inMilliseconds.toString());
-      // Try to process the log
-      Log.processPerformanceLogs();
-    }
+    log.endTrace("realm_update", frame: frame);
   }
 
   @override
   void onMount() {
-    if (logPerformanceData) {
-      Log.logPerformance('Running', 'true');
-    }
+    log.addEvent('Running',
+        payload: (DateTime.now().millisecondsSinceEpoch / 1000).toString(),
+        frame: frame);
   }
 
   @override
   void renderTree(Canvas canvas) {
-    final renderStart = DateTime.now();
+    log.startTrace("realm_renderTree");
     super.renderTree(canvas);
-    if (logPerformanceData) {
-      Log.logPerformance('Render',
-          DateTime.now().difference(renderStart).inMilliseconds.toString());
-    }
+    log.endTrace("realm_renderTree", frame: frame);
   }
 }

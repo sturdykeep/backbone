@@ -1,5 +1,6 @@
 import 'package:backbone/message.dart';
 import 'package:backbone/realm.dart';
+import 'package:flutter/foundation.dart';
 
 typedef SystemResult = dynamic;
 
@@ -12,10 +13,26 @@ typedef System = SystemResult Function(Realm realm);
 typedef MessageSystem = bool Function(Realm realm, AMessage message);
 
 final RegExp systemNameMatcher = RegExp('\'(.*?)\'');
+
 String getSystemName(System system) {
-  final match = systemNameMatcher.firstMatch(system.toString());
-  if (match != null) {
-    return match.group(1)!;
+  if (kIsWeb) {
+    try {
+      return system
+          .toString()
+          .split("{")[0]
+          .split("function")[1]
+          .trim()
+          .split("(")[0]
+          .trim();
+    } catch (ex) {
+      debugPrint("Error getting sysname: $ex");
+    }
+  } else {
+    final match = systemNameMatcher.firstMatch(system.toString());
+    if (match != null) {
+      return match.group(1)!;
+    }
   }
+
   return 'Unknown System';
 }
