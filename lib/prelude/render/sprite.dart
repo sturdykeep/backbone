@@ -8,23 +8,28 @@ import 'package:backbone/prelude/render/visual.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
-import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' show Colors;
 
 class SpriteVisual extends Visual {
   Sprite? sprite;
-  SpriteVisual({this.sprite});
+  Paint? overridePaint;
+  Color? overrideColor;
+  SpriteVisual({this.sprite, this.overridePaint});
 
   Image? get image => sprite?.image;
-  Paint? get paint => sprite?.paint;
+  Paint? get paint => overridePaint ?? sprite?.paint;
+  Color get color => overrideColor ?? Colors.white;
 }
 
 class SpriteAnimationVisual extends Visual {
   SpriteAnimation? animation;
-  SpriteAnimationVisual({this.animation});
+  Paint? overridePaint;
+  Color? overrideColor;
+  SpriteAnimationVisual({this.animation, this.overridePaint});
 
   Image? get image => animation?.currentFrame.sprite.image;
-  Paint? get paint => animation?.currentFrame.sprite.paint;
+  Paint? get paint => overridePaint ?? animation?.currentFrame.sprite.paint;
+  Color get color => overrideColor ?? Colors.white;
 }
 
 /// System that advances the animation of all entities with a SpriteAnimationVisual.
@@ -51,10 +56,11 @@ class SpriteRenderer extends Renderer {
     if (renderTrait != null) {
       final visual = renderTrait.visual;
       if (visual is SpriteVisual) {
-        if (currentImage == null) {
+        if (currentImage == null && currentPaint == null) {
           currentImage = visual.image;
           currentPaint = visual.paint;
-        } else if (currentImage != visual.image) {
+        } else if (currentImage != visual.image ||
+            currentPaint != visual.paint) {
           return null;
         }
 
@@ -62,10 +68,11 @@ class SpriteRenderer extends Renderer {
       }
 
       if (visual is SpriteAnimationVisual) {
-        if (currentImage == null) {
+        if (currentImage == null && currentPaint == null) {
           currentImage = visual.image;
           currentPaint = visual.paint;
-        } else if (currentImage != visual.image) {
+        } else if (currentImage != visual.image ||
+            currentPaint != visual.paint) {
           return null;
         }
 
@@ -82,35 +89,34 @@ class SpriteRenderer extends Renderer {
 
     List<RSTransform> transforms = [];
     List<Rect> rects = [];
+    List<Color> colors = [];
     for (final renderee in renderees) {
       final transformTrait = renderee.transformTrait;
 
       if (transformTrait != null) {
         if (renderee.matchedVisual is SpriteVisual) {
+          final sprite = renderee.matchedVisual as SpriteVisual;
           transforms.add(transformTrait.globalRSTransform(
-              spriteSize:
-                  (renderee.matchedVisual as SpriteVisual).sprite!.srcSize));
-          rects.add((renderee.matchedVisual as SpriteVisual).sprite!.src);
+              spriteSize: sprite.sprite!.srcSize));
+          rects.add(sprite.sprite!.src);
+          colors.add(sprite.color);
         } else if (renderee.matchedVisual is SpriteAnimationVisual) {
+          final sprite = renderee.matchedVisual as SpriteAnimationVisual;
           transforms.add(transformTrait.globalRSTransform(
-              spriteSize: (renderee.matchedVisual as SpriteAnimationVisual)
-                  .animation!
-                  .currentFrame
-                  .sprite
-                  .srcSize));
-          rects.add((renderee.matchedVisual as SpriteAnimationVisual)
-              .animation!
-              .currentFrame
-              .sprite
-              .src);
+              spriteSize: sprite.animation!.currentFrame.sprite.srcSize));
+          rects.add(sprite.animation!.currentFrame.sprite.src);
+          colors.add(sprite.color);
         } else {
           throw Exception('Unknown visual type for SpriteRenderer');
         }
       }
     }
 
-    canvas.drawAtlas(
-        currentImage!, transforms, rects, null, null, null, currentPaint!);
+    canvas.drawAtlas(currentImage!, transforms, rects, colors,
+        BlendMode.modulate, null, currentPaint!);
+
+    currentImage = null;
+    currentPaint = null;
 
     // For each of them, render a red circle at edges and center
     // for (final renderee in renderees) {

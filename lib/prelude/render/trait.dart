@@ -6,4 +6,6 @@ class Renderable extends Trait {
   int? overridePriority;
 
   Renderable({this.visual, this.overridePriority});
+
+  T as<T extends Visual>() => visual as T;
 }

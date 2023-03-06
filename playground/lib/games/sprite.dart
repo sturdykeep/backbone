@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:backbone/builders.dart';
 import 'package:backbone/entity.dart';
 import 'package:backbone/prelude/mod.dart';
@@ -6,6 +8,7 @@ import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:playground/games/base.dart';
 
 class SpriteGame extends PlaygroundGame {
@@ -86,5 +89,28 @@ class SpriteGame extends PlaygroundGame {
     dash8.get<Transform>().scale = Vector2.all(0.5);
     realm.addEntity(dash8);
     dash8.parent = dash7;
+
+    // A sample with override green paint
+    final dash9 = createSpriteEntity(dashSprite);
+    dash9.get<Transform>().position = Vector2(750, 10);
+    dash9.get<Renderable>().as<SpriteVisual>().overrideColor = Colors.green;
+    realm.addEntity(dash9);
+
+    // Draw three sprites on top of each other with reversed priority
+    final dash10 = createSpriteEntity(dashSprite);
+    dash10.get<Transform>().position = Vector2(10, 200);
+    dash10.get<Transform>().priority = 3;
+    realm.addEntity(dash10);
+
+    final dash11 = createSpriteEntity(dashSprite);
+    dash11.get<Transform>().position = Vector2(50, 200);
+    dash11.get<Transform>().priority = 2;
+    dash11.get<Renderable>().as<SpriteVisual>().overrideColor = Colors.red;
+    realm.addEntity(dash11);
+
+    final dash12 = createSpriteEntity(dashSprite);
+    dash12.get<Transform>().position = Vector2(100, 200);
+    dash12.get<Transform>().priority = 1;
+    realm.addEntity(dash12);
   }
 }
