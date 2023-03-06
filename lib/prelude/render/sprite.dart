@@ -8,6 +8,7 @@ import 'package:backbone/prelude/render/visual.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' show Colors;
 
 class SpriteVisual extends Visual {
@@ -110,5 +111,38 @@ class SpriteRenderer extends Renderer {
 
     canvas.drawAtlas(
         currentImage!, transforms, rects, null, null, null, currentPaint!);
+
+    // For each of them, render a red circle at edges and center
+    for (final renderee in renderees) {
+      final transformTrait = renderee.transformTrait;
+      if (transformTrait != null) {
+        final localRect = transformTrait.localRect;
+        final center = localRect.center;
+        final topLeft = localRect.topLeft;
+        final topRight = localRect.topRight;
+        final bottomLeft = localRect.bottomLeft;
+        final bottomRight = localRect.bottomRight;
+
+        final globalTransform = transformTrait.globalTransformMatrix;
+        final globalCenter = globalTransform.transform2(center.toVector2());
+        final globalTopLeft = globalTransform.transform2(topLeft.toVector2());
+        final globalTopRight = globalTransform.transform2(topRight.toVector2());
+        final globalBottomLeft =
+            globalTransform.transform2(bottomLeft.toVector2());
+        final globalBottomRight =
+            globalTransform.transform2(bottomRight.toVector2());
+
+        canvas.drawCircle(
+            globalCenter.toOffset(), 4, Paint()..color = Colors.red);
+        canvas.drawCircle(
+            globalTopLeft.toOffset(), 4, Paint()..color = Colors.red);
+        canvas.drawCircle(
+            globalTopRight.toOffset(), 4, Paint()..color = Colors.red);
+        canvas.drawCircle(
+            globalBottomLeft.toOffset(), 4, Paint()..color = Colors.red);
+        canvas.drawCircle(
+            globalBottomRight.toOffset(), 4, Paint()..color = Colors.red);
+      }
+    }
   }
 }

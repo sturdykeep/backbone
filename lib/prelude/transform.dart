@@ -135,8 +135,8 @@ class Transform extends Trait {
     return RSTransform.fromComponents(
       rotation: rotation,
       scale: scale.x * scaleToSize.x,
-      anchorX: origin.x * size.x,
-      anchorY: origin.y * size.y,
+      anchorX: anchor.x * (spriteSize?.x ?? size.x),
+      anchorY: anchor.y * (spriteSize?.y ?? size.y),
       translateX: position.x,
       translateY: position.y,
     );

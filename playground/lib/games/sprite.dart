@@ -16,7 +16,7 @@ class SpriteGame extends PlaygroundGame {
   Entity createSpriteEntity(Sprite sprite) {
     final entity = Entity();
     final transform = Transform();
-    transform.size = Vector2.all(100);
+    transform.size = Vector2.all(150);
     entity.add(transform);
     final renderTrait = Renderable();
     renderTrait.visual = SpriteVisual(sprite: sprite);
@@ -39,5 +39,11 @@ class SpriteGame extends PlaygroundGame {
     final dash1 = createSpriteEntity(dashSprite);
     dash1.get<Transform>().position = Vector2(10, 10);
     realm.addEntity(dash1);
+
+    // Same as before, but anchored to the center
+    final dash2 = createSpriteEntity(dashSprite);
+    dash2.get<Transform>().position = Vector2(10 + 150 / 2, 10 + 150 / 2);
+    dash2.get<Transform>().anchor = Anchor.center;
+    realm.addEntity(dash2);
   }
 }
