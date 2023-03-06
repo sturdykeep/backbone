@@ -2,8 +2,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:backbone/builders.dart';
-import 'package:backbone/node.dart';
-import 'package:backbone/position_node.dart';
+import 'package:backbone/component.dart';
+import 'package:backbone/position_component.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
@@ -22,7 +22,7 @@ void transformPlugin(RealmBuilder builder) {
 }
 
 class Transform extends Trait {
-  Node? node;
+  HasEntity? node;
 
   Vector2 _position = Vector2.zero();
   Vector2 _scale = Vector2.all(1.0);
@@ -36,8 +36,8 @@ class Transform extends Trait {
   set position(Vector2 value) {
     if (_position != value) {
       _position = value;
-      if (node != null && node is PositionNode) {
-        final positionNode = node as PositionNode;
+      if (node != null && node is PositionEntityComponent) {
+        final positionNode = node as PositionEntityComponent;
         positionNode.position = value;
       }
     }
@@ -48,8 +48,8 @@ class Transform extends Trait {
   set scale(Vector2 value) {
     if (_scale != value) {
       _scale = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).scale = value;
+      if (node != null && node is PositionEntityComponent) {
+        (node as PositionEntityComponent).scale = value;
       }
     }
   }
@@ -59,8 +59,8 @@ class Transform extends Trait {
   set rotation(double value) {
     if (_rotation != value) {
       _rotation = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).angle = value;
+      if (node != null && node is PositionEntityComponent) {
+        (node as PositionEntityComponent).angle = value;
       }
     }
   }
@@ -76,8 +76,8 @@ class Transform extends Trait {
   set size(Vector2 value) {
     if (_size != value) {
       _size = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).size = value;
+      if (node != null && node is PositionEntityComponent) {
+        (node as PositionEntityComponent).size = value;
       }
     }
   }
@@ -87,8 +87,8 @@ class Transform extends Trait {
   set anchor(Anchor value) {
     if (_anchor != value) {
       _anchor = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).anchor = value;
+      if (node != null && node is PositionEntityComponent) {
+        (node as PositionEntityComponent).anchor = value;
       }
     }
   }
@@ -98,8 +98,8 @@ class Transform extends Trait {
   set priority(int value) {
     if (_priority != value) {
       _priority = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).priority = value;
+      if (node != null && node is PositionEntityComponent) {
+        (node as PositionEntityComponent).priority = value;
       }
     }
   }
@@ -213,10 +213,10 @@ class Transform extends Trait {
 
   @override
   void onAdd() {
-    node = entity.tryGet<NodeTrait>()?.node;
+    node = entity.tryGet<ComponentTrait>()?.node;
 
-    if (node != null && node is PositionNode) {
-      final positionNode = node as PositionNode;
+    if (node != null && node is PositionEntityComponent) {
+      final positionNode = node as PositionEntityComponent;
       positionNode.position = position;
       positionNode.scale = scale;
       positionNode.angle = rotation;

@@ -1,5 +1,5 @@
 import 'package:backbone/filter.dart';
-import 'package:backbone/node.dart';
+import 'package:backbone/component.dart';
 import 'package:backbone/prelude/text/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
@@ -15,7 +15,7 @@ void textSystem(Realm realm) {
   final counterZoom = Vector2.all(cameraZoom + (-2.0 * (cameraZoom - 1.0)));
 
   for (var entity in query) {
-    final node = entity.tryGet<NodeTrait>()?.node;
+    final node = entity.tryGet<ComponentTrait>()?.node;
     final trait = entity.get<TextTrait>();
 
     if (node != null && trait.dirty) {

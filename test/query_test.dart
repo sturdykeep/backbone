@@ -3,10 +3,10 @@ import 'package:backbone/component_node.dart';
 import 'package:backbone/iterable.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
-import 'package:backbone/node.dart';
+import 'package:backbone/component.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class TestNode extends ComponentNode {
+class TestNode extends EntityComponent {
   TestNode() : super();
 }
 

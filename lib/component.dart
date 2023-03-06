@@ -6,9 +6,9 @@ import 'package:backbone/trait.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
 
-/// Nodes are a collection of game objects. Nodes can
+/// EntityComponent are a collection of game objects. EntityComponent can
 /// have traits and their entities can be processed by systems.
-mixin Node on HasGameRef {
+mixin HasEntity on HasGameRef {
   /// Realm of the node, null if not yet added to a realm.
   Realm? realm;
 
@@ -28,7 +28,7 @@ mixin Node on HasGameRef {
     realm = findRealmParent();
     assert(realm != null, 'Node must be a child of a realm');
     realm!.addEntity(entity);
-    entity.add(NodeTrait(this));
+    entity.add(ComponentTrait(this));
   }
 
   @override
@@ -40,11 +40,11 @@ mixin Node on HasGameRef {
   // Methods
   // Tree searching
   /// Get the parent of the node, it might return null
-  Node? findNodeParent() {
+  HasEntity? findNodeParent() {
     var componentToCheck = parent;
-    Node? parentNode;
+    HasEntity? parentNode;
     while (componentToCheck != null) {
-      if (componentToCheck is Node) {
+      if (componentToCheck is HasEntity) {
         parentNode = componentToCheck;
         break;
       }
@@ -54,14 +54,14 @@ mixin Node on HasGameRef {
   }
 
   /// Get all child nodes of the current node
-  List<Node> findNodeChildren() {
-    var result = <Node>[];
+  List<HasEntity> findNodeChildren() {
+    var result = <HasEntity>[];
     var childrenToCheck = Queue<Component>();
     childrenToCheck.addAll(children);
 
     while (childrenToCheck.isNotEmpty) {
       final component = childrenToCheck.removeFirst();
-      if (component is Node) {
+      if (component is HasEntity) {
         result.add(component);
       }
       childrenToCheck.addAll(component.children);
@@ -95,7 +95,7 @@ mixin Node on HasGameRef {
       if (component is C) {
         result.add(component);
       }
-      if (component is Node) {
+      if (component is HasEntity) {
         continue;
       }
       childrenToCheck.addAll(component.children);
@@ -105,15 +105,19 @@ mixin Node on HasGameRef {
   }
 
   // Utilities
-  int compareToOnPriority(Node other) {
+  int compareToOnPriority(HasEntity other) {
     return priority.compareTo(other.priority);
   }
 }
 
-/// A trait that allows to access a node through the entity.
-class NodeTrait extends Trait {
-  /// The node that this trait is attached to.
-  final Node node;
+/// Default node that comes without any traits. This node is based on the
+/// component class of Flame.
+abstract class EntityComponent extends Component with HasGameRef, HasEntity {}
 
-  NodeTrait(this.node);
+/// A trait that allows to access a component through the entity.
+class ComponentTrait extends Trait {
+  /// The node that this trait is attached to.
+  final HasEntity node;
+
+  ComponentTrait(this.node);
 }
