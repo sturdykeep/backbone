@@ -7,6 +7,7 @@ import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
+import 'dart:math' as math;
 
 /// Plugin to register the TransformTrait and transformSystem in your realm
 /// Both are used to handle PositionComponent basics setter for:
@@ -128,17 +129,33 @@ class Transform extends Trait {
   Matrix4 get inverseTransformMatrixWithoutOrigin =>
       transformMatrixWithoutOrigin.clone()..invert();
 
-  RSTransform rstTransform({Vector2? spriteSize}) {
+  RSTransform globalRSTransform({Vector2? spriteSize}) {
     final scaleToSize = spriteSize != null
         ? Vector2(size.x / spriteSize.x, size.y / spriteSize.y)
         : Vector2.all(1.0);
+    final globalTransform = globalTransformMatrix;
+
+    final transformedPosition = globalTransform.transform2(origin);
+    // figure out the scale
+    final pointA = Vector2(0, 0);
+    final pointB = Vector2(1, 0);
+    final transformedPointA = globalTransform.transform2(pointA);
+    final transformedPointB = globalTransform.transform2(pointB);
+    final transformedScale = transformedPointA.distanceTo(transformedPointB);
+    final transformedRotation = globalTransform
+        .getRotation()
+        .transform2(Vector2(1, 0))
+        .angleTo(Vector2(1, 0));
+
+    final anchorX = anchor.x * (spriteSize?.x ?? size.x);
+    final anchorY = anchor.y * (spriteSize?.y ?? size.y);
     return RSTransform.fromComponents(
-      rotation: rotation,
-      scale: scale.x * scaleToSize.x,
-      anchorX: anchor.x * (spriteSize?.x ?? size.x),
-      anchorY: anchor.y * (spriteSize?.y ?? size.y),
-      translateX: position.x,
-      translateY: position.y,
+      rotation: transformedRotation,
+      scale: transformedScale * scaleToSize.x,
+      anchorX: anchorX,
+      anchorY: anchorY,
+      translateX: transformedPosition.x,
+      translateY: transformedPosition.y,
     );
   }
 

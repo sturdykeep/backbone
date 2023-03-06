@@ -42,8 +42,49 @@ class SpriteGame extends PlaygroundGame {
 
     // Same as before, but anchored to the center
     final dash2 = createSpriteEntity(dashSprite);
-    dash2.get<Transform>().position = Vector2(10 + 150 / 2, 10 + 150 / 2);
+    dash2.get<Transform>().position = Vector2(180 + 150 / 2, 10 + 150 / 2);
     dash2.get<Transform>().anchor = Anchor.center;
     realm.addEntity(dash2);
+
+    // Centered sprite with another one painted green on top
+    // scaled 0.5 and rotated 45 degrees
+    final dash3 = createSpriteEntity(dashSprite);
+    dash3.get<Transform>().position = Vector2(360 + 150 / 2, 10 + 150 / 2);
+    dash3.get<Transform>().anchor = Anchor.center;
+    realm.addEntity(dash3);
+
+    final dash4 = createSpriteEntity(dashSprite);
+    dash4.get<Transform>().position = Vector2(0, 0);
+    dash4.get<Transform>().anchor = Anchor.center;
+    dash4.get<Transform>().scale = Vector2.all(0.5);
+    dash4.get<Transform>().rotationDegrees = 45;
+    realm.addEntity(dash4);
+    dash4.parent = dash3;
+
+    // Build a "scorpion tail" with 4 sprites one after the other
+    final dash5 = createSpriteEntity(dashSprite);
+    dash5.get<Transform>().position = Vector2(540, 10);
+    realm.addEntity(dash5);
+
+    final dash6 = createSpriteEntity(dashSprite);
+    dash6.get<Transform>().position = Vector2(150, 150);
+    dash6.get<Transform>().rotationDegrees = 10;
+    dash6.get<Transform>().scale = Vector2.all(0.5);
+    realm.addEntity(dash6);
+    dash6.parent = dash5;
+
+    final dash7 = createSpriteEntity(dashSprite);
+    dash7.get<Transform>().position = Vector2(150, 150);
+    dash7.get<Transform>().rotationDegrees = 10;
+    dash7.get<Transform>().scale = Vector2.all(0.5);
+    realm.addEntity(dash7);
+    dash7.parent = dash6;
+
+    final dash8 = createSpriteEntity(dashSprite);
+    dash8.get<Transform>().position = Vector2(150, 150);
+    dash8.get<Transform>().rotationDegrees = 10;
+    dash8.get<Transform>().scale = Vector2.all(0.5);
+    realm.addEntity(dash8);
+    dash8.parent = dash7;
   }
 }
