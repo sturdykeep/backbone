@@ -2,6 +2,7 @@ import 'package:backbone/realm_mixin.dart';
 import 'package:backbone/widget.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter/material.dart';
+import 'package:playground/games/animation.dart';
 import 'package:playground/games/sprite.dart';
 import 'package:playground/games/top_down.dart';
 import 'package:playground/games/transform.dart';
@@ -28,7 +29,8 @@ class AppShell extends HookWidget {
   List<PlaygroundGameInitializer> games = [
     PlaygroundGameInitializer('Transform', () => TransformGame()),
     PlaygroundGameInitializer('Top-down', () => TopdownGame()),
-    PlaygroundGameInitializer('Sprite', () => SpriteGame())
+    PlaygroundGameInitializer('Sprite', () => SpriteGame()),
+    PlaygroundGameInitializer('Animation', () => AnimationGame()),
   ];
 
   @override
