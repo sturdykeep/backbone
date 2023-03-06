@@ -103,13 +103,13 @@ class SpriteGame extends PlaygroundGame {
     realm.addEntity(dash10);
 
     final dash11 = createSpriteEntity(dashSprite);
-    dash11.get<Transform>().position = Vector2(50, 200);
+    dash11.get<Transform>().position = Vector2(60, 200);
     dash11.get<Transform>().priority = 2;
     dash11.get<Renderable>().as<SpriteVisual>().overrideColor = Colors.red;
     realm.addEntity(dash11);
 
     final dash12 = createSpriteEntity(dashSprite);
-    dash12.get<Transform>().position = Vector2(100, 200);
+    dash12.get<Transform>().position = Vector2(110, 200);
     dash12.get<Transform>().priority = 1;
     realm.addEntity(dash12);
   }
