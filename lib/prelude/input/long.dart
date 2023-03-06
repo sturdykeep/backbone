@@ -4,7 +4,7 @@ import 'package:backbone/realm.dart';
 import 'package:flutter/widgets.dart';
 
 void longDownSystem(Realm realm) {
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final pointers = input.pointers();
   final downPointers =
       pointers.where((pointer) => pointer.state is PointerStateDown).toList();

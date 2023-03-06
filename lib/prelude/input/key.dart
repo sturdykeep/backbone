@@ -25,7 +25,7 @@ class BackboneKey {
 /// Performs maintenance on the [BackboneKey]s.
 void keyboardSystem(Realm realm) {
   final frame = realm.frame;
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
 
   // 1. Make sure to fill out the `pressedOnFrame` property.
   for (final key in input.keys()) {

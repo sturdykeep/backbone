@@ -28,7 +28,7 @@ void rotateSystem(Realm realm) {
   final player = query.first;
   final transform = player.get<Transform>();
 
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final mouseInputs = input.pointers().where(
       (p) => p.kind == PointerDeviceKind.mouse && p.state is PointerStateHover);
   final mouse = mouseInputs.isNotEmpty ? mouseInputs.first : null;
@@ -46,8 +46,8 @@ void moveSystem(Realm realm) {
   final player = query.first;
   final transform = player.get<Transform>();
 
-  final input = realm.getResource<Input>();
-  final time = realm.getResource<Time>();
+  final input = realm.resource<Input>();
+  final time = realm.resource<Time>();
   const speed = 400.0;
   if (input.pressed(LogicalKeyboardKey.keyW)) {
     transform.position += Vector2(0, -speed * time.delta);

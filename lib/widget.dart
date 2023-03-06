@@ -85,7 +85,7 @@ class _BackboneGameWidgetState<T extends HasRealm>
   void _getWidgetInfo(_) {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     if (widget.game.realmReady) {
-      widget.game.realm.getResource<Input>().widgetOffset =
+      widget.game.realm.resource<Input>().widgetOffset =
           renderBox.localToGlobal(Offset.zero);
     }
   }
@@ -102,17 +102,17 @@ class _BackboneGameWidgetState<T extends HasRealm>
     final start = DateTime.now();
 
     if (event is PointerAddedEvent) {
-      widget.game.realm.getResource<Input>().onPointerAdded(event);
+      widget.game.realm.resource<Input>().onPointerAdded(event);
     } else if (event is PointerHoverEvent) {
-      widget.game.realm.getResource<Input>().onPointerHover(event);
+      widget.game.realm.resource<Input>().onPointerHover(event);
     } else if (event is PointerRemovedEvent) {
-      widget.game.realm.getResource<Input>().onPointerRemoved(event);
+      widget.game.realm.resource<Input>().onPointerRemoved(event);
     } else if (event is PointerDownEvent) {
-      widget.game.realm.getResource<Input>().onPointerDown(event);
+      widget.game.realm.resource<Input>().onPointerDown(event);
     } else if (event is PointerMoveEvent) {
-      widget.game.realm.getResource<Input>().onPointerMove(event);
+      widget.game.realm.resource<Input>().onPointerMove(event);
     } else if (event is PointerUpEvent) {
-      widget.game.realm.getResource<Input>().onPointerUp(event);
+      widget.game.realm.resource<Input>().onPointerUp(event);
     }
     if (widget.game.realm.logPerformanceData) {
       Log.logSystemPerformance("pointerRouter", null,

@@ -120,9 +120,9 @@ void ensureSelectableNodesAreTappable(Realm realm) {
 
 /// A system that handles selection of nodes.
 void selectableSystem(Realm realm) {
-  final selection = realm.getResource<Selection>();
+  final selection = realm.resource<Selection>();
   final tappable = realm.checkOrRunSystem<TappableSystemResult>(tappableSystem);
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   // When control is pressed, the selection is additive.
   // Otherwise, the selection is replaced.
   bool ctrlPressed = input.pressed(LogicalKeyboardKey.controlLeft) ||

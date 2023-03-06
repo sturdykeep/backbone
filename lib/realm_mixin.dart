@@ -28,7 +28,7 @@ mixin HasRealm on FlameGame {
 
   bool onKeyEvent(KeyEvent event) {
     if (realmReady) {
-      return realm.getResource<Input>().onKeyEvent(event);
+      return realm.resource<Input>().onKeyEvent(event);
     }
     return false;
   }

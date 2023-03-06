@@ -8,7 +8,7 @@ import 'package:backbone/realm.dart';
 
 void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // TODO: I am sure this can be optimized, a lot.
-  final pipeline = realm.getResource<PipelineRenderer>();
+  final pipeline = realm.resource<PipelineRenderer>();
   final query = realm.query(Has([Renderable]));
 
   final List<Renderee> renderees = [];

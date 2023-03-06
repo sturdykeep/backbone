@@ -35,7 +35,7 @@ void main() {
     test('can access resource from a system', () {
       var resultValue = 0;
       var realm = RealmBuilder().withSystem((realm) {
-        resultValue = realm.getResource<TestResource>().value;
+        resultValue = realm.resource<TestResource>().value;
       }).build();
       var resource = TestResource(1);
       realm.addResource(resource);

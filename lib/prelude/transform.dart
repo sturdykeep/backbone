@@ -128,10 +128,13 @@ class Transform extends Trait {
   Matrix4 get inverseTransformMatrixWithoutOrigin =>
       transformMatrixWithoutOrigin.clone()..invert();
 
-  RSTransform get rstTransform {
+  RSTransform rstTransform({Vector2? spriteSize}) {
+    final scaleToSize = spriteSize != null
+        ? Vector2(size.x / spriteSize.x, size.y / spriteSize.y)
+        : Vector2.all(1.0);
     return RSTransform.fromComponents(
       rotation: rotation,
-      scale: scale.x,
+      scale: scale.x * scaleToSize.x,
       anchorX: origin.x * size.x,
       anchorY: origin.y * size.y,
       translateX: position.x,

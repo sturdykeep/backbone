@@ -61,7 +61,7 @@ class MainGame extends FlameGame with HasRealm {
     }
     realm.add(TemplateBar(size));
     realm.add(BouncerCounterNode());
-    realm.getResource<Input>().debugMode = true;
+    realm.resource<Input>().debugMode = true;
 
     realmReady = true;
   }

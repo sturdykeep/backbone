@@ -65,7 +65,7 @@ TappableSystemResult tappableSystem(Realm realm) {
   final query = realm.query(Has([Tappable]));
   final result = TappableSystemResult();
 
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final tapStarts = input.justTapDownPointers();
   final foundTapStarts = <CapturedTappableEvent>[];
   final longTapStarts = input.justLongTapDownPointers();

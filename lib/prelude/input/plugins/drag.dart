@@ -36,7 +36,7 @@ void draggableSystem(Realm realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(hoverableSystem);
 
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final dragStarts = input.justDragStartPointers();
   final dragUpdates = input.justDragUpdatePointers();
   final dragEnds = input.justDragEndPointers();
@@ -124,7 +124,7 @@ void dragReceiverSystem(Realm realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(draggableSystem);
 
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final dragEnds = input.justDragEndPointers();
   if (dragEnds.isEmpty) return;
   final query = realm.query(Has([DragReceiver]));

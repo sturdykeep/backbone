@@ -176,7 +176,7 @@ class Realm extends Component with HasGameRef {
   }
 
   // Return a resource that must exists
-  R getResource<R extends dynamic>() {
+  R resource<R extends dynamic>() {
     return resources[R]! as R;
   }
 
@@ -325,7 +325,7 @@ class Realm extends Component with HasGameRef {
 
     final updateStart = DateTime.now();
     // Update the time
-    getResource<Time>().delta = dt;
+    resource<Time>().delta = dt;
 
     // Reset the system results
     systemResults.clear();
@@ -377,7 +377,7 @@ class Realm extends Component with HasGameRef {
     }
     final cleanInputStart = DateTime.now();
     // Clear the inputs
-    final input = getResource<Input>();
+    final input = resource<Input>();
     input.clear();
     if (logPerformanceData) {
       Log.logSystemPerformance(

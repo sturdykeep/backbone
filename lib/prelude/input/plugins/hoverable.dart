@@ -17,7 +17,7 @@ class Hoverable extends Trait {
 
 void hoverableSystem(Realm realm) {
   final query = realm.query(Has([Hoverable]));
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final hoverEnters = input.justHoverEnterPointers();
   final hovers = input.justHoverPointers();
   final hoverLeaves = input.justHoverLeavePointers();

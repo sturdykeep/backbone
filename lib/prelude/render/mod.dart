@@ -4,6 +4,7 @@ import 'package:backbone/builders.dart';
 import 'package:backbone/entity.dart';
 import 'package:backbone/pool.dart';
 import 'package:backbone/prelude/render/rectangle.dart';
+import 'package:backbone/prelude/render/sprite.dart';
 import 'package:backbone/prelude/render/system.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/render/visual.dart';
@@ -28,6 +29,7 @@ void renderPlugin(RealmBuilder builder) {
   builder.withResource(PipelineRenderer, pipeline);
   builder.withTrait(Renderable);
   builder.withRenderSystem(pipelineRenderSystem);
+  builder.withSystem(spriteAnimationSystem);
 }
 
 /// Resource that includes the state of rendering.

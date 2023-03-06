@@ -17,7 +17,7 @@ import 'template_bar.dart';
 
 /// System that bounces boxes off screen edges
 void bounceSystem(Realm realm) {
-  final time = realm.getResource<Time>();
+  final time = realm.resource<Time>();
   final realmQuery = realm.query(Has([Transform, BouncerTrait]));
   // or
   // final realmQuery = realm.query(And([Has([TransformTrait]), Has([BouncerTrait])]));
@@ -55,7 +55,7 @@ void bounceSystem(Realm realm) {
 /// System that spawns new boxes on click
 void tapSpawnSystem(Realm realm) {
   final rng = Random();
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   final pointers = input.justReleasedPointers();
   for (var pointer in pointers) {
     if (pointer.handled == false) {
@@ -84,9 +84,9 @@ void tapSpawnSystem(Realm realm) {
 }
 
 void deleteRemoveSystem(Realm realm) {
-  final selected = realm.getResource<Selection>();
+  final selected = realm.resource<Selection>();
   final toRemove = selected.entities.toList();
-  final input = realm.getResource<Input>();
+  final input = realm.resource<Input>();
   if (input.justPressed(LogicalKeyboardKey.delete)) {
     for (final node in toRemove) {
       realm.pushMessage(RemoveBouncerMessage(node as BouncerNode));
