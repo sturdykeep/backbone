@@ -7,7 +7,6 @@ import 'package:backbone/position_component.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
-import 'dart:math' as math;
 
 /// Plugin to register the TransformTrait and transformSystem in your realm
 /// Both are used to handle PositionComponent basics setter for:

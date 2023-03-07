@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart';
 
 void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // Check if in debug mode in Flutter
-  const debug = kDebugMode;
+  final debug = realm.debugMode;
   if (debug) {
     debugPrint('[Rendering pipeline] New frame');
   }
