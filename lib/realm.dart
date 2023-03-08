@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/entity.dart';
@@ -418,13 +419,13 @@ class Realm extends Component with HasGameRef {
     final translatedSimd = translationSimd.transform2(position);
     debugPrint('Translated SIMD: $translatedSimd');
 
-    const iterations = 1000;
+    const iterations = 10;
 
     final startTime = DateTime.now();
     var originalMatrix = Matrix4.identity().toFloat32x4List();
     var finalVectorSimd = position.clone();
     for (var i = 0; i < iterations; i++) {
-      originalMatrix = originalMatrix.multiply(translationSimd);
+      originalMatrix.multiplySelf(translationSimd);
       finalVectorSimd = originalMatrix.transform2(finalVectorSimd);
     }
     final endTime = DateTime.now();
@@ -481,6 +482,19 @@ class Realm extends Component with HasGameRef {
     final mlEndTime = DateTime.now();
     debugPrint(
         'Double Transform ML: ${mlEndTime.difference(mlStartTime).inMilliseconds} ms with $mlFinalVector');
+
+    // Using SIMD (without Vector2)
+    final startTime3 = DateTime.now();
+    var originalMatrix3 = Matrix4.identity().toFloat32x4List();
+    var finalVectorSimd3 =
+        Float32x4List.fromList([Float32x4(position.x, position.y, 0, 0)]);
+    for (var i = 0; i < iterations; i++) {
+      originalMatrix3.multiplySelf(translationSimd);
+      originalMatrix3.transformFloat32x4ListSelf(finalVectorSimd3);
+    }
+    final endTime3 = DateTime.now();
+    debugPrint(
+        'Double Transform Simd (without Vector2, self): ${endTime3.difference(startTime3).inMilliseconds} ms with $finalVectorSimd3');
 
     if (logPerformanceData) {
       Log.logPerformance('Running', 'true');

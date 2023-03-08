@@ -41,10 +41,24 @@ extension Float32x4ListAsMatrix on Float32x4List {
     return Vector2(result[0].x, result[0].y);
   }
 
+  Float32x4List transformFloat32x4List(Float32x4List vector) {
+    final result = Float32x4List(vector.length);
+    Matrix44SIMDOperations.transform4(result, 0, this, 0, vector, 0);
+    return result;
+  }
+
+  void transformFloat32x4ListSelf(Float32x4List vector) {
+    Matrix44SIMDOperations.transform4(vector, 0, this, 0, vector, 0);
+  }
+
   Float32x4List multiply(Float32x4List other) {
     final result = Float32x4List(4);
     Matrix44SIMDOperations.multiply(result, 0, this, 0, other, 0);
     return result;
+  }
+
+  void multiplySelf(Float32x4List other) {
+    Matrix44SIMDOperations.multiply(this, 0, this, 0, other, 0);
   }
 
   Float32x4List inverse() {
