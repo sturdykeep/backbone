@@ -1,10 +1,8 @@
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:backbone/builders.dart';
 import 'package:backbone/component.dart';
-import 'package:backbone/linear_algebra.dart';
 import 'package:backbone/position_component.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
@@ -37,9 +35,9 @@ class Transform extends Trait {
   }
 
   // Cache
-  Float32x4List _matrix = Matrix4.identity().toFloat32x4List();
-  Float32x4List _matrixInverse = Matrix4.identity().toFloat32x4List();
-  Float32x4List _matrixWithoutOrigin = Matrix4.identity().toFloat32x4List();
+  Matrix4 _matrix = Matrix4.identity();
+  Matrix4 _matrixInverse = Matrix4.identity();
+  Matrix4 _matrixWithoutOrigin = Matrix4.identity();
 
   // -- position
   Vector2 get position => _position;
@@ -142,7 +140,7 @@ class Transform extends Trait {
   }
 
   Matrix4 get inverseTransformMatrixWithoutOrigin =>
-      transformMatrixWithoutOrigin.clone()..invert();
+      transformMatrixWithoutOrigin..invert();
 
   RSTransform globalRSTransform({Vector2? spriteSize}) {
     final scaleToSize = spriteSize != null
@@ -150,14 +148,17 @@ class Transform extends Trait {
         : Vector2.all(1.0);
     final globalTransform = globalTransformMatrix;
 
-    final transformedPosition = globalTransform.transform2(Vector2.zero());
+    final transformedPosition = globalTransform.transform2(origin);
     // figure out the scale
     final pointA = Vector2(0, 0);
     final pointB = Vector2(1, 0);
     final transformedPointA = globalTransform.transform2(pointA);
     final transformedPointB = globalTransform.transform2(pointB);
     final transformedScale = transformedPointA.distanceTo(transformedPointB);
-    final transformedRotation = transformedPointA.angleTo(transformedPointB);
+    final transformedRotation = globalTransform
+        .getRotation()
+        .transform2(Vector2(1, 0))
+        .angleTo(Vector2(1, 0));
 
     final anchorX = anchor.x * (spriteSize?.x ?? size.x);
     final anchorY = anchor.y * (spriteSize?.y ?? size.y);
@@ -172,23 +173,23 @@ class Transform extends Trait {
   }
 
   /// Transform matrix, that takes parent transforms into account.
-  Float32x4List get globalTransformMatrix {
+  Matrix4 get globalTransformMatrix {
     final transforms = entity.findAllReverse<Transform>();
-    final matrix = Matrix4.identity().toFloat32x4List();
+    final matrix = Matrix4.identity();
     for (final transform in transforms) {
       final last = transform == transforms.last;
-      matrix.multiply(last ? _matrix : _matrixWithoutOrigin);
+      matrix
+          .multiply(last ? transform._matrix : transform._matrixWithoutOrigin);
     }
     return matrix;
   }
 
-  Float32x4List get globalInverseTransformMatrix =>
-      globalTransformMatrix.inverse();
+  Matrix4 get globalInverseTransformMatrix => globalTransformMatrix..invert();
 
   void _populateCaches() {
-    _matrix = transformMatrix.toFloat32x4List();
-    _matrixInverse = inverseTransformMatrix.toFloat32x4List();
-    _matrixWithoutOrigin = transformMatrixWithoutOrigin.toFloat32x4List();
+    _matrix = transformMatrix;
+    _matrixInverse = inverseTransformMatrix;
+    _matrixWithoutOrigin = transformMatrixWithoutOrigin;
   }
 
   Vector2 toLocal(Vector2 point) {
