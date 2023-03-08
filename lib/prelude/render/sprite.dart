@@ -8,7 +8,7 @@ import 'package:backbone/prelude/render/visual.dart';
 import 'package:backbone/prelude/time.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart' show Colors, debugPrint;
 
 class SpriteVisual extends Visual {
   Sprite? sprite;
@@ -50,6 +50,36 @@ class SpriteRenderer extends Renderer {
   Image? currentImage;
   Paint? currentPaint;
 
+  bool paintsAreSame(Paint a, Paint b) {
+    return a.color == b.color &&
+        a.blendMode == b.blendMode &&
+        a.maskFilter == b.maskFilter &&
+        a.filterQuality == b.filterQuality &&
+        a.invertColors == b.invertColors &&
+        a.shader == b.shader &&
+        a.colorFilter == b.colorFilter &&
+        a.imageFilter == b.imageFilter &&
+        a.isAntiAlias == b.isAntiAlias &&
+        a.strokeWidth == b.strokeWidth &&
+        a.strokeCap == b.strokeCap &&
+        a.strokeJoin == b.strokeJoin &&
+        a.strokeMiterLimit == b.strokeMiterLimit &&
+        a.style == b.style &&
+        a.color == b.color &&
+        a.maskFilter == b.maskFilter &&
+        a.filterQuality == b.filterQuality &&
+        a.invertColors == b.invertColors &&
+        a.shader == b.shader &&
+        a.colorFilter == b.colorFilter &&
+        a.imageFilter == b.imageFilter &&
+        a.isAntiAlias == b.isAntiAlias &&
+        a.strokeWidth == b.strokeWidth &&
+        a.strokeCap == b.strokeCap &&
+        a.strokeJoin == b.strokeJoin &&
+        a.strokeMiterLimit == b.strokeMiterLimit &&
+        a.style == b.style;
+  }
+
   @override
   Visual? matches(Entity entity) {
     final renderTrait = entity.tryGet<Renderable>();
@@ -60,7 +90,7 @@ class SpriteRenderer extends Renderer {
           currentImage = visual.image;
           currentPaint = visual.paint;
         } else if (currentImage != visual.image ||
-            currentPaint != visual.paint) {
+            paintsAreSame(currentPaint!, visual.paint!) == false) {
           return null;
         }
 
@@ -72,7 +102,7 @@ class SpriteRenderer extends Renderer {
           currentImage = visual.image;
           currentPaint = visual.paint;
         } else if (currentImage != visual.image ||
-            currentPaint != visual.paint) {
+            paintsAreSame(currentPaint!, visual.paint!) == false) {
           return null;
         }
 

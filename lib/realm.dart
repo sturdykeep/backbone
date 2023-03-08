@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:backbone/archetype.dart';
 import 'package:backbone/entity.dart';
 import 'package:backbone/iterable.dart';
+import 'package:backbone/linear_algebra.dart';
 import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/time.dart';
@@ -13,7 +15,9 @@ import 'package:backbone/message.dart';
 import 'package:backbone/system.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
+import 'package:flame/extensions.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flame/extensions.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
@@ -399,6 +403,85 @@ class Realm extends Component with HasGameRef {
 
   @override
   void onMount() {
+    final matrix = Matrix4.translation(Vector3(2, 2, 0))
+      ..rotateZ(45 * pi / 180);
+
+    // Test some Matricies
+    final position = Vector2(100, 100);
+    final translation = Matrix4.identity()
+      ..setFromFloat32x4List(matrix.toFloat32x4List());
+    final translated = translation.transform2(position);
+    debugPrint('Translated: $translated');
+
+    // Using SIMD
+    final translationSimd = translation.toFloat32x4List();
+    final translatedSimd = translationSimd.transform2(position);
+    debugPrint('Translated SIMD: $translatedSimd');
+
+    const iterations = 1000;
+
+    final startTime = DateTime.now();
+    var originalMatrix = Matrix4.identity().toFloat32x4List();
+    var finalVectorSimd = position.clone();
+    for (var i = 0; i < iterations; i++) {
+      originalMatrix = originalMatrix.multiply(translationSimd);
+      finalVectorSimd = originalMatrix.transform2(finalVectorSimd);
+    }
+    final endTime = DateTime.now();
+    debugPrint(
+        'Double Transform Simd: ${endTime.difference(startTime).inMilliseconds} ms with $finalVectorSimd');
+
+    // Using no SIMD
+    final startTime2 = DateTime.now();
+    final originalMatrix2 = Matrix4.identity();
+    var finalVector = position.clone();
+    for (var i = 0; i < iterations; i++) {
+      originalMatrix2.multiply(translation);
+      finalVector = originalMatrix2.transform2(finalVector);
+    }
+    final endTime2 = DateTime.now();
+    debugPrint(
+        'Double Transform: ${endTime2.difference(startTime2).inMilliseconds} ms with $finalVector');
+
+    // Using ml_linalg
+    final mlRoundAboutMatrix = Matrix4.identity()
+      ..setFromMLMatrix(matrix.toMatrix());
+    final mlMatrix = matrix.toMatrix();
+    // ... check if matricies are the same
+    final normalTranslated = matrix.transform2(position);
+    debugPrint('Translated Normal: $normalTranslated');
+    final mlRoundaboutTranslated = mlRoundAboutMatrix.transform2(position);
+    debugPrint(
+        'Translated Roundabout ML: $mlRoundaboutTranslated, ${mlRoundaboutTranslated == translated}');
+    final mlTranslated = mlMatrix.transform2(position);
+    debugPrint('Translated ML: $mlTranslated, ${mlTranslated == translated}');
+
+    // Compare identity matrix
+    final identityMatrix = Matrix4.identity();
+    final identityMatrixSimd = identityMatrix.toFloat32x4List();
+    final identityMatrixML = identityMatrix.toMatrix();
+
+    debugPrint('Identity Matrix: $identityMatrix');
+    debugPrint('Identity Matrix Simd: $identityMatrixSimd');
+    debugPrint('Identity Matrix ML: $identityMatrixML');
+
+    // Compare test matricies
+    debugPrint('Matrix: $matrix');
+    debugPrint('Matrix Simd: $translationSimd');
+    debugPrint('Matrix ML: $mlMatrix');
+
+    // Performance checking for ML
+    final mlStartTime = DateTime.now();
+    var mlMatrix2 = Matrix4.identity().toMatrix();
+    var mlFinalVector = position.clone();
+    for (var i = 0; i < iterations; i++) {
+      mlMatrix2 = mlMatrix2 * mlMatrix;
+      mlFinalVector = mlMatrix2.transform2(mlFinalVector);
+    }
+    final mlEndTime = DateTime.now();
+    debugPrint(
+        'Double Transform ML: ${mlEndTime.difference(mlStartTime).inMilliseconds} ms with $mlFinalVector');
+
     if (logPerformanceData) {
       Log.logPerformance('Running', 'true');
     }

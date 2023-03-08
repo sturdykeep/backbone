@@ -44,12 +44,22 @@ class Entity {
 
   /// Try to get a trait, otherwise return null.
   T? tryGet<T extends Trait>() {
-    return traits.firstWhereOrNull((t) => t is T) as T?;
+    for (final trait in traits) {
+      if (trait is T) {
+        return trait;
+      }
+    }
+    return null;
   }
 
   /// Get a trait, otherwise throw an exception.
   T get<T extends Trait>() {
-    return traits.firstWhere((t) => t is T) as T;
+    final trait = tryGet<T>();
+    if (trait != null) {
+      return trait;
+    } else {
+      throw Exception('Trait not found: ${T.toString()}');
+    }
   }
 
   /// Try to get a trait, otherwise add it.
@@ -82,20 +92,21 @@ class Entity {
   /// Returned order is from the entity itself to the root.
   List<T> findAll<T extends Trait>({bool includeSelf = true}) {
     final traits = <T>[];
-    if (includeSelf) {
-      final trait = tryGet<T>();
+    Entity? toCheck = includeSelf ? this : parent;
+    while (toCheck != null) {
+      final trait = toCheck.tryGet<T>();
       if (trait != null) {
         traits.add(trait);
       }
+      toCheck = toCheck.parent;
     }
-    traits.addAll(parent?.findAll<T>(includeSelf: true) ?? []);
     return traits;
   }
 
   /// Gather all traits of a given type by walking up the entity tree.
   /// Returned order is from the root to the entity itself.
-  List<T> findAllReverse<T extends Trait>({bool includeSelf = true}) {
-    return findAll<T>(includeSelf: includeSelf).reversed.toList();
+  Iterable<T> findAllReverse<T extends Trait>({bool includeSelf = true}) {
+    return findAll<T>(includeSelf: includeSelf).reversed;
   }
 
   // Children

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:backbone/entity.dart';
+import 'package:backbone/linear_algebra.dart';
 import 'package:backbone/prelude/render/mod.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/render/visual.dart';
@@ -34,7 +37,9 @@ class RectangleRenderer extends Renderer {
       if (transform != null) {
         final paint = Paint()..color = visual.color;
         canvas.save();
-        canvas.transform(transform.globalTransformMatrix.storage);
+        final matrix4 = Matrix4.identity()
+          ..setFromFloat32x4List(transform.globalTransformMatrix);
+        canvas.transform(Float64List.fromList(matrix4.storage));
         canvas.drawRect(transform.localRect, paint);
         canvas.restore();
       }

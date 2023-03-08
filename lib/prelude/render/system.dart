@@ -9,12 +9,11 @@ import 'package:flutter/foundation.dart';
 
 void pipelineRenderSystem(Realm realm, Canvas canvas) {
   // Check if in debug mode in Flutter
-  const debug = kDebugMode;
+  const debug = kDebugMode && false;
   if (debug) {
     debugPrint('[Rendering pipeline] New frame');
   }
 
-  // TODO: I am sure this can be optimized, a lot.
   final pipeline = realm.resource<PipelineRenderer>();
   final query = realm.query(Has([Renderable]));
 
@@ -77,7 +76,7 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
         currentRenderer.render(batch, realm, canvas);
         if (debug) {
           debugPrint(
-              '[Rendering pipeline] Rendered ${batch.length} objects with priority ${batch.first.priority} to ${batch.last.priority} using ${currentRenderer.runtimeType}');
+              '[Rendering pipeline] * Rendered ${batch.length} objects with priority ${batch.first.priority} to ${batch.last.priority} using ${currentRenderer.runtimeType}');
         }
         currentRenderer = null;
         batch = [];
@@ -90,7 +89,7 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
     currentRenderer!.render(batch, realm, canvas);
     if (debug) {
       debugPrint(
-          '[Rendering pipeline] Rendered ${batch.length} objects with priority ${batch.first.priority} to ${batch.last.priority} using ${currentRenderer.runtimeType}');
+          '[Rendering pipeline] * Rendered ${batch.length} objects with priority ${batch.first.priority} to ${batch.last.priority} using ${currentRenderer.runtimeType}');
     }
   }
 

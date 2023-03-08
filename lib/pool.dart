@@ -2,7 +2,7 @@ import 'dart:collection';
 
 /// A pool of objects that can be reused.
 class Pool<T> {
-  final HashSet<T> _pool = HashSet<T>();
+  final Queue<T> _pool = Queue();
   final T Function() _creator;
   final void Function(T) _resetter;
 
@@ -19,9 +19,7 @@ class Pool<T> {
     if (_pool.isEmpty) {
       return _creator();
     } else {
-      final first = _pool.first;
-      _pool.remove(first);
-      return first;
+      return _pool.removeLast();
     }
   }
 
@@ -31,7 +29,7 @@ class Pool<T> {
   /// If the object is already in the pool, it is not added again.
   /// Returns true if the object was added to the pool.
   /// Returns false if the object was already in the pool.
-  bool release(T obj) {
+  void release(T obj) {
     _resetter(obj);
     return _pool.add(obj);
   }
