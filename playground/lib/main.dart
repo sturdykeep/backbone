@@ -3,6 +3,7 @@ import 'package:backbone/widget.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter/material.dart';
 import 'package:playground/games/animation.dart';
+import 'package:playground/games/dashmark.dart';
 import 'package:playground/games/sprite.dart';
 import 'package:playground/games/top_down.dart';
 import 'package:playground/games/transform.dart';
@@ -31,6 +32,7 @@ class AppShell extends HookWidget {
     PlaygroundGameInitializer('Top-down', () => TopdownGame()),
     PlaygroundGameInitializer('Sprite', () => SpriteGame()),
     PlaygroundGameInitializer('Animation', () => AnimationGame()),
+    PlaygroundGameInitializer('Dashmark', () => DashmarkGame())
   ];
 
   @override

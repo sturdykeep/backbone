@@ -80,7 +80,7 @@ class TopdownGame extends PlaygroundGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final playerEntity = Entity();
+    final playerEntity = Entity(realm);
     final playerTransform = Transform();
     playerTransform.position = Vector2(100, 100);
     playerTransform.size = Vector2(100, 100);
@@ -91,10 +91,10 @@ class TopdownGame extends PlaygroundGame {
     final rectangle = RectangleVisual(Colors.blue);
     render.visual = rectangle;
     playerEntity.add(render);
-    realm.addEntity(playerEntity);
+    realm.registerEntity(playerEntity);
 
     // Add a gun that sticks from the player's middle
-    final gunEntity = Entity();
+    final gunEntity = Entity(realm);
     final gunTransform = Transform();
     gunTransform.position = Vector2(0, 0);
     gunTransform.size = Vector2(100, 20);
@@ -104,7 +104,7 @@ class TopdownGame extends PlaygroundGame {
     final gunRectangle = RectangleVisual(Colors.red);
     gunRender.visual = gunRectangle;
     gunEntity.add(gunRender);
-    realm.addEntity(gunEntity);
+    realm.registerEntity(gunEntity);
     playerEntity.addChild(gunEntity);
   }
 }

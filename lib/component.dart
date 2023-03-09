@@ -10,31 +10,32 @@ import 'package:flame/components.dart';
 /// have traits and their entities can be processed by systems.
 mixin HasEntity on HasGameRef {
   /// Realm of the node, null if not yet added to a realm.
-  Realm? realm;
+  late Realm realm;
 
   /// Entity of the node, null if not yet added to a realm.
-  final Entity entity = Entity();
+  late Entity entity;
 
   /// Archetype of the underlying entity.
   Archetype get archetype => entity.archetype;
-
-  /// Whether the node is mounted to a realm.
-  bool get isMountedToRealm => realm != null;
 
   // Integrate into Flame
   @override
   void onMount() {
     super.onMount();
-    realm = findRealmParent();
-    assert(realm != null, 'Node must be a child of a realm');
-    realm!.addEntity(entity);
+    final foundRealm = findRealmParent();
+    if (foundRealm != null) {
+      realm = foundRealm;
+    } else {
+      throw Exception('Node must be a child of a realm');
+    }
+    entity = Entity(realm);
     entity.add(ComponentTrait(this));
   }
 
   @override
   void onRemove() {
     super.onRemove();
-    realm!.removeEntity(entity);
+    realm.removeEntity(entity);
   }
 
   // Methods

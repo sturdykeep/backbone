@@ -17,7 +17,7 @@ class SpriteGame extends PlaygroundGame {
   SpriteGame();
 
   Entity createSpriteEntity(Sprite sprite) {
-    final entity = Entity();
+    final entity = Entity(realm);
     final transform = Transform();
     transform.size = Vector2.all(150);
     entity.add(transform);
@@ -41,76 +41,76 @@ class SpriteGame extends PlaygroundGame {
     // Create first dash sprite at 10,10
     final dash1 = createSpriteEntity(dashSprite);
     dash1.get<Transform>().position = Vector2(10, 10);
-    realm.addEntity(dash1);
+    realm.registerEntity(dash1);
 
     // Same as before, but anchored to the center
     final dash2 = createSpriteEntity(dashSprite);
     dash2.get<Transform>().position = Vector2(180 + 150 / 2, 10 + 150 / 2);
     dash2.get<Transform>().anchor = Anchor.center;
-    realm.addEntity(dash2);
+    realm.registerEntity(dash2);
 
     // Centered sprite with another one painted green on top
     // scaled 0.5 and rotated 45 degrees
     final dash3 = createSpriteEntity(dashSprite);
     dash3.get<Transform>().position = Vector2(360 + 150 / 2, 10 + 150 / 2);
     dash3.get<Transform>().anchor = Anchor.center;
-    realm.addEntity(dash3);
+    realm.registerEntity(dash3);
 
     final dash4 = createSpriteEntity(dashSprite);
     dash4.get<Transform>().position = Vector2(0, 0);
     dash4.get<Transform>().anchor = Anchor.center;
     dash4.get<Transform>().scale = Vector2.all(0.5);
     dash4.get<Transform>().rotationDegrees = 45;
-    realm.addEntity(dash4);
+    realm.registerEntity(dash4);
     dash4.parent = dash3;
 
     // Build a "scorpion tail" with 4 sprites one after the other
     final dash5 = createSpriteEntity(dashSprite);
     dash5.get<Transform>().position = Vector2(540, 10);
-    realm.addEntity(dash5);
+    realm.registerEntity(dash5);
 
     final dash6 = createSpriteEntity(dashSprite);
     dash6.get<Transform>().position = Vector2(150, 150);
     dash6.get<Transform>().rotationDegrees = 10;
     dash6.get<Transform>().scale = Vector2.all(0.5);
-    realm.addEntity(dash6);
+    realm.registerEntity(dash6);
     dash6.parent = dash5;
 
     final dash7 = createSpriteEntity(dashSprite);
     dash7.get<Transform>().position = Vector2(150, 150);
     dash7.get<Transform>().rotationDegrees = 10;
     dash7.get<Transform>().scale = Vector2.all(0.5);
-    realm.addEntity(dash7);
+    realm.registerEntity(dash7);
     dash7.parent = dash6;
 
     final dash8 = createSpriteEntity(dashSprite);
     dash8.get<Transform>().position = Vector2(150, 150);
     dash8.get<Transform>().rotationDegrees = 10;
     dash8.get<Transform>().scale = Vector2.all(0.5);
-    realm.addEntity(dash8);
+    realm.registerEntity(dash8);
     dash8.parent = dash7;
 
     // A sample with override green paint
     final dash9 = createSpriteEntity(dashSprite);
     dash9.get<Transform>().position = Vector2(750, 10);
     dash9.get<Renderable>().as<SpriteVisual>().overrideColor = Colors.green;
-    realm.addEntity(dash9);
+    realm.registerEntity(dash9);
 
     // Draw three sprites on top of each other with reversed priority
     final dash10 = createSpriteEntity(dashSprite);
     dash10.get<Transform>().position = Vector2(10, 200);
     dash10.get<Transform>().priority = 3;
-    realm.addEntity(dash10);
+    realm.registerEntity(dash10);
 
     final dash11 = createSpriteEntity(dashSprite);
     dash11.get<Transform>().position = Vector2(60, 200);
     dash11.get<Transform>().priority = 2;
     dash11.get<Renderable>().as<SpriteVisual>().overrideColor = Colors.red;
-    realm.addEntity(dash11);
+    realm.registerEntity(dash11);
 
     final dash12 = createSpriteEntity(dashSprite);
     dash12.get<Transform>().position = Vector2(110, 200);
     dash12.get<Transform>().priority = 1;
-    realm.addEntity(dash12);
+    realm.registerEntity(dash12);
   }
 }

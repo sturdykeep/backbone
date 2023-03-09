@@ -68,7 +68,7 @@ Entity buildTemplate(Realm realm, TemplateBar bar, Vector2 position) {
   final renderTrait = Renderable(visual: visual);
   entity.add(renderTrait);
 
-  realm.addEntity(entity);
+  realm.registerEntity(entity);
   entity.parent = bar.entity;
   return entity;
 }

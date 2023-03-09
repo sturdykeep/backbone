@@ -15,7 +15,7 @@ class AnimationGame extends PlaygroundGame {
   AnimationGame();
 
   Entity createSpriteEntity(SpriteAnimation animation) {
-    final entity = Entity();
+    final entity = Entity(realm);
     final transform = Transform();
     transform.size = Vector2.all(150);
     entity.add(transform);
@@ -47,7 +47,7 @@ class AnimationGame extends PlaygroundGame {
     // Create an explosion sprite at 10,10
     final explosion1 = createSpriteEntity(explosion);
     explosion1.get<Transform>().position = Vector2(10, 10);
-    realm.addEntity(explosion1);
+    realm.registerEntity(explosion1);
 
     // Crate an explosion with green tint center-anchored
     final explosion2 = createSpriteEntity(explosion);
@@ -55,13 +55,13 @@ class AnimationGame extends PlaygroundGame {
     explosion2.get<Transform>().anchor = Anchor.center;
     explosion2.get<Renderable>().as<SpriteAnimationVisual>().overrideColor =
         Colors.green;
-    realm.addEntity(explosion2);
+    realm.registerEntity(explosion2);
 
     // Normal explosion, but rotated 45 degrees
     final explosion3 = createSpriteEntity(explosion);
     explosion3.get<Transform>().position = Vector2(360 + 150 / 2, 10 + 150 / 2);
     explosion3.get<Transform>().anchor = Anchor.center;
     explosion3.get<Transform>().rotationDegrees = 45;
-    realm.addEntity(explosion3);
+    realm.registerEntity(explosion3);
   }
 }

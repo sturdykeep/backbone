@@ -6,6 +6,7 @@ abstract class Trait {
 
   /// Called when the trait is added to an entity.
   void onAdd() {}
+
   /// Called when the trait is removed from an entity.
   void onRemove() {}
 }

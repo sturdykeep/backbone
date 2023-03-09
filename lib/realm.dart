@@ -6,14 +6,16 @@ import 'package:backbone/entity.dart';
 import 'package:backbone/iterable.dart';
 import 'package:backbone/log.dart';
 import 'package:backbone/prelude/input/mod.dart';
+import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/time.dart';
+import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
 import 'package:backbone/message.dart';
 import 'package:backbone/system.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart' show debugPrint, Canvas;
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
@@ -28,6 +30,7 @@ class Realm extends Component with HasGameRef {
 
   /// All registered trait types within this realm.
   late final HashSet<Type> registeredTraits;
+  late final HashMap<Type, int> registeredTraitsIndex;
 
   /// Entities sorted into buckets based on their archetype.
   late final HashMap<Archetype, List<Entity>> archetypeBuckets;
@@ -35,6 +38,9 @@ class Realm extends Component with HasGameRef {
   late final List<List<Entity>> archetypeBucketsValues;
   final List<Archetype> nonEmptyBucketKeys = [];
   final List<List<Entity>> nonEmptyBucketValues = [];
+
+  /// List of all entities that are currently inactive
+  final HashSet<Entity> inactiveEntities = HashSet();
 
   /// List of all registered systems
   late final List<System> systems;
@@ -66,6 +72,12 @@ class Realm extends Component with HasGameRef {
     const int minInt =
         (double.infinity is int) ? -double.infinity as int : (-1 << 63);
     priority = (double.infinity is int) ? double.infinity as int : ~minInt;
+
+    // Generate an index for all registered traits
+    registeredTraitsIndex = HashMap();
+    for (var i = 0; i < registeredTraits.length; i++) {
+      registeredTraitsIndex[registeredTraits.elementAt(i)] = i;
+    }
   }
 
   /// Used for debugging
@@ -216,16 +228,19 @@ class Realm extends Component with HasGameRef {
   void removeFromBuckets(Entity entity) {
     // Remove the trait from the existing archetype storage
     final currentBucket = entity.archetype;
-    final currentBucketList = archetypeBuckets[currentBucket]!;
-    currentBucketList.remove(entity);
+    final currentBucketList = archetypeBuckets[currentBucket];
 
-    // also remove from the non-empty bucket cache
-    final index = nonEmptyBucketKeys.indexOf(currentBucket);
-    if (index != -1) {
-      // check if it's actually empty now
-      if (nonEmptyBucketValues[index].isEmpty) {
-        nonEmptyBucketKeys.removeAt(index);
-        nonEmptyBucketValues.removeAt(index);
+    if (currentBucketList != null) {
+      currentBucketList.remove(entity);
+
+      // also remove from the non-empty bucket cache
+      final index = nonEmptyBucketKeys.indexOf(currentBucket);
+      if (index != -1) {
+        // check if it's actually empty now
+        if (nonEmptyBucketValues[index].isEmpty) {
+          nonEmptyBucketKeys.removeAt(index);
+          nonEmptyBucketValues.removeAt(index);
+        }
       }
     }
   }
@@ -238,31 +253,37 @@ class Realm extends Component with HasGameRef {
       if (archetypeBuckets.containsKey(archetype) == false) {
         throw Exception('Archetype $archetype is not registered');
       }
-      archetypeBuckets[archetype]!.add(entity);
+
+      // Add only if it's not already in the bucket
+      final bucket = archetypeBuckets[archetype]!;
+      if (bucket.contains(entity) == false) {
+        bucket.add(entity);
+      }
 
       // if necessary add to the non-empty bucket cache
       final index = nonEmptyBucketKeys.indexOf(archetype);
       if (index == -1) {
         nonEmptyBucketKeys.add(archetype);
-        nonEmptyBucketValues.add(archetypeBuckets[archetype]!);
+        nonEmptyBucketValues.add(bucket);
       }
     }
   }
 
   /// Register an entity in the realm.
-  /// You cannot register an entity twice.
-  void addEntity(Entity entity) {
-    if (entity.realm != null) {
-      throw Exception('Entity $entity is already registered in a realm.');
+  /// Returns `true` if the entity was previously removed.
+  bool registerEntity(Entity entity) {
+    if (entity.realm != this) {
+      throw Exception('Entity $entity is already registered in another realm');
     }
-    entity.realm = this;
     putIntoBucket(entity);
+    return inactiveEntities.remove(entity);
   }
 
   /// Remove an entity from the realm.
   bool removeEntity(Entity entity) {
     if (entity.realm == this) {
       removeFromBuckets(entity);
+      inactiveEntities.add(entity);
       return true;
     }
     return false;
@@ -402,6 +423,247 @@ class Realm extends Component with HasGameRef {
     if (logPerformanceData) {
       Log.logPerformance('Running', 'true');
     }
+
+    // Benchmark `tryGet` vs `tryGetMap`
+    final entity = Entity(this);
+    final transform = Transform();
+    final renderable = Renderable();
+    entity.add(transform);
+    entity.add(renderable);
+
+    // Warm up the cache
+    for (var i = 0; i < 100000; i++) {
+      entity.tryGet<Transform>();
+    }
+
+    // Benchmark `tryGet`
+    final stopwatch = Stopwatch()..start();
+    for (var i = 0; i < 1000000; i++) {
+      entity.tryGet<Transform>();
+    }
+    stopwatch.stop();
+    debugPrint('tryGet: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `hashCode` of `Type` vs `int` vs `String`
+    final Type type = Transform;
+    final intType = 0;
+    final stringType = 'Transform';
+
+    // Warm up the cache
+    for (var i = 0; i < 100000; i++) {
+      type.hashCode;
+      intType.hashCode;
+      stringType.hashCode;
+    }
+
+    // Benchmark `hashCode` of `Type`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      type.hashCode;
+    }
+    stopwatch.stop();
+    debugPrint('hashCode of Type: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `hashCode` of `int`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      intType.hashCode;
+    }
+    stopwatch.stop();
+    debugPrint('hashCode of int: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `hashCode` of `String`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      stringType.hashCode;
+    }
+    stopwatch.stop();
+    debugPrint('hashCode of String: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark a small `List` vs `Set` vs `Map` vs `HashMap` vs `LinkedHashMap`
+    final list = <int>[];
+    final set = <int>{};
+    final map = <int, int>{};
+    final hashMap = HashMap<int, int>();
+    final linkedHashMap = LinkedHashMap<int, int>();
+
+    // Warm up the cache
+    for (var i = 0; i < 5; i++) {
+      list.add(i);
+      set.add(i);
+      map[i] = i;
+      hashMap[i] = i;
+      linkedHashMap[i] = i;
+    }
+
+    // Benchmark `List`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      list.contains(i);
+    }
+    stopwatch.stop();
+    debugPrint('List: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `Set`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      set.contains(i);
+    }
+    stopwatch.stop();
+    debugPrint('Set: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `Map`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      map.containsKey(i);
+    }
+    stopwatch.stop();
+    debugPrint('Map: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `HashMap`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      hashMap.containsKey(i);
+    }
+    stopwatch.stop();
+    debugPrint('HashMap: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `LinkedHashMap`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      linkedHashMap.containsKey(i);
+    }
+    stopwatch.stop();
+    debugPrint('LinkedHashMap: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `List` of objects searching by `is T` vs `Set` of `Type` vs `Map` of `Type` vs `HashMap` of `Type` vs `LinkedHashMap` of `Type`
+    // vs direct variable access
+    final objectList = <Object>[];
+    final typeSet = <Type>{};
+    final typeMap = <Type, Object>{};
+    final typeHashMap = HashMap<Type, Object>();
+    final typeLinkedHashMap = LinkedHashMap<Type, Object>();
+    Object object = 0;
+
+    // Warm up the cache
+    for (var i = 0; i < 5; i++) {
+      objectList.add(i);
+      typeSet.add(i.runtimeType);
+      typeMap[i.runtimeType] = i;
+      typeHashMap[i.runtimeType] = i;
+      typeLinkedHashMap[i.runtimeType] = i;
+      object is int;
+      object = i;
+    }
+
+    // Benchmark `List` of objects searching by `is T`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      for (final object in objectList) {
+        if (object is int) {
+          break;
+        }
+      }
+    }
+    stopwatch.stop();
+    debugPrint(
+        'List of objects searching by `is T`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `Set` of `Type`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      typeSet.contains(int);
+    }
+    stopwatch.stop();
+    debugPrint('Set of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `Map` of `Type`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      typeMap.containsKey(int);
+    }
+    stopwatch.stop();
+    debugPrint('Map of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `HashMap` of `Type`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      typeHashMap.containsKey(int);
+    }
+    stopwatch.stop();
+    debugPrint('HashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `LinkedHashMap` of `Type`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      typeLinkedHashMap.containsKey(int);
+    }
+    stopwatch.stop();
+    debugPrint('LinkedHashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark direct variable access
+    stopwatch.reset();
+    stopwatch.start();
+    var objectIsInt = false;
+    for (var i = 0; i < 1000000; i++) {
+      objectIsInt = object is int;
+    }
+    stopwatch.stop();
+    debugPrint(
+        'Direct variable access: ${stopwatch.elapsedMilliseconds} ms with result $objectIsInt');
+
+    // Benchmark `is T` vs `.runtimeType == T` vs `.runtimeType.hashCode == T.hashCode`
+    final toTestObject = Object();
+    final toTestType = toTestObject.runtimeType;
+    final toTestHashCode = toTestType.hashCode;
+
+    // Warm up the cache
+    for (var i = 0; i < 5; i++) {
+      toTestObject is Object;
+      toTestObject.runtimeType == Object;
+      toTestObject.runtimeType.hashCode == (Object).hashCode;
+    }
+
+    // Benchmark `is T`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      toTestObject is Object;
+    }
+    stopwatch.stop();
+    debugPrint('`is T`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `.runtimeType == T`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      toTestObject.runtimeType == Object;
+    }
+    stopwatch.stop();
+    debugPrint('`.runtimeType == T`: ${stopwatch.elapsedMilliseconds} ms');
+
+    // Benchmark `.runtimeType.hashCode == T.hashCode`
+    stopwatch.reset();
+    stopwatch.start();
+    for (var i = 0; i < 1000000; i++) {
+      toTestObject.runtimeType.hashCode == (Object).hashCode;
+    }
+    stopwatch.stop();
+    debugPrint(
+        '`.runtimeType.hashCode == T.hashCode`: ${stopwatch.elapsedMilliseconds} ms');
   }
 
   @override

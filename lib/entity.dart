@@ -1,13 +1,14 @@
 import 'package:backbone/archetype.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
-import 'package:collection/collection.dart';
 
 class Entity {
-  Realm? realm;
+  Realm realm;
   final List<Trait> traits = [];
 
-  Entity({this.realm});
+  Entity(this.realm) {
+    realm.registerEntity(this);
+  }
 
   Archetype get archetype => Archetype(traits.map((t) => t.runtimeType));
   // Parent
@@ -21,29 +22,24 @@ class Entity {
 
   // Children
   final List<Entity> _children = [];
-  List<Entity> get children => List.unmodifiable(_children);
+  List<Entity> get children => _children;
 
   /// Add a trait to an existing entity.
   void add<C extends Trait>(C trait) {
-    if (realm == null) {
-      traits.add(trait);
-      trait.entity = this;
-    } else {
-      realm!.addTrait(trait, this);
-    }
+    realm.addTrait(trait, this);
   }
 
   /// Remove a trait from an existing entity.
   void remove<C extends Trait>(C trait) {
-    if (realm == null) {
-      traits.remove(trait);
-    } else {
-      realm!.removeTrait(trait, this);
-    }
+    realm.removeTrait(trait, this);
   }
 
   /// Try to get a trait, otherwise return null.
   T? tryGet<T extends Trait>() {
+    if (traits.isEmpty) {
+      return null;
+    }
+
     for (final trait in traits) {
       if (trait is T) {
         return trait;
@@ -91,6 +87,16 @@ class Entity {
   /// Gather all traits of a given type by walking up the entity tree.
   /// Returned order is from the entity itself to the root.
   List<T> findAll<T extends Trait>({bool includeSelf = true}) {
+    // Short circuit if we don't want to include self
+    if (includeSelf == false && parent == null) {
+      return [];
+    }
+    // Short circuit if `includeSelf` and no parent
+    if (includeSelf == true && parent == null) {
+      final trait = tryGet<T>();
+      return trait != null ? [trait] : [];
+    }
+
     final traits = <T>[];
     Entity? toCheck = includeSelf ? this : parent;
     while (toCheck != null) {

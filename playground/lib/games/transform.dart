@@ -13,38 +13,38 @@ import 'package:playground/games/base.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/render/rectangle.dart';
 
-Entity buildRectangle({Entity? parent, Color? color}) {
-  final entity = Entity();
-  entity.parent = parent;
-
-  final transform = Transform();
-  transform.size = Vector2(50, 50);
-  entity.add(transform);
-
-  final renderTrait = Renderable();
-  entity.add(renderTrait);
-
-  final rectangle = RectangleVisual(color ?? Colors.blue);
-  renderTrait.visual = rectangle;
-
-  Color oldColor = rectangle.color;
-  final hoverable = Hoverable(onHoverEnter: (p) {
-    oldColor = rectangle.color;
-    rectangle.color = Colors.red;
-  }, onHoverExit: (p) {
-    rectangle.color = oldColor;
-  });
-  entity.add(hoverable);
-
-  return entity;
-}
-
 class TransformGame extends PlaygroundGame {
   TransformGame();
 
   @override
   Realm realmBuilder() {
     return RealmBuilder().withPlugin(defaultPlugin).build();
+  }
+
+  Entity buildRectangle({Entity? parent, Color? color}) {
+    final entity = Entity(realm);
+    entity.parent = parent;
+
+    final transform = Transform();
+    transform.size = Vector2(50, 50);
+    entity.add(transform);
+
+    final renderTrait = Renderable();
+    entity.add(renderTrait);
+
+    final rectangle = RectangleVisual(color ?? Colors.blue);
+    renderTrait.visual = rectangle;
+
+    Color oldColor = rectangle.color;
+    final hoverable = Hoverable(onHoverEnter: (p) {
+      oldColor = rectangle.color;
+      rectangle.color = Colors.red;
+    }, onHoverExit: (p) {
+      rectangle.color = oldColor;
+    });
+    entity.add(hoverable);
+
+    return entity;
   }
 
   @override
@@ -77,7 +77,7 @@ class TransformGame extends PlaygroundGame {
     final entity = buildRectangle();
     final transform = entity.get<Transform>();
     transform.position = Vector2(10, 10);
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
   }
 
   Future<void> sampleTwo() async {
@@ -85,13 +85,13 @@ class TransformGame extends PlaygroundGame {
     final transform = entity.get<Transform>();
     transform.position = Vector2(150, 10);
     transform.rotationDegrees = 45;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle, offset by 0,10
     final entity2 = buildRectangle();
     final transform2 = entity2.get<Transform>();
     transform2.position = Vector2(0, 50 + 10);
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
   }
 
@@ -100,7 +100,7 @@ class TransformGame extends PlaygroundGame {
     final transform = entity.get<Transform>();
     transform.position = Vector2(250, 10 + 50 / 2);
     transform.anchor = Anchor.center;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
   }
 
   Future<void> sampleFour() async {
@@ -108,7 +108,7 @@ class TransformGame extends PlaygroundGame {
     final transform = entity.get<Transform>();
     transform.position = Vector2(350, 10 + 50 / 2);
     transform.anchor = Anchor.center;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle
     final entity2 = buildRectangle();
@@ -117,7 +117,7 @@ class TransformGame extends PlaygroundGame {
     transform2.size = Vector2(25, 25);
     transform2.anchor = Anchor.center;
     transform2.rotationDegrees = 45;
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
 
     // Set color of child
@@ -131,14 +131,14 @@ class TransformGame extends PlaygroundGame {
     final transform = entity.get<Transform>();
     transform.position = Vector2(450, 10 + 50 / 2);
     transform.anchor = Anchor.center;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle
     final entity2 = buildRectangle();
     final transform2 = entity2.get<Transform>();
     transform2.position = Vector2(0, 0);
     transform2.size = Vector2(25, 25);
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
 
     // Set color of child
@@ -152,7 +152,7 @@ class TransformGame extends PlaygroundGame {
     final transform = entity.get<Transform>();
     transform.position = Vector2(550, 10 + 50 / 2);
     transform.anchor = Anchor.center;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle
     final entity2 = buildRectangle();
@@ -160,7 +160,7 @@ class TransformGame extends PlaygroundGame {
     transform2.position = Vector2(0, 0);
     transform2.size = Vector2(25, 25);
     transform2.rotationDegrees = 45;
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
 
     // Set color of child
@@ -175,7 +175,7 @@ class TransformGame extends PlaygroundGame {
     transform.position = Vector2(650, 10 + 50 / 2);
     transform.anchor = Anchor.center;
     transform.rotationDegrees = 45;
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle
     final entity2 = buildRectangle();
@@ -183,7 +183,7 @@ class TransformGame extends PlaygroundGame {
     transform2.position = Vector2(0, 0);
     transform2.size = Vector2(25, 25);
     transform2.rotationDegrees = 45;
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
 
     // Set color of child
@@ -196,14 +196,14 @@ class TransformGame extends PlaygroundGame {
     final entity = buildRectangle();
     final transform = entity.get<Transform>();
     transform.position = Vector2(720, 10);
-    realm.addEntity(entity);
+    realm.registerEntity(entity);
 
     // Second rectangle
     final entity2 = buildRectangle();
     final transform2 = entity2.get<Transform>();
     transform2.position = Vector2(50, 50);
     transform2.rotationDegrees = 10;
-    realm.addEntity(entity2);
+    realm.registerEntity(entity2);
     entity2.parent = entity;
 
     // Set color of child
@@ -216,7 +216,7 @@ class TransformGame extends PlaygroundGame {
     final transform3 = entity3.get<Transform>();
     transform3.position = Vector2(50, 50);
     transform3.rotationDegrees = 10;
-    realm.addEntity(entity3);
+    realm.registerEntity(entity3);
     entity3.parent = entity2;
 
     // Set color of child
@@ -229,7 +229,7 @@ class TransformGame extends PlaygroundGame {
     final transform4 = entity4.get<Transform>();
     transform4.position = Vector2(50, 50);
     transform4.rotationDegrees = 10;
-    realm.addEntity(entity4);
+    realm.registerEntity(entity4);
     entity4.parent = entity3;
 
     // Set color of child

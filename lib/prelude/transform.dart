@@ -35,13 +35,9 @@ class Transform extends Trait {
   // Cache
   bool _cacheIsDirty = true;
   Matrix4 _matrix = Matrix4.identity();
-  Matrix4 _matrixInverse = Matrix4.identity();
   Matrix4 _matrixWithoutOrigin = Matrix4.identity();
-  Matrix4 _matrixWithoutOriginInverse = Matrix4.identity();
   Matrix4 _globalMatrix = Matrix4.identity();
-  Matrix4 _globalMatrixInverse = Matrix4.identity();
   Matrix4 _globalMatrixWithoutOrigin = Matrix4.identity();
-  Matrix4 _globalMatrixWithoutOriginInverse = Matrix4.identity();
 
   // -- position
   Vector2 get position => _position;
@@ -190,9 +186,7 @@ class Transform extends Trait {
   void _populateLocalCaches() {
     // Local
     _matrix = calculateTransformMatrix();
-    _matrixInverse = _matrix.clone()..invert();
     _matrixWithoutOrigin = calculateTransformMatrixWithoutOrigin();
-    _matrixWithoutOriginInverse = _matrixWithoutOrigin.clone()..invert();
 
     _cacheIsDirty = false;
   }
@@ -200,10 +194,7 @@ class Transform extends Trait {
   void _populateGlobalCaches() {
     // Global
     _globalMatrix = calculateGlobalTransformMatrix();
-    _globalMatrixInverse = _globalMatrix.clone()..invert();
     _globalMatrixWithoutOrigin = calculateGlobalTransformMatrixWithoutOrigin();
-    _globalMatrixWithoutOriginInverse = _globalMatrixWithoutOrigin.clone()
-      ..invert();
   }
 
   void _propagateChangesDownTree() {
@@ -224,7 +215,14 @@ class Transform extends Trait {
   void _findMostRootDirtyParentAndPropagateDown() {
     // Find the parent that is dirty
     final parents = entity.findAllReverse<Transform>();
-    final dirtyParent = parents.firstWhereOrNull((e) => e._cacheIsDirty);
+    Transform? dirtyParent;
+    for (final parent in parents) {
+      if (parent._cacheIsDirty) {
+        dirtyParent = parent;
+        break;
+      }
+    }
+
     if (dirtyParent != null) {
       dirtyParent._propagateChangesDownTree();
     }
@@ -242,7 +240,7 @@ class Transform extends Trait {
     if (_cacheIsDirty) {
       _propagateChangesDownTree();
     }
-    return _matrixInverse;
+    return _matrix.clone()..invert();
   }
 
   Matrix4 get matrixWithoutOrigin {
@@ -256,7 +254,7 @@ class Transform extends Trait {
     if (_cacheIsDirty) {
       _propagateChangesDownTree();
     }
-    return _matrixWithoutOriginInverse;
+    return _matrixWithoutOrigin.clone()..invert();
   }
 
   Matrix4 get globalMatrix {
@@ -266,7 +264,7 @@ class Transform extends Trait {
 
   Matrix4 get globalMatrixInverse {
     _findMostRootDirtyParentAndPropagateDown();
-    return _globalMatrixInverse;
+    return _globalMatrix.clone()..invert();
   }
 
   Matrix4 get globalMatrixWithoutOrigin {
@@ -276,7 +274,7 @@ class Transform extends Trait {
 
   Matrix4 get globalMatrixWithoutOriginInverse {
     _findMostRootDirtyParentAndPropagateDown();
-    return _globalMatrixWithoutOriginInverse;
+    return _globalMatrixWithoutOrigin.clone()..invert();
   }
 
   Vector2 toLocal(Vector2 point) {

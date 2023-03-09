@@ -612,4 +612,10 @@ class Input {
   bool pointerJustReleased(int id) {
     return pointerJustUp(id) || pointerJustDragEnd(id);
   }
+
+  Pointer? mouse() {
+    return _pointers.firstWhereOrNull((pointer) =>
+        pointer.kind == PointerDeviceKind.mouse &&
+        (pointer.isHovering || pointer.isPressed));
+  }
 }
