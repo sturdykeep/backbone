@@ -124,7 +124,7 @@ class SpriteRenderer extends Renderer {
     for (final renderee in renderees) {
       final transformTrait = renderee.transformTrait;
 
-      if (transformTrait != null) {
+      if (transformTrait != null && transformTrait.initialized) {
         if (renderee.matchedVisual is SpriteVisual) {
           final sprite = renderee.matchedVisual as SpriteVisual;
           transforms.add(transformTrait.globalRSTransform(

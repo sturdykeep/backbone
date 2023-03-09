@@ -43,11 +43,8 @@ class Transform extends Trait {
   Anchor _anchor = Anchor.topLeft;
   int _priority = 0;
 
-  Transform() {
-    _populateCaches();
-  }
-
   // Cache
+  bool initialized = false;
   bool _cacheIsDirty = true;
   Matrix4 _matrix = Matrix4.identity();
   Matrix4 _matrixInverse = Matrix4.identity();
@@ -204,6 +201,8 @@ class Transform extends Trait {
     _matrixInverse = inverseTransformMatrix;
     _matrixWithoutOrigin = transformMatrixWithoutOrigin;
     _matrixWithoutOriginInverse = inverseTransformMatrixWithoutOrigin;
+    _cacheIsDirty = false;
+    initialized = true;
   }
 
   Vector2 toLocal(Vector2 point) {
