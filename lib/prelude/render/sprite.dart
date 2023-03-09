@@ -30,6 +30,7 @@ class SpriteAnimationVisual extends Visual {
   Image? get image => animation?.currentFrame.sprite.image;
   Paint? get paint => overridePaint ?? animation?.currentFrame.sprite.paint;
   Color get color => overrideColor ?? Colors.white;
+  bool get isComplete => animation?.done() ?? true;
 }
 
 /// System that advances the animation of all entities with a SpriteAnimationVisual.
@@ -147,38 +148,5 @@ class SpriteRenderer extends Renderer {
 
     currentImage = null;
     currentPaint = null;
-
-    // For each of them, render a red circle at edges and center
-    // for (final renderee in renderees) {
-    //   final transformTrait = renderee.transformTrait;
-    //   if (transformTrait != null) {
-    //     final localRect = transformTrait.localRect;
-    //     final center = localRect.center;
-    //     final topLeft = localRect.topLeft;
-    //     final topRight = localRect.topRight;
-    //     final bottomLeft = localRect.bottomLeft;
-    //     final bottomRight = localRect.bottomRight;
-
-    //     final globalTransform = transformTrait.globalTransformMatrix;
-    //     final globalCenter = globalTransform.transform2(center.toVector2());
-    //     final globalTopLeft = globalTransform.transform2(topLeft.toVector2());
-    //     final globalTopRight = globalTransform.transform2(topRight.toVector2());
-    //     final globalBottomLeft =
-    //         globalTransform.transform2(bottomLeft.toVector2());
-    //     final globalBottomRight =
-    //         globalTransform.transform2(bottomRight.toVector2());
-
-    //     canvas.drawCircle(
-    //         globalCenter.toOffset(), 4, Paint()..color = Colors.red);
-    //     canvas.drawCircle(
-    //         globalTopLeft.toOffset(), 4, Paint()..color = Colors.red);
-    //     canvas.drawCircle(
-    //         globalTopRight.toOffset(), 4, Paint()..color = Colors.red);
-    //     canvas.drawCircle(
-    //         globalBottomLeft.toOffset(), 4, Paint()..color = Colors.red);
-    //     canvas.drawCircle(
-    //         globalBottomRight.toOffset(), 4, Paint()..color = Colors.red);
-    //   }
-    // }
   }
 }

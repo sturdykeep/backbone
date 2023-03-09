@@ -3,7 +3,9 @@ import 'dart:ui';
 
 import 'package:backbone/builders.dart';
 import 'package:backbone/component.dart';
+import 'package:backbone/filter.dart';
 import 'package:backbone/position_component.dart';
+import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
@@ -18,6 +20,17 @@ import 'package:flame/extensions.dart';
 /// - priority
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(Transform);
+  builder.withSystem(rebuildMatrixCacheSystem);
+}
+
+void rebuildMatrixCacheSystem(Realm realm) {
+  final entities = realm.query(Has([Transform]));
+  for (final entity in entities) {
+    final transform = entity.get<Transform>();
+    if (transform._cacheIsDirty) {
+      transform._populateCaches();
+    }
+  }
 }
 
 class Transform extends Trait {
@@ -35,20 +48,22 @@ class Transform extends Trait {
   }
 
   // Cache
+  bool _cacheIsDirty = true;
   Matrix4 _matrix = Matrix4.identity();
   Matrix4 _matrixInverse = Matrix4.identity();
   Matrix4 _matrixWithoutOrigin = Matrix4.identity();
+  Matrix4 _matrixWithoutOriginInverse = Matrix4.identity();
 
   // -- position
   Vector2 get position => _position;
   set position(Vector2 value) {
     if (_position != value) {
       _position = value;
+      _cacheIsDirty = true;
       if (node != null && node is PositionEntityComponent) {
         final positionNode = node as PositionEntityComponent;
         positionNode.position = value;
       }
-      _populateCaches();
     }
   }
 
@@ -57,10 +72,10 @@ class Transform extends Trait {
   set scale(Vector2 value) {
     if (_scale != value) {
       _scale = value;
+      _cacheIsDirty = true;
       if (node != null && node is PositionEntityComponent) {
         (node as PositionEntityComponent).scale = value;
       }
-      _populateCaches();
     }
   }
 
@@ -69,10 +84,10 @@ class Transform extends Trait {
   set rotation(double value) {
     if (_rotation != value) {
       _rotation = value;
+      _cacheIsDirty = true;
       if (node != null && node is PositionEntityComponent) {
         (node as PositionEntityComponent).angle = value;
       }
-      _populateCaches();
     }
   }
 
@@ -87,10 +102,10 @@ class Transform extends Trait {
   set size(Vector2 value) {
     if (_size != value) {
       _size = value;
+      _cacheIsDirty = true;
       if (node != null && node is PositionEntityComponent) {
         (node as PositionEntityComponent).size = value;
       }
-      _populateCaches();
     }
   }
 
@@ -99,10 +114,10 @@ class Transform extends Trait {
   set anchor(Anchor value) {
     if (_anchor != value) {
       _anchor = value;
+      _cacheIsDirty = true;
       if (node != null && node is PositionEntityComponent) {
         (node as PositionEntityComponent).anchor = value;
       }
-      _populateCaches();
     }
   }
 
@@ -190,6 +205,7 @@ class Transform extends Trait {
     _matrix = transformMatrix;
     _matrixInverse = inverseTransformMatrix;
     _matrixWithoutOrigin = transformMatrixWithoutOrigin;
+    _matrixWithoutOriginInverse = inverseTransformMatrixWithoutOrigin;
   }
 
   Vector2 toLocal(Vector2 point) {
@@ -198,8 +214,8 @@ class Transform extends Trait {
     for (final transform in transforms) {
       final last = transform == transforms.last;
       final inverse = last
-          ? transform.inverseTransformMatrix
-          : transform.inverseTransformMatrixWithoutOrigin;
+          ? transform._matrixInverse
+          : transform._matrixWithoutOriginInverse;
       localPoint = inverse.transform2(localPoint);
     }
     return localPoint;
@@ -210,9 +226,7 @@ class Transform extends Trait {
     var worldPoint = point;
     for (final transform in transforms) {
       final first = transform == transforms.first;
-      final matrix = first
-          ? transform.transformMatrix
-          : transform.transformMatrixWithoutOrigin;
+      final matrix = first ? transform._matrix : transform._matrixWithoutOrigin;
       worldPoint = matrix.transform2(worldPoint);
     }
 
