@@ -124,16 +124,16 @@ class SpriteRenderer extends Renderer {
     for (final renderee in renderees) {
       final transformTrait = renderee.transformTrait;
 
-      if (transformTrait != null && transformTrait.initialized) {
+      if (transformTrait != null) {
         if (renderee.matchedVisual is SpriteVisual) {
           final sprite = renderee.matchedVisual as SpriteVisual;
-          transforms.add(transformTrait.globalRSTransform(
+          transforms.add(transformTrait.calculateGlobalRSTransform(
               spriteSize: sprite.sprite!.srcSize));
           rects.add(sprite.sprite!.src);
           colors.add(sprite.color);
         } else if (renderee.matchedVisual is SpriteAnimationVisual) {
           final sprite = renderee.matchedVisual as SpriteAnimationVisual;
-          transforms.add(transformTrait.globalRSTransform(
+          transforms.add(transformTrait.calculateGlobalRSTransform(
               spriteSize: sprite.animation!.currentFrame.sprite.srcSize));
           rects.add(sprite.animation!.currentFrame.sprite.src);
           colors.add(sprite.color);

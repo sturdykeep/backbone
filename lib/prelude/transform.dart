@@ -3,10 +3,10 @@ import 'dart:ui';
 
 import 'package:backbone/builders.dart';
 import 'package:backbone/component.dart';
-import 'package:backbone/filter.dart';
+import 'package:backbone/entity.dart';
 import 'package:backbone/position_component.dart';
-import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 
@@ -20,17 +20,6 @@ import 'package:flame/extensions.dart';
 /// - priority
 void transformPlugin(RealmBuilder builder) {
   builder.withTrait(Transform);
-  builder.withSystem(rebuildMatrixCacheSystem);
-}
-
-void rebuildMatrixCacheSystem(Realm realm) {
-  final entities = realm.query(Has([Transform]));
-  for (final entity in entities) {
-    final transform = entity.get<Transform>();
-    if (transform._cacheIsDirty) {
-      transform._populateCaches();
-    }
-  }
 }
 
 class Transform extends Trait {
@@ -44,12 +33,15 @@ class Transform extends Trait {
   int _priority = 0;
 
   // Cache
-  bool initialized = false;
   bool _cacheIsDirty = true;
   Matrix4 _matrix = Matrix4.identity();
   Matrix4 _matrixInverse = Matrix4.identity();
   Matrix4 _matrixWithoutOrigin = Matrix4.identity();
   Matrix4 _matrixWithoutOriginInverse = Matrix4.identity();
+  Matrix4 _globalMatrix = Matrix4.identity();
+  Matrix4 _globalMatrixInverse = Matrix4.identity();
+  Matrix4 _globalMatrixWithoutOrigin = Matrix4.identity();
+  Matrix4 _globalMatrixWithoutOriginInverse = Matrix4.identity();
 
   // -- position
   Vector2 get position => _position;
@@ -133,8 +125,9 @@ class Transform extends Trait {
   Vector2 get origin => anchor.toVector2()..multiply(size);
   Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
 
+  // Matrix calculations
   /// Transform matrix, that takes anchor into account for scaling and rotation.
-  Matrix4 get transformMatrix {
+  Matrix4 calculateTransformMatrix() {
     return Matrix4.identity()
       ..translate(position.x, position.y)
       ..rotateZ(rotation)
@@ -142,23 +135,35 @@ class Transform extends Trait {
       ..translate(-origin.x, -origin.y);
   }
 
-  Matrix4 get inverseTransformMatrix => transformMatrix.clone()..invert();
-
-  Matrix4 get transformMatrixWithoutOrigin {
+  Matrix4 calculateTransformMatrixWithoutOrigin() {
     return Matrix4.identity()
       ..translate(position.x, position.y)
       ..rotateZ(rotation)
       ..scale(scale.x, scale.y);
   }
 
-  Matrix4 get inverseTransformMatrixWithoutOrigin =>
-      transformMatrixWithoutOrigin..invert();
+  /// Transform matrix, that takes parent transforms into account.
+  Matrix4 calculateGlobalTransformMatrix() {
+    final parentMatrix = entity.parent != null
+        ? (entity.findFirst<Transform>()?._globalMatrixWithoutOrigin ??
+            Matrix4.identity())
+        : Matrix4.identity();
+    return parentMatrix * _matrix;
+  }
 
-  RSTransform globalRSTransform({Vector2? spriteSize}) {
+  Matrix4 calculateGlobalTransformMatrixWithoutOrigin() {
+    final parentMatrix = entity.parent != null
+        ? (entity.findFirst<Transform>()?._globalMatrixWithoutOrigin ??
+            Matrix4.identity())
+        : Matrix4.identity();
+    return parentMatrix * _matrixWithoutOrigin;
+  }
+
+  RSTransform calculateGlobalRSTransform({Vector2? spriteSize}) {
     final scaleToSize = spriteSize != null
         ? Vector2(size.x / spriteSize.x, size.y / spriteSize.y)
         : Vector2.all(1.0);
-    final globalTransform = globalTransformMatrix;
+    final globalTransform = globalMatrix;
 
     final transformedPosition = globalTransform.transform2(origin);
     // figure out the scale
@@ -182,52 +187,104 @@ class Transform extends Trait {
     );
   }
 
-  /// Transform matrix, that takes parent transforms into account.
-  Matrix4 get globalTransformMatrix {
-    final transforms = entity.findAllReverse<Transform>();
-    final matrix = Matrix4.identity();
-    for (final transform in transforms) {
-      final last = transform == transforms.last;
-      matrix
-          .multiply(last ? transform._matrix : transform._matrixWithoutOrigin);
-    }
-    return matrix;
+  void _populateLocalCaches() {
+    // Local
+    _matrix = calculateTransformMatrix();
+    _matrixInverse = _matrix.clone()..invert();
+    _matrixWithoutOrigin = calculateTransformMatrixWithoutOrigin();
+    _matrixWithoutOriginInverse = _matrixWithoutOrigin.clone()..invert();
+
+    _cacheIsDirty = false;
   }
 
-  Matrix4 get globalInverseTransformMatrix => globalTransformMatrix..invert();
+  void _populateGlobalCaches() {
+    // Global
+    _globalMatrix = calculateGlobalTransformMatrix();
+    _globalMatrixInverse = _globalMatrix.clone()..invert();
+    _globalMatrixWithoutOrigin = calculateGlobalTransformMatrixWithoutOrigin();
+    _globalMatrixWithoutOriginInverse = _globalMatrixWithoutOrigin.clone()
+      ..invert();
+  }
 
-  void _populateCaches() {
-    _matrix = transformMatrix;
-    _matrixInverse = inverseTransformMatrix;
-    _matrixWithoutOrigin = transformMatrixWithoutOrigin;
-    _matrixWithoutOriginInverse = inverseTransformMatrixWithoutOrigin;
-    _cacheIsDirty = false;
-    initialized = true;
+  void _propagateChangesDownTree() {
+    List<Entity> toDo = [entity];
+    while (toDo.isNotEmpty) {
+      final current = toDo.removeLast();
+      final transform = current.tryGet<Transform>();
+      if (transform != null) {
+        if (transform._cacheIsDirty) {
+          transform._populateLocalCaches();
+        }
+        transform._populateGlobalCaches();
+      }
+      toDo.addAll(current.children);
+    }
+  }
+
+  void _findMostRootDirtyParentAndPropagateDown() {
+    // Find the parent that is dirty
+    final parents = entity.findAllReverse<Transform>();
+    final dirtyParent = parents.firstWhereOrNull((e) => e._cacheIsDirty);
+    if (dirtyParent != null) {
+      dirtyParent._propagateChangesDownTree();
+    }
+  }
+
+  // Getters for cached matrices
+  Matrix4 get matrix {
+    if (_cacheIsDirty) {
+      _propagateChangesDownTree();
+    }
+    return _matrix;
+  }
+
+  Matrix4 get matrixInverse {
+    if (_cacheIsDirty) {
+      _propagateChangesDownTree();
+    }
+    return _matrixInverse;
+  }
+
+  Matrix4 get matrixWithoutOrigin {
+    if (_cacheIsDirty) {
+      _propagateChangesDownTree();
+    }
+    return _matrixWithoutOrigin;
+  }
+
+  Matrix4 get matrixWithoutOriginInverse {
+    if (_cacheIsDirty) {
+      _propagateChangesDownTree();
+    }
+    return _matrixWithoutOriginInverse;
+  }
+
+  Matrix4 get globalMatrix {
+    _findMostRootDirtyParentAndPropagateDown();
+    return _globalMatrix;
+  }
+
+  Matrix4 get globalMatrixInverse {
+    _findMostRootDirtyParentAndPropagateDown();
+    return _globalMatrixInverse;
+  }
+
+  Matrix4 get globalMatrixWithoutOrigin {
+    _findMostRootDirtyParentAndPropagateDown();
+    return _globalMatrixWithoutOrigin;
+  }
+
+  Matrix4 get globalMatrixWithoutOriginInverse {
+    _findMostRootDirtyParentAndPropagateDown();
+    return _globalMatrixWithoutOriginInverse;
   }
 
   Vector2 toLocal(Vector2 point) {
-    final transforms = entity.findAllReverse<Transform>();
-    var localPoint = point;
-    for (final transform in transforms) {
-      final last = transform == transforms.last;
-      final inverse = last
-          ? transform._matrixInverse
-          : transform._matrixWithoutOriginInverse;
-      localPoint = inverse.transform2(localPoint);
-    }
-    return localPoint;
+    return globalMatrixInverse.transform2(point);
   }
 
   Vector2 toWorld(Vector2 point) {
-    final transforms = entity.findAll<Transform>();
-    var worldPoint = point;
-    for (final transform in transforms) {
-      final first = transform == transforms.first;
-      final matrix = first ? transform._matrix : transform._matrixWithoutOrigin;
-      worldPoint = matrix.transform2(worldPoint);
-    }
-
-    return worldPoint;
+    return globalMatrix.transform2(point);
   }
 
   bool containsPoint(Vector2 point) {

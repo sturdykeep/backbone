@@ -109,6 +109,20 @@ class Entity {
     return findAll<T>(includeSelf: includeSelf).reversed;
   }
 
+  /// Find the first trait of a given type by walking up the entity tree.
+  /// The search doesn't include the entity itself.
+  T? findFirst<T extends Trait>() {
+    Entity? toCheck = parent;
+    while (toCheck != null) {
+      final trait = toCheck.tryGet<T>();
+      if (trait != null) {
+        return trait;
+      }
+      toCheck = toCheck.parent;
+    }
+    return null;
+  }
+
   // Children
   void addChild(Entity child) {
     if (child.realm != realm) {

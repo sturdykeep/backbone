@@ -35,8 +35,7 @@ class RectangleRenderer extends Renderer {
       if (transform != null) {
         final paint = Paint()..color = visual.color;
         canvas.save();
-        canvas.transform(
-            Float64List.fromList(transform.globalTransformMatrix.storage));
+        canvas.transform(Float64List.fromList(transform.globalMatrix.storage));
         canvas.drawRect(transform.localRect, paint);
         canvas.restore();
       }
