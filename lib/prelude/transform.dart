@@ -170,10 +170,8 @@ class Transform extends Trait {
     final transformedPointA = globalTransform.transform2(pointA);
     final transformedPointB = globalTransform.transform2(pointB);
     final transformedScale = transformedPointA.distanceTo(transformedPointB);
-    final transformedRotation = globalTransform
-        .getRotation()
-        .transform2(Vector2(1, 0))
-        .angleToSigned(Vector2(1, 0));
+    final transformedRotation = Vector2(0, 1)
+        .angleToSigned(globalTransform.getRotation().transform2(Vector2(0, 1)));
 
     final anchorX = anchor.x * (spriteSize?.x ?? size.x);
     final anchorY = anchor.y * (spriteSize?.y ?? size.y);
