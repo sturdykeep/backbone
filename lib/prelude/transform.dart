@@ -118,83 +118,109 @@ class Transform extends Trait {
   }
 
   // Utilities
-  Vector2 get origin => anchor.toVector2()..multiply(size);
+  Vector2 get origin => Vector2(size.x * anchor.x, size.y * anchor.y);
   Rect get localRect => Rect.fromLTWH(0, 0, size.x, size.y);
 
   // Matrix calculations
   /// Transform matrix, that takes anchor into account for scaling and rotation.
-  Matrix4 calculateTransformMatrix() {
-    return Matrix4.identity()
-      ..translate(position.x, position.y)
-      ..rotateZ(rotation)
-      ..scale(scale.x, scale.y)
-      ..translate(-origin.x, -origin.y);
+  void recalculateTransformMatrix() {
+    final storage = _matrix.storage;
+    final origin = this.origin;
+    final s = sin(rotation);
+    final c = cos(rotation);
+    final x = position.x;
+    final y = position.y;
+    final sx = scale.x;
+    final sy = scale.y;
+    final ox = origin.x;
+    final oy = origin.y;
+
+    storage[0] = c * sx;
+    storage[1] = s * sx;
+    storage[2] = 0.0;
+    storage[3] = 0.0;
+    storage[4] = -s * sy;
+    storage[5] = c * sy;
+    storage[6] = 0.0;
+    storage[7] = 0.0;
+    storage[8] = 0.0;
+    storage[9] = 0.0;
+    storage[10] = 1.0;
+    storage[11] = 0.0;
+    storage[12] = x - c * sx * ox + s * sy * oy;
+    storage[13] = y - s * sx * ox - c * sy * oy;
+    storage[14] = 0.0;
+    storage[15] = 1.0;
   }
 
-  Matrix4 calculateTransformMatrixWithoutOrigin() {
-    return Matrix4.identity()
-      ..translate(position.x, position.y)
-      ..rotateZ(rotation)
-      ..scale(scale.x, scale.y);
+  void recalculateTransformMatrixWithoutOrigin() {
+    final storage = _matrixWithoutOrigin.storage;
+    final s = sin(rotation);
+    final c = cos(rotation);
+    final x = position.x;
+    final y = position.y;
+    final sx = scale.x;
+    final sy = scale.y;
+
+    storage[0] = c * sx;
+    storage[1] = s * sx;
+    storage[2] = 0.0;
+    storage[3] = 0.0;
+    storage[4] = -s * sy;
+    storage[5] = c * sy;
+    storage[6] = 0.0;
+    storage[7] = 0.0;
+    storage[8] = 0.0;
+    storage[9] = 0.0;
+    storage[10] = 1.0;
+    storage[11] = 0.0;
+    storage[12] = x;
+    storage[13] = y;
+    storage[14] = 0.0;
+    storage[15] = 1.0;
   }
 
   /// Transform matrix, that takes parent transforms into account.
-  Matrix4 calculateGlobalTransformMatrix() {
-    final parentMatrix = entity.parent != null
-        ? (entity.findFirst<Transform>()?._globalMatrixWithoutOrigin ??
-            Matrix4.identity())
-        : Matrix4.identity();
-    return parentMatrix * _matrix;
+  void recalculateGlobalTransformMatrix() {
+    if (entity.parent == null) {
+      _globalMatrix.setFrom(_matrix);
+    }
+
+    final parentMatrix =
+        entity.findFirst<Transform>()?._globalMatrixWithoutOrigin;
+    if (parentMatrix == null) {
+      _globalMatrix.setFrom(_matrix);
+    } else {
+      _globalMatrix = parentMatrix * _matrix;
+    }
   }
 
-  Matrix4 calculateGlobalTransformMatrixWithoutOrigin() {
-    final parentMatrix = entity.parent != null
-        ? (entity.findFirst<Transform>()?._globalMatrixWithoutOrigin ??
-            Matrix4.identity())
-        : Matrix4.identity();
-    return parentMatrix * _matrixWithoutOrigin;
-  }
+  void recalculateGlobalTransformMatrixWithoutOrigin() {
+    if (entity.parent == null) {
+      _globalMatrixWithoutOrigin.setFrom(_matrixWithoutOrigin);
+    }
 
-  RSTransform calculateGlobalRSTransform({Vector2? spriteSize}) {
-    final scaleToSize = spriteSize != null
-        ? Vector2(size.x / spriteSize.x, size.y / spriteSize.y)
-        : Vector2.all(1.0);
-    final globalTransform = globalMatrix;
-
-    final transformedPosition = globalTransform.transform2(origin);
-    // figure out the scale
-    final pointA = Vector2(0, 0);
-    final pointB = Vector2(1, 0);
-    final transformedPointA = globalTransform.transform2(pointA);
-    final transformedPointB = globalTransform.transform2(pointB);
-    final transformedScale = transformedPointA.distanceTo(transformedPointB);
-    final transformedRotation = Vector2(0, 1)
-        .angleToSigned(globalTransform.getRotation().transform2(Vector2(0, 1)));
-
-    final anchorX = anchor.x * (spriteSize?.x ?? size.x);
-    final anchorY = anchor.y * (spriteSize?.y ?? size.y);
-    return RSTransform.fromComponents(
-      rotation: transformedRotation,
-      scale: transformedScale * scaleToSize.x,
-      anchorX: anchorX,
-      anchorY: anchorY,
-      translateX: transformedPosition.x,
-      translateY: transformedPosition.y,
-    );
+    final parentMatrix =
+        entity.findFirst<Transform>()?._globalMatrixWithoutOrigin;
+    if (parentMatrix == null) {
+      _globalMatrixWithoutOrigin.setFrom(_matrixWithoutOrigin);
+    } else {
+      _globalMatrixWithoutOrigin = parentMatrix * _matrixWithoutOrigin;
+    }
   }
 
   void _populateLocalCaches() {
     // Local
-    _matrix = calculateTransformMatrix();
-    _matrixWithoutOrigin = calculateTransformMatrixWithoutOrigin();
+    recalculateTransformMatrix();
+    recalculateTransformMatrixWithoutOrigin();
 
     _cacheIsDirty = false;
   }
 
   void _populateGlobalCaches() {
     // Global
-    _globalMatrix = calculateGlobalTransformMatrix();
-    _globalMatrixWithoutOrigin = calculateGlobalTransformMatrixWithoutOrigin();
+    recalculateGlobalTransformMatrix();
+    recalculateGlobalTransformMatrixWithoutOrigin();
   }
 
   void _propagateChangesDownTree() {
@@ -213,19 +239,17 @@ class Transform extends Trait {
   }
 
   void _findMostRootDirtyParentAndPropagateDown() {
-    // Find the parent that is dirty
-    final parents = entity.findAllReverse<Transform>();
-    Transform? dirtyParent;
-    for (final parent in parents) {
-      if (parent._cacheIsDirty) {
-        dirtyParent = parent;
-        break;
+    Entity? toCheck = entity;
+    Transform mostRootDirtyTransform = this;
+    while (toCheck != null) {
+      final transform = toCheck.tryGet<Transform>();
+      if (transform != null && transform._cacheIsDirty) {
+        mostRootDirtyTransform = transform;
       }
+      toCheck = toCheck.parent;
     }
 
-    if (dirtyParent != null) {
-      dirtyParent._propagateChangesDownTree();
-    }
+    mostRootDirtyTransform._propagateChangesDownTree();
   }
 
   // Getters for cached matrices

@@ -36,11 +36,9 @@ class Entity {
 
   /// Try to get a trait, otherwise return null.
   T? tryGet<T extends Trait>() {
-    if (traits.isEmpty) {
-      return null;
-    }
-
-    for (final trait in traits) {
+    final length = traits.length;
+    for (var i = 0; i < length; i++) {
+      final trait = traits[i];
       if (trait is T) {
         return trait;
       }
@@ -150,5 +148,13 @@ class Entity {
 
     _children.remove(child);
     child._parent = null;
+  }
+
+  Entity? root() {
+    Entity? root = this;
+    while (root?.parent != null) {
+      root = root?.parent;
+    }
+    return root;
   }
 }

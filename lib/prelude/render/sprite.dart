@@ -6,26 +6,78 @@ import 'package:backbone/prelude/render/mod.dart';
 import 'package:backbone/prelude/render/trait.dart';
 import 'package:backbone/prelude/render/visual.dart';
 import 'package:backbone/prelude/time.dart';
+import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart' show Colors, debugPrint;
 
-class SpriteVisual extends Visual {
-  Sprite? sprite;
+class BaseSpriteVisual extends Visual {
   Paint? overridePaint;
   Color? overrideColor;
-  SpriteVisual({this.sprite, this.overridePaint});
+
+  BaseSpriteVisual({this.overridePaint, this.overrideColor});
+
+  // Transform cache
+  Matrix4 _usedMatrix = Matrix4.identity();
+  Vector2? _usedSize;
+  late RSTransform _transform;
+
+  RSTransform getGlobalRSTransform(Transform transform, Vector2 spriteSize) {
+    final globalMatrix = transform.globalMatrix;
+    if (_usedSize != transform.size || _usedMatrix != globalMatrix) {
+      _usedSize = transform.size;
+      _transform =
+          calculateGlobalRSTransform(transform, globalMatrix, spriteSize);
+    }
+    return _transform;
+  }
+
+  RSTransform calculateGlobalRSTransform(
+      Transform transform, Matrix4 globalMatrix, Vector2 spriteSize) {
+    final scaleToSize = Vector2(
+        transform.size.x / spriteSize.x, transform.size.y / spriteSize.y);
+
+    final transformedPosition = globalMatrix.transform2(transform.origin);
+    // figure out the scale
+    final pointA = Vector2(0, 0);
+    final pointB = Vector2(1, 0);
+    final transformedPointA = globalMatrix.transform2(pointA);
+    final transformedPointB = globalMatrix.transform2(pointB);
+    final transformedScale = transformedPointA.distanceTo(transformedPointB);
+    final transformedRotation = Vector2(0, 1)
+        .angleToSigned(globalMatrix.getRotation().transform2(Vector2(0, 1)));
+
+    final anchorX = transform.anchor.x * spriteSize.x;
+    final anchorY = transform.anchor.y * spriteSize.y;
+
+    // for cache
+    _usedMatrix = globalMatrix;
+    _usedSize = spriteSize;
+
+    return RSTransform.fromComponents(
+      rotation: transformedRotation,
+      scale: transformedScale * scaleToSize.x,
+      anchorX: anchorX,
+      anchorY: anchorY,
+      translateX: transformedPosition.x,
+      translateY: transformedPosition.y,
+    );
+  }
+}
+
+class SpriteVisual extends BaseSpriteVisual {
+  Sprite? sprite;
+  SpriteVisual({this.sprite});
 
   Image? get image => sprite?.image;
   Paint? get paint => overridePaint ?? sprite?.paint;
   Color get color => overrideColor ?? Colors.white;
 }
 
-class SpriteAnimationVisual extends Visual {
+class SpriteAnimationVisual extends BaseSpriteVisual {
   SpriteAnimation? animation;
-  Paint? overridePaint;
-  Color? overrideColor;
-  SpriteAnimationVisual({this.animation, this.overridePaint});
+  SpriteAnimationVisual({this.animation});
 
   Image? get image => animation?.currentFrame.sprite.image;
   Paint? get paint => overridePaint ?? animation?.currentFrame.sprite.paint;
@@ -82,34 +134,32 @@ class SpriteRenderer extends Renderer {
   }
 
   @override
-  Visual? matches(Entity entity) {
-    final renderTrait = entity.tryGet<Renderable>();
-    if (renderTrait != null) {
-      final visual = renderTrait.visual;
-      if (visual is SpriteVisual) {
-        if (currentImage == null && currentPaint == null) {
-          currentImage = visual.image;
-          currentPaint = visual.paint;
-        } else if (currentImage != visual.image ||
-            paintsAreSame(currentPaint!, visual.paint!) == false) {
-          return null;
-        }
-
-        return visual;
+  Visual? matches(Entity entity, Renderable renderable, Transform? transform) {
+    final visual = renderable.visual;
+    if (visual is SpriteVisual) {
+      if (currentImage == null && currentPaint == null) {
+        currentImage = visual.image;
+        currentPaint = visual.paint;
+      } else if (currentImage != visual.image ||
+          paintsAreSame(currentPaint!, visual.paint!) == false) {
+        return null;
       }
 
-      if (visual is SpriteAnimationVisual) {
-        if (currentImage == null && currentPaint == null) {
-          currentImage = visual.image;
-          currentPaint = visual.paint;
-        } else if (currentImage != visual.image ||
-            paintsAreSame(currentPaint!, visual.paint!) == false) {
-          return null;
-        }
-
-        return visual;
-      }
+      return visual;
     }
+
+    if (visual is SpriteAnimationVisual) {
+      if (currentImage == null && currentPaint == null) {
+        currentImage = visual.image;
+        currentPaint = visual.paint;
+      } else if (currentImage != visual.image ||
+          paintsAreSame(currentPaint!, visual.paint!) == false) {
+        return null;
+      }
+
+      return visual;
+    }
+
     return null;
   }
 
@@ -127,14 +177,14 @@ class SpriteRenderer extends Renderer {
       if (transformTrait != null) {
         if (renderee.matchedVisual is SpriteVisual) {
           final sprite = renderee.matchedVisual as SpriteVisual;
-          transforms.add(transformTrait.calculateGlobalRSTransform(
-              spriteSize: sprite.sprite!.srcSize));
+          transforms.add(sprite.getGlobalRSTransform(
+              transformTrait, sprite.sprite!.srcSize));
           rects.add(sprite.sprite!.src);
           colors.add(sprite.color);
         } else if (renderee.matchedVisual is SpriteAnimationVisual) {
           final sprite = renderee.matchedVisual as SpriteAnimationVisual;
-          transforms.add(transformTrait.calculateGlobalRSTransform(
-              spriteSize: sprite.animation!.currentFrame.sprite.srcSize));
+          transforms.add(sprite.getGlobalRSTransform(
+              transformTrait, sprite.animation!.currentFrame.sprite.srcSize));
           rects.add(sprite.animation!.currentFrame.sprite.src);
           colors.add(sprite.color);
         } else {

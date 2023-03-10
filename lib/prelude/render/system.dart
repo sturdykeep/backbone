@@ -52,7 +52,8 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
     if (currentRenderer == null) {
       // If we don't have a renderer yet, try to find one
       for (final renderer in pipeline.renderers) {
-        final visual = renderer.matches(renderee.entity!);
+        final visual =
+            renderer.matches(renderee.entity!, renderTrait, transformTrait);
         if (visual != null) {
           renderee.matchedVisual = visual;
           renderee.renderer = renderer;
@@ -64,7 +65,8 @@ void pipelineRenderSystem(Realm realm, Canvas canvas) {
       }
     } else {
       // If we have a renderer, try to match the renderee with it
-      final visual = currentRenderer.matches(renderee.entity!);
+      final visual = currentRenderer.matches(
+          renderee.entity!, renderTrait, transformTrait);
       if (visual != null) {
         renderee.matchedVisual = visual;
         renderee.renderer = currentRenderer;

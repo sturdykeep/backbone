@@ -8,6 +8,7 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/mod.dart';
 import 'package:backbone/prelude/render/sprite.dart';
 import 'package:backbone/prelude/render/trait.dart';
+import 'package:backbone/prelude/time.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
@@ -22,11 +23,13 @@ class ResourceHolder {
 }
 
 void dashSpawner(Realm realm) {
+  final time = realm.resource<Time>();
   final input = realm.resource<Input>();
   final mouse = input.mouse();
 
   if (mouse != null && mouse.isPressed) {
-    const amount = 5;
+    const amountPerSecond = 1000;
+    final amount = (amountPerSecond * time.delta).toInt();
     for (var i = 0; i < amount; i++) {
       // Create a dash at 0,0 every frame
       final dash =

@@ -41,7 +41,7 @@ class PipelineRenderer {
 /// Segment of the rendering pipeline. Does a priority-based rendering of a batch of objects
 /// it is given, then yields control to the next renderer in the pipeline.
 abstract class Renderer {
-  Visual? matches(Entity entity);
+  Visual? matches(Entity entity, Renderable renderable, Transform? transform);
   void render(Iterable<Renderee> renderees, Realm realm, Canvas canvas);
 }
 
