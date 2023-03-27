@@ -82,23 +82,23 @@ class Realm<T extends FlameGame> extends Component with HasGameRef<T> {
   final HashMap<AMessage, Completer<dynamic>> messageCompleters = HashMap();
 
   /// Push a new message to the end of the queue
-  Future<T?> pushMessage<T>(AMessage<T> message) {
+  Future<R?> pushMessage<R>(AMessage<R> message) {
     final completer = Completer();
     messageQueue.add(message);
     messageCompleters.putIfAbsent(message, () => completer);
-    return completer.future.then((v) => v as T?);
+    return completer.future.then((v) => v as R?);
   }
 
   /// Push a message to the first pposition in the queue
-  Future<T?> pushMessageToFront<T>(AMessage<T> message) {
+  Future<R?> pushMessageToFront<R>(AMessage<R> message) {
     final completer = Completer();
     messageQueue.addFirst(message);
     messageCompleters.putIfAbsent(message, () => completer);
-    return completer.future.then((v) => v as T?);
+    return completer.future.then((v) => v as R?);
   }
 
   /// Push a message right after a given message
-  Future<T?> pushMessageAfter<T>(AMessage<T> message, AMessage after) {
+  Future<R?> pushMessageAfter<R>(AMessage<R> message, AMessage after) {
     final completer = Completer();
     final oldMessages = messageQueue.toList();
     messageQueue.clear();
@@ -109,7 +109,7 @@ class Realm<T extends FlameGame> extends Component with HasGameRef<T> {
       }
     }
     messageCompleters.putIfAbsent(message, () => completer);
-    return completer.future.then((v) => v as T?);
+    return completer.future.then((v) => v as R?);
   }
 
   /// Push multiple messages to the queue
@@ -148,7 +148,7 @@ class Realm<T extends FlameGame> extends Component with HasGameRef<T> {
   ///   return false;
   /// }
   /// ```
-  bool resolveMessage<T>(AMessage<T> message, T result) {
+  bool resolveMessage<R>(AMessage<R> message, R result) {
     final completer = messageCompleters.remove(message);
     if (completer != null) {
       completer.complete(result);
