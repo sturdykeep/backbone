@@ -9,9 +9,9 @@ import 'package:flame/game.dart';
 /// realm!
 class PositionNode<T extends FlameGame> extends PositionComponent
     with HasGameRef<T>, ANode<T> {
-  TransformTrait get transformTrait => get<TransformTrait>();
+  TransformTrait<T> get transformTrait => get<TransformTrait<T>>();
 
-  PositionNode({TransformTrait? transformTrait}) {
-    addTrait(transformTrait ?? TransformTrait());
+  PositionNode({TransformTrait<T>? transformTrait}) {
+    addTrait(transformTrait ?? TransformTrait<T>());
   }
 }

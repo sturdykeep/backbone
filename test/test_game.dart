@@ -11,6 +11,6 @@ class TestGame extends FlameGame
         KeyboardEvents,
         HasHoverables,
         Hoverable,
-        HasRealm {
+        HasRealm<TestGame> {
   TestGame();
 }

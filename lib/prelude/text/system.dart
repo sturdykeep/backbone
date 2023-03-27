@@ -15,7 +15,7 @@ void textSystem<T extends FlameGame>(Realm<T> realm) {
   final counterZoom = Vector2.all(cameraZoom + (-2.0 * (cameraZoom - 1.0)));
 
   for (var node in query) {
-    final trait = node.get<TextTrait>();
+    final trait = node.get<TextTrait<T>>();
     if (trait.dirty) {
       final textChildList = node.findChildren<TextComponent>();
       if (textChildList.isNotEmpty) {

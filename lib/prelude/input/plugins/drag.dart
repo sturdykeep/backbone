@@ -16,7 +16,7 @@ class DraggablePointerPayload {
   DraggablePointerPayload(this.initiator, this.data);
 }
 
-class DraggableTrait extends ATrait {
+class DraggableTrait<T extends FlameGame> extends ATrait<T> {
   final DraggablePointerPayload? Function(Pointer pointer, Vector2 offset)?
       onStart;
   final void Function(Pointer pointer)? onUpdate;
@@ -42,12 +42,12 @@ void draggableSystem<T extends FlameGame>(Realm<T> realm) {
   final dragEnds = input.justDragEndPointers();
   if (dragStarts.isEmpty && dragUpdates.isEmpty && dragEnds.isEmpty) return;
 
-  final query = realm.query(Has([DraggableTrait]));
+  final query = realm.query(Has([DraggableTrait<T>]));
   final foundDragStarts = [];
 
   for (final node in query) {
-    final draggable = node.get<DraggableTrait>();
-    final tranform = node.tryGet<TransformTrait>();
+    final draggable = node.get<DraggableTrait<T>>();
+    final tranform = node.tryGet<TransformTrait<T>>();
 
     // Check drag starts
     for (var dragStart in dragStarts) {
@@ -102,7 +102,7 @@ void draggableSystem<T extends FlameGame>(Realm<T> realm) {
       .reversed;
   for (final dragStart in foundDragStartsSorted) {
     final node = dragStart["node"];
-    final draggable = node.get<DraggableTrait>();
+    final draggable = node.get<DraggableTrait<T>>();
     final pointer = dragStart["pointer"];
     if (pointer.handled) continue; // Otherwise we would override the
     final offset = dragStart["offset"];

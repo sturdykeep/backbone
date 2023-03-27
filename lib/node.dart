@@ -10,12 +10,12 @@ import 'package:flame/game.dart';
 /// have traits. Nodes are processed by systems.
 mixin ANode<T extends FlameGame> on HasGameRef<T> {
   /// Realm of the node, null if not yet added to a realm
-  Realm? realm;
+  Realm<T>? realm;
   bool isBackboneMounted = false;
 
   /// Archetype of this node, based on the used traits
   Archetype? bucket;
-  final List<ATrait> _traits = [];
+  final List<ATrait<T>> _traits = [];
 
   Archetype get archetype => Archetype(_traits.map((c) => c.runtimeType));
 
@@ -37,11 +37,11 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
 
   // Methods
   /// Get all registered traits of a node
-  List<ATrait> get traits => _traits.toList();
+  List<ATrait<T>> get traits => _traits.toList();
 
   /// Get traites sorted by the comparer
-  List<ATrait> get sortedTraits {
-    final List<ATrait> sorted = _traits.toList();
+  List<ATrait<T>> get sortedTraits {
+    final List<ATrait<T>> sorted = _traits.toList();
     sorted.sort((a, b) => a.toString().compareTo(b.toString()));
     return sorted;
   }
@@ -49,11 +49,11 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   // Tree searching
 
   /// Get the parent of the node, it might return null
-  ANode? findNodeParent() {
+  ANode<T>? findNodeParent() {
     var componentToCheck = parent;
-    ANode? parentNode;
+    ANode<T>? parentNode;
     while (componentToCheck != null) {
-      if (componentToCheck is ANode) {
+      if (componentToCheck is ANode<T>) {
         parentNode = componentToCheck;
         break;
       }
@@ -63,14 +63,14 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Get all child nodes of the current node
-  List<ANode> findNodeChildren() {
-    var result = <ANode>[];
+  List<ANode<T>> findNodeChildren() {
+    var result = <ANode<T>>[];
     var childrenToCheck = Queue<Component>();
     childrenToCheck.addAll(children);
 
     while (childrenToCheck.isNotEmpty) {
       final component = childrenToCheck.removeFirst();
-      if (component is ANode) {
+      if (component is ANode<T>) {
         result.add(component);
       }
       childrenToCheck.addAll(component.children);
@@ -80,11 +80,11 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Get the Realm of the parent
-  Realm? findRealmParent() {
+  Realm<T>? findRealmParent() {
     var componentToCheck = parent;
-    Realm? parentRealm;
+    Realm<T>? parentRealm;
     while (componentToCheck != null) {
-      if (componentToCheck is Realm) {
+      if (componentToCheck is Realm<T>) {
         parentRealm = componentToCheck;
         break;
       }
@@ -104,7 +104,7 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
       if (component is C) {
         result.add(component);
       }
-      if (component is ANode) {
+      if (component is ANode<T>) {
         continue;
       }
       childrenToCheck.addAll(component.children);
@@ -115,7 +115,7 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
 
   // Traits
   /// Add a trait to this node
-  void addTrait(ATrait trait) {
+  void addTrait(ATrait<T> trait) {
     if (trait.node != null && trait.node != this) {
       throw Exception(
           'Trait $trait is already added to another node ${trait.node}');
@@ -134,9 +134,10 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Remove a trait from a node
-  void removeTrait<T extends ATrait>() {
-    final trait =
-        _traits.cast<ATrait?>().firstWhere((c) => c is T, orElse: () => null);
+  void removeTrait<R extends ATrait<T>>() {
+    final trait = _traits
+        .cast<ATrait<T>?>()
+        .firstWhere((c) => c is R, orElse: () => null);
     if (trait != null) {
       _traits.remove(trait);
       trait.onRemove(this);
@@ -146,11 +147,11 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Try get a trait from the node
-  T? tryGet<T extends ATrait>() {
+  R? tryGet<R extends ATrait<T>>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
       final trait = _traits[i];
-      if (trait is T) {
+      if (trait is R) {
         return trait;
       }
     }
@@ -158,24 +159,24 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Get an existing trait otherwise throws
-  T get<T extends ATrait>() {
+  R get<R extends ATrait<T>>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
       final trait = _traits[i];
-      if (trait is T) {
+      if (trait is R) {
         return trait;
       }
     }
-    throw Exception('Trait ${T.toString()} not found');
+    throw Exception('Trait ${R.toString()} not found');
   }
 
   /// Gets an existing trait or adds the one returned
   /// by orElse to the trait list.
-  T getOrElse<T extends ATrait>(T Function() orElse) {
+  R getOrElse<R extends ATrait<T>>(R Function() orElse) {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
       final trait = _traits[i];
-      if (trait is T) {
+      if (trait is R) {
         return trait;
       }
     }
@@ -185,11 +186,11 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   /// Checks if a trait exists in this node
-  bool hasTrait<T extends ATrait>() {
+  bool hasTrait<R extends ATrait<T>>() {
     final traitsLength = _traits.length;
     for (var i = 0; i < traitsLength; i++) {
       final trait = _traits[i];
-      if (trait is T) {
+      if (trait is R) {
         return true;
       }
     }
@@ -197,7 +198,7 @@ mixin ANode<T extends FlameGame> on HasGameRef<T> {
   }
 
   // Utilities
-  int compareToOnPriority(ANode other) {
+  int compareToOnPriority(ANode<T> other) {
     return priority.compareTo(other.priority);
   }
 }

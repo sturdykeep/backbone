@@ -16,7 +16,7 @@ class HoverableTrait<T extends FlameGame> extends ATrait<T> {
 }
 
 void hoverableSystem<T extends FlameGame>(Realm<T> realm) {
-  final query = realm.query(Has([HoverableTrait]));
+  final query = realm.query(Has([HoverableTrait<T>]));
   final input = realm.getResource<Input>();
   final hoverEnters = input.justHoverEnterPointers();
   final hovers = input.justHoverPointers();
@@ -35,7 +35,7 @@ void hoverableSystem<T extends FlameGame>(Realm<T> realm) {
   final foundHoverMoves = [];
 
   for (final node in query) {
-    final hoverable = node.get<HoverableTrait>();
+    final hoverable = node.get<HoverableTrait<T>>();
 
     // Check hover enters
     for (var hoverEnter in hoverEnters) {

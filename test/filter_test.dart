@@ -3,13 +3,15 @@ import 'package:backbone/trait.dart';
 import 'package:backbone/filter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class TestComponentA extends ATrait {}
+import 'test_game.dart';
 
-class TestComponentB extends ATrait {}
+class TestComponentA extends ATrait<TestGame> {}
 
-class TestComponentC extends ATrait {}
+class TestComponentB extends ATrait<TestGame> {}
 
-class TestComponentD extends ATrait {}
+class TestComponentC extends ATrait<TestGame> {}
+
+class TestComponentD extends ATrait<TestGame> {}
 
 void main() {
   group('Filter', () {

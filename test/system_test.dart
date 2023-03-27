@@ -3,23 +3,25 @@ import 'package:backbone/realm.dart';
 import 'package:backbone/system.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-void testSystem(Realm realm) {}
+import 'test_game.dart';
+
+void testSystem(Realm<TestGame> realm) {}
 
 void main() {
   group('System', () {
     var emptySystemRun = false;
-    void emptySystem(Realm realm) {
+    void emptySystem(Realm<TestGame> realm) {
       emptySystemRun = true;
     }
 
     var systemIntegerRun = false;
-    double systemInteger(Realm realm) {
+    double systemInteger(Realm<TestGame> realm) {
       systemIntegerRun = true;
       return 1.0;
     }
 
     var systemMultiplyTwoRun = false;
-    double systemMultiplyTwo(Realm realm) {
+    double systemMultiplyTwo(Realm<TestGame> realm) {
       systemMultiplyTwoRun = true;
       var value = realm.checkOrRunSystem(systemInteger);
       return value * 2;
@@ -30,7 +32,7 @@ void main() {
     });
     test('run system without result', () {
       emptySystemRun = false;
-      var realm = RealmBuilder().withSystem(emptySystem).build();
+      var realm = RealmBuilder<TestGame>().withSystem(emptySystem).build();
       expect(realm.systems.length, 1);
       expect(realm.systemResults.length, 0);
       realm.update(0.0);
@@ -40,7 +42,7 @@ void main() {
     });
     test('run system with result', () {
       systemIntegerRun = false;
-      var realm = RealmBuilder().withSystem(systemInteger).build();
+      var realm = RealmBuilder<TestGame>().withSystem(systemInteger).build();
       expect(realm.systems.length, 1);
       expect(realm.systemResults.length, 0);
       realm.update(0.0);
@@ -51,7 +53,7 @@ void main() {
     test('run system with result and dependency', () {
       systemIntegerRun = false;
       systemMultiplyTwoRun = false;
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withSystem(systemInteger)
           .withSystem(systemMultiplyTwo)
           .build();
@@ -67,7 +69,7 @@ void main() {
     test('run system with result and dependency in different order', () {
       systemIntegerRun = false;
       systemMultiplyTwoRun = false;
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withSystem(systemMultiplyTwo)
           .withSystem(systemInteger)
           .build();
@@ -83,7 +85,7 @@ void main() {
     test('systems are run next frame', () {
       systemIntegerRun = false;
       systemMultiplyTwoRun = false;
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withSystem(systemMultiplyTwo)
           .withSystem(systemInteger)
           .build();
@@ -109,7 +111,7 @@ void main() {
     test('system is not run second time same frame', () {
       systemIntegerRun = false;
       systemMultiplyTwoRun = false;
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withSystem(systemMultiplyTwo)
           .withSystem(systemInteger)
           .build();

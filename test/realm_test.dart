@@ -7,6 +7,7 @@ import 'package:backbone/message.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'node_test.dart';
+import 'test_game.dart';
 
 class RealmTestMessage extends AMessage<int> {
   RealmTestMessage(this.value);
@@ -19,7 +20,7 @@ class ExampleResource {}
 
 class ExampleResource2 {}
 
-class SecondTestNode extends ComponentNode {}
+class SecondTestNode extends ComponentNode<TestGame> {}
 
 void main() {
   group('Realm', () {
@@ -65,7 +66,7 @@ void main() {
     });
 
     test('remove nodes from realm', () {
-      var realm = RealmBuilder().build();
+      var realm = RealmBuilder<TestGame>().build();
       final node = TestNode();
       node.realm = realm;
       node.isBackboneMounted = true;

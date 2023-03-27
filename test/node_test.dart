@@ -10,23 +10,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'test_game.dart';
 
-class IntComponent extends ATrait {
+class IntComponent extends ATrait<TestGame> {
   final int value;
   IntComponent(this.value);
 }
 
-class StringTrait extends ATrait {
+class StringTrait extends ATrait<TestGame> {
   final String value;
   StringTrait(this.value);
 }
 
-class TestNode extends ComponentNode {
+class TestNode extends ComponentNode<TestGame> {
   TestNode() : super();
 }
 
 Future<void> basicSetup(TestGame game, WidgetTester _) async {
   await game.ready();
-  await game.ensureAdd(RealmBuilder().withTrait(IntComponent).build());
+  await game
+      .ensureAdd(RealmBuilder<TestGame>().withTrait(IntComponent).build());
 }
 
 void main() {
@@ -37,14 +38,14 @@ void main() {
     gameTester.testGameWidget('checks if a trait exists in this node',
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
-      await game.ensureAdd(RealmBuilder()
+      await game.ensureAdd(RealmBuilder<TestGame>()
           .withTrait(IntComponent)
           .withTrait(StringTrait)
           .build());
     }, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -61,14 +62,14 @@ void main() {
     gameTester.testGameWidget('gets an existing trait or adds the one returned',
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
-      await game.ensureAdd(RealmBuilder()
+      await game.ensureAdd(RealmBuilder<TestGame>()
           .withTrait(IntComponent)
           .withTrait(StringTrait)
           .build());
     }, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -81,8 +82,8 @@ void main() {
     gameTester.testGameWidget('get an existing trait otherwise throws',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -129,7 +130,10 @@ void main() {
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
       await game.ensureAdd(
-        RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
+        RealmBuilder<TestGame>()
+            .withTrait(IntComponent)
+            .withTrait(StringTrait)
+            .build(),
       );
     }, verify: (game, tester) async {
       expect(
@@ -137,14 +141,16 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
       var anotherrealmsNode = TestNode();
-      final anotherrealm =
-          RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build();
+      final anotherrealm = RealmBuilder<TestGame>()
+          .withTrait(IntComponent)
+          .withTrait(StringTrait)
+          .build();
       await game.add(anotherrealm);
       anotherrealm.add(anotherrealmsNode);
       game.update(0);
@@ -179,7 +185,10 @@ void main() {
         setUp: (TestGame game, WidgetTester _) async {
       await game.ready();
       await game.ensureAdd(
-        RealmBuilder().withTrait(IntComponent).withTrait(StringTrait).build(),
+        RealmBuilder<TestGame>()
+            .withTrait(IntComponent)
+            .withTrait(StringTrait)
+            .build(),
       );
     }, verify: (game, tester) async {
       expect(
@@ -187,8 +196,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -230,8 +239,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -316,8 +325,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       node.addTrait(IntComponent(1));
       realm.add(node);

@@ -6,22 +6,24 @@ import 'package:backbone/filter.dart';
 import 'package:backbone/node.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class TestNode extends ComponentNode {
+import 'test_game.dart';
+
+class TestNode extends ComponentNode<TestGame> {
   TestNode() : super();
 }
 
-class TestComponentA extends ATrait {}
+class TestComponentA extends ATrait<TestGame> {}
 
-class TestComponentB extends ATrait {}
+class TestComponentB extends ATrait<TestGame> {}
 
-class TestComponentC extends ATrait {}
+class TestComponentC extends ATrait<TestGame> {}
 
-class TestComponentD extends ATrait {}
+class TestComponentD extends ATrait<TestGame> {}
 
 void main() {
   group('Query', () {
     test('register [a] query [a] from [a]', () {
-      var realm = RealmBuilder().withTrait(TestComponentA).build();
+      var realm = RealmBuilder<TestGame>().withTrait(TestComponentA).build();
       var node = TestNode();
       node.isBackboneMounted = true;
       node.realm = realm;
@@ -33,7 +35,7 @@ void main() {
       expect(result.first.tryGet<TestComponentA>(), node.traits.first);
     });
     test('register [a] query [b] from [a]', () {
-      var realm = RealmBuilder().withTrait(TestComponentA).build();
+      var realm = RealmBuilder<TestGame>().withTrait(TestComponentA).build();
       var node = TestNode();
       node.isBackboneMounted = true;
       node.realm = realm;
@@ -43,7 +45,7 @@ void main() {
       expect(result.length, 0);
     });
     test('register [a] query [a,b] from [a]', () {
-      var realm = RealmBuilder().withTrait(TestComponentA).build();
+      var realm = RealmBuilder<TestGame>().withTrait(TestComponentA).build();
       var node = TestNode();
       node.isBackboneMounted = true;
       node.realm = realm;
@@ -53,7 +55,7 @@ void main() {
       expect(result.length, 0);
     });
     test('register [a, b, c] query [a, b] from [a, b, c]', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -72,7 +74,7 @@ void main() {
       expect(result.first.tryGet<TestComponentB>(), node.traits[1]);
     });
     test('register [a, b, c] query [a] or [b] without [c] from [a, b, c]', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -94,7 +96,7 @@ void main() {
       expect(result.length, 0);
     });
     test('register [a, b, c] query [a] or [b] without [c] from [a, b]', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -118,7 +120,7 @@ void main() {
       expect(result.first.tryGet<TestComponentB>(), node.traits.last);
     });
     test('register [a, b, c] query [a] or [b] without [c] from [a, c]', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -139,7 +141,7 @@ void main() {
       expect(result.length, 0);
     });
     test('register [a, b, c] query [a] or [b] without [c] from [b, c]', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -160,7 +162,7 @@ void main() {
       expect(result.length, 0);
     });
     test('cannot query [a] from [a, b, c] after it was removed', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -179,7 +181,7 @@ void main() {
       expect(result.length, 0);
     });
     test('cannot query [a] from [a, b, c] after [a] is removed', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
@@ -199,7 +201,7 @@ void main() {
     });
     test('can query [a] from [a, b, c] after [a] is removed and added back',
         () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(TestComponentA)
           .withTrait(TestComponentB)
           .withTrait(TestComponentC)
