@@ -4,7 +4,7 @@ import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 
 /// All information to for a sprite or SpriteAnimationData
-class SpriteTrait extends ATrait {
+class SpriteTrait<T extends FlameGame> extends ATrait<T> {
   var _offset = Vector2.zero();
   Vector2 get offset => _offset;
   set offset(Vector2 value) {

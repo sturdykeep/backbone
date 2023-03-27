@@ -3,12 +3,13 @@ import 'package:backbone/prelude/text/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 
 /// Handle any text rendering including, zoom, position and padding
 /// The node requires to have the TextTrait and TransformTrait and one TextComponent
 /// If multiple are found only the first is used
-void textSystem(Realm realm) {
-  final query = realm.query(Has([TextTrait, TransformTrait]));
+void textSystem<T extends FlameGame>(Realm<T> realm) {
+  final query = realm.query(Has([TextTrait<T>, TransformTrait<T>]));
   final cameraZoom = realm.gameRef.camera.zoom;
   // If requested by the trait the text will zoom to 1 aka unzoom any current zoom
   final counterZoom = Vector2.all(cameraZoom + (-2.0 * (cameraZoom - 1.0)));
@@ -28,7 +29,7 @@ void textSystem(Realm realm) {
         }
 
         //Just transform
-        final transformTrait = node.get<TransformTrait>();
+        final transformTrait = node.get<TransformTrait<T>>();
         centerX() =>
             textChild.position.x = ((transformTrait.size.x - textSize.x) / 2);
         centerY() =>

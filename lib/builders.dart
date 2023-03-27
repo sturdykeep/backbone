@@ -6,13 +6,14 @@ import 'package:backbone/logging/no_op_log.dart';
 import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:backbone/realm.dart';
+import 'package:flame/game.dart';
 
-typedef Plugin = void Function(RealmBuilder builder);
+typedef Plugin<T extends FlameGame> = void Function(RealmBuilder<T> builder);
 
-class RealmBuilder {
+class RealmBuilder<T extends FlameGame> {
   // Traits
   final HashSet<Type> registeredTraits = HashSet();
-  RealmBuilder withTrait(Type trait) {
+  RealmBuilder<T> withTrait(Type trait) {
     if (registeredTraits.contains(trait) == false) {
       registeredTraits.add(trait);
     }
@@ -20,41 +21,41 @@ class RealmBuilder {
   }
 
   // Systems
-  final List<System> systems = [];
-  final List<MessageSystem> messageSystems = [];
-  RealmBuilder withSystem(System system) {
+  final List<System<T>> systems = [];
+  final List<MessageSystem<T>> messageSystems = [];
+  RealmBuilder<T> withSystem(System<T> system) {
     systems.add(system);
     return this;
   }
 
-  RealmBuilder withMessageSystem(MessageSystem system) {
+  RealmBuilder<T> withMessageSystem(MessageSystem<T> system) {
     messageSystems.add(system);
     return this;
   }
 
   // Resources
   final HashMap<Type, dynamic> resources = HashMap();
-  RealmBuilder withResource(Type resourceType, dynamic resource) {
+  RealmBuilder<T> withResource(Type resourceType, dynamic resource) {
     resources[resourceType] = resource;
     return this;
   }
 
   // Plugins
-  RealmBuilder withPlugin(Plugin plugin) {
+  RealmBuilder<T> withPlugin(Plugin plugin) {
     plugin(this);
     return this;
   }
 
-  Realm build({
+  Realm<T> build({
     Log? realmLogger,
   }) {
     var possibleArchetypes = Archetype.allCombinations(registeredTraits);
-    var archetypeBuckets = HashMap<Archetype, List<ANode>>();
+    var archetypeBuckets = HashMap<Archetype, List<ANode<T>>>();
     for (var archetype in possibleArchetypes) {
       archetypeBuckets[archetype] = [];
     }
 
-    return Realm(
+    return Realm<T>(
       registeredTraits,
       archetypeBuckets,
       systems,

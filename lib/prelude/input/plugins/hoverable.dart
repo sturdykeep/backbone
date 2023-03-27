@@ -3,8 +3,9 @@ import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flame/game.dart';
 
-class HoverableTrait extends ATrait {
+class HoverableTrait<T extends FlameGame> extends ATrait<T> {
   final void Function(Pointer pointer)? onHoverEnter;
   final void Function(Pointer pointer)? onHoverExit;
   final void Function(Pointer pointer)? onHoverMove;
@@ -14,7 +15,7 @@ class HoverableTrait extends ATrait {
   HoverableTrait({this.onHoverEnter, this.onHoverExit, this.onHoverMove});
 }
 
-void hoverableSystem(Realm realm) {
+void hoverableSystem<T extends FlameGame>(Realm<T> realm) {
   final query = realm.query(Has([HoverableTrait]));
   final input = realm.getResource<Input>();
   final hoverEnters = input.justHoverEnterPointers();

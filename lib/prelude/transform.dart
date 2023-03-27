@@ -4,6 +4,7 @@ import 'package:backbone/position_node.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/game.dart';
 
 /// Plugin to register the TransformTrait and transformSystem in your realm
 /// Both are used to handle PositionComponent basics setter for:
@@ -12,11 +13,11 @@ import 'package:flame/extensions.dart';
 /// - angle
 /// - size
 /// - anchor
-void transformPlugin(RealmBuilder builder) {
+void transformPlugin<T extends FlameGame>(RealmBuilder<T> builder) {
   builder.withTrait(TransformTrait);
 }
 
-class TransformTrait extends ATrait {
+class TransformTrait<T extends FlameGame> extends ATrait<T> {
   Vector2 _position = Vector2.zero();
   Vector2 _scale = Vector2.all(1.0);
   Vector2 _size = Vector2.zero();
@@ -28,8 +29,8 @@ class TransformTrait extends ATrait {
   set position(Vector2 value) {
     if (_position != value) {
       _position = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).position = value;
+      if (node != null && node is PositionNode<T>) {
+        (node as PositionNode<T>).position = value;
       }
     }
   }
@@ -39,8 +40,8 @@ class TransformTrait extends ATrait {
   set scale(Vector2 value) {
     if (_scale != value) {
       _scale = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).scale = value;
+      if (node != null && node is PositionNode<T>) {
+        (node as PositionNode<T>).scale = value;
       }
     }
   }
@@ -50,8 +51,8 @@ class TransformTrait extends ATrait {
   set rotation(double value) {
     if (_rotation != value) {
       _rotation = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).angle = value;
+      if (node != null && node is PositionNode<T>) {
+        (node as PositionNode<T>).angle = value;
       }
     }
   }
@@ -61,8 +62,8 @@ class TransformTrait extends ATrait {
   set size(Vector2 value) {
     if (_size != value) {
       _size = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).size = value;
+      if (node != null && node is PositionNode<T>) {
+        (node as PositionNode<T>).size = value;
       }
     }
   }
@@ -72,8 +73,8 @@ class TransformTrait extends ATrait {
   set anchor(Anchor value) {
     if (_anchor != value) {
       _anchor = value;
-      if (node != null && node is PositionNode) {
-        (node as PositionNode).anchor = value;
+      if (node != null && node is PositionNode<T>) {
+        (node as PositionNode<T>).anchor = value;
       }
     }
   }
@@ -82,7 +83,7 @@ class TransformTrait extends ATrait {
       position.y - anchor.y * size.y, size.x, size.y);
 
   // Convert current local position to global (world) coordinate space.
-  Vector2 absolutePosition(ANode node) {
+  Vector2 absolutePosition(ANode<T> node) {
     // Find the first parent, which is a PositionComponent
     var parent = node.parent;
     while (parent != null) {
@@ -95,8 +96,8 @@ class TransformTrait extends ATrait {
   }
 
   @override
-  void onAdd(ANode node) {
-    if (node is PositionNode) {
+  void onAdd(ANode<T> node) {
+    if (node is PositionNode<T>) {
       node.position = position;
       node.scale = scale;
       node.angle = rotation;

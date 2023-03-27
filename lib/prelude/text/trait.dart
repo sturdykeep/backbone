@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 /// - Text
 /// - Text style (default color white)
 /// - Counter zoom allows to render text unzoomed or changed based on your camera
-class TextTrait extends ATrait {
+class TextTrait<T extends FlameGame> extends ATrait<T> {
   /// Setting this will force the system to reset the properties of the trait to the node
   bool dirty = false;
 

@@ -7,6 +7,7 @@ import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/game.dart';
 
 class DraggablePointerPayload {
   final ANode initiator;
@@ -24,14 +25,14 @@ class DraggableTrait extends ATrait {
   DraggableTrait({this.onStart, this.onUpdate, this.onEnd});
 }
 
-class DragReceiverTrait extends ATrait {
+class DragReceiverTrait<T extends FlameGame> extends ATrait<T> {
   final void Function(Pointer pointer, DraggablePointerPayload? payload)
       onReceive;
 
   DragReceiverTrait({required this.onReceive});
 }
 
-void draggableSystem(Realm realm) {
+void draggableSystem<T extends FlameGame>(Realm<T> realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(hoverableSystem);
 
@@ -114,17 +115,17 @@ void draggableSystem(Realm realm) {
   }
 }
 
-void dragReceiverSystem(Realm realm) {
+void dragReceiverSystem<T extends FlameGame>(Realm<T> realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(draggableSystem);
 
   final input = realm.getResource<Input>();
   final dragEnds = input.justDragEndPointers();
   if (dragEnds.isEmpty) return;
-  final query = realm.query(Has([DragReceiverTrait]));
+  final query = realm.query(Has([DragReceiverTrait<T>]));
 
   for (final node in query) {
-    final dragReceiver = node.get<DragReceiverTrait>();
+    final dragReceiver = node.get<DragReceiverTrait<T>>();
 
     // Check drag ends
     for (var dragEnd in dragEnds) {

@@ -5,8 +5,9 @@ import 'package:backbone/prelude/input/plugins/drag.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flame/game.dart';
 
-class TappableTrait extends ATrait {
+class TappableTrait<T extends FlameGame> extends ATrait<T> {
   // Basic
   final void Function(Pointer pointer)? onTapDown;
   final void Function(Pointer pointer)? onLongTapDown;
@@ -28,15 +29,15 @@ class TappableTrait extends ATrait {
       this.onJustReleased});
 }
 
-class TappableSystemResult {
+class TappableSystemResult<T extends FlameGame> {
   // Hits
-  final List<CapturedTappableEvent> tapStarts = [];
-  final List<CapturedTappableEvent> longTapStarts = [];
-  final List<CapturedTappableEvent> tapEnds = [];
-  final List<CapturedTappableEvent> tapCancels = [];
-  final List<CapturedTappableEvent> justPressed = [];
-  final List<CapturedTappableEvent> pressed = [];
-  final List<CapturedTappableEvent> justReleased = [];
+  final List<CapturedTappableEvent<T>> tapStarts = [];
+  final List<CapturedTappableEvent<T>> longTapStarts = [];
+  final List<CapturedTappableEvent<T>> tapEnds = [];
+  final List<CapturedTappableEvent<T>> tapCancels = [];
+  final List<CapturedTappableEvent<T>> justPressed = [];
+  final List<CapturedTappableEvent<T>> pressed = [];
+  final List<CapturedTappableEvent<T>> justReleased = [];
 
   // Misses
   final List<Pointer> tapStartMisses = [];
@@ -48,47 +49,47 @@ class TappableSystemResult {
   final List<Pointer> justReleasedMisses = [];
 }
 
-class CapturedTappableEvent {
+class CapturedTappableEvent<T extends FlameGame> {
   final Pointer pointer;
-  final ANode node;
-  final TappableTrait trait;
+  final ANode<T> node;
+  final TappableTrait<T> trait;
 
   CapturedTappableEvent(this.pointer, this.node, this.trait);
 }
 
-TappableSystemResult tappableSystem(Realm realm) {
+TappableSystemResult tappableSystem<T extends FlameGame>(Realm<T> realm) {
   // Dependencies to maintain order
   realm.checkOrRunSystem(dragReceiverSystem);
 
-  final query = realm.query(Has([TappableTrait]));
-  final result = TappableSystemResult();
+  final query = realm.query(Has([TappableTrait<T>]));
+  final result = TappableSystemResult<T>();
 
   final input = realm.getResource<Input>();
   final tapStarts = input.justTapDownPointers();
-  final foundTapStarts = <CapturedTappableEvent>[];
+  final foundTapStarts = <CapturedTappableEvent<T>>[];
   final longTapStarts = input.justLongTapDownPointers();
-  final foundLongTapStarts = <CapturedTappableEvent>[];
+  final foundLongTapStarts = <CapturedTappableEvent<T>>[];
   final tapEnds = input.justTapUpPointers();
-  final foundTapEnds = <CapturedTappableEvent>[];
+  final foundTapEnds = <CapturedTappableEvent<T>>[];
   final tapCancels = input.justTapCancelPointers();
-  final foundTapCancels = <CapturedTappableEvent>[];
+  final foundTapCancels = <CapturedTappableEvent<T>>[];
   final justPressed = input.justPressedPointers();
-  final foundJustPressed = <CapturedTappableEvent>[];
+  final foundJustPressed = <CapturedTappableEvent<T>>[];
   final pressed = input.pressedPointers();
-  final foundPressed = <CapturedTappableEvent>[];
+  final foundPressed = <CapturedTappableEvent<T>>[];
   final justReleased = input.justReleasedPointers();
-  final foundJustReleased = <CapturedTappableEvent>[];
+  final foundJustReleased = <CapturedTappableEvent<T>>[];
 
   // Search for nodes matching the events
   for (final node in query) {
-    final tappable = node.get<TappableTrait>();
+    final tappable = node.get<TappableTrait<T>>();
 
     // Check tap starts
     for (var tapStart in tapStarts) {
       bool found = false;
       if (node.containsPoint(tapStart.worldPosition(realm.gameRef))) {
         found = true;
-        final event = CapturedTappableEvent(tapStart, node, tappable);
+        final event = CapturedTappableEvent<T>(tapStart, node, tappable);
         foundTapStarts.add(event);
       }
       if (found == false) {

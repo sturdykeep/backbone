@@ -8,6 +8,7 @@ import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/extensions.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +17,7 @@ import 'package:flutter/services.dart';
 // https://docs.rs/bevy/latest/bevy/input/struct.Input.html
 // https://bevy-cheatbook.github.io/input.html
 
-void inputPlugin(RealmBuilder builder) {
+void inputPlugin<T extends FlameGame>(RealmBuilder<T> builder) {
   builder.withSystem(longDownSystem);
 
   // Hover
@@ -287,7 +288,7 @@ class Input {
       }
       return false;
     });
-    
+
     // Check all hover pointers to see if they need to time out
     for (var pointer in _pointers) {
       if (pointer.state is PointerStateHover) {

@@ -13,13 +13,14 @@ import 'package:backbone/node.dart';
 import 'package:backbone/system.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
 /// Realm is the main entry point for all backbone systems
 /// You can have multiple realm in your game
-class Realm extends Component with HasGameRef {
+class Realm<T extends FlameGame> extends Component with HasGameRef<T> {
   int nextUniqueId = 0;
 
   /// Get a unique id for this wolrd instance
@@ -30,24 +31,24 @@ class Realm extends Component with HasGameRef {
   late final HashSet<Type> registeredTraits;
 
   /// Nodes sorted into lists by their archetype
-  late final HashMap<Archetype, List<ANode>> archetypeBuckets;
+  late final HashMap<Archetype, List<ANode<T>>> archetypeBuckets;
   late final List<Archetype> archetypeBucketsKeys;
-  late final List<List<ANode>> archetypeBucketsValues;
+  late final List<List<ANode<T>>> archetypeBucketsValues;
   final List<Archetype> nonEmptyBucketKeys = [];
-  final List<List<ANode>> nonEmptyBucketValues = [];
+  final List<List<ANode<T>>> nonEmptyBucketValues = [];
 
   /// List of all registered systems
-  late final List<System> systems;
-  late final HashMap<System, SystemResult> systemResults = HashMap();
+  late final List<System<T>> systems;
+  late final HashMap<System<T>, SystemResult> systemResults = HashMap();
 
   /// List of all messages systems
-  late final List<MessageSystem> messageSystems;
+  late final List<MessageSystem<T>> messageSystems;
 
   /// Map of types with the connected resource
   late final HashMap<Type, dynamic> resources;
 
   /// Map of nodes sorted by their type
-  final HashMap<Type, HashSet<ANode>> nodesByType = HashMap();
+  final HashMap<Type, HashSet<ANode<T>>> nodesByType = HashMap();
 
   /// Current frame number being processed
   int frame = 0;
@@ -191,9 +192,9 @@ class Realm extends Component with HasGameRef {
   // Systems and their results
   /// Make sure the system was run this frame, or run it.
   /// Returns the result of the system.
-  R checkOrRunSystem<R>(System system, {bool force = false}) {
+  R checkOrRunSystem<R>(System<T> system, {bool force = false}) {
     if (force || systemResults.containsKey(system) == false) {
-      final systemName = getSystemName(system);
+      final systemName = getSystemName<T>(system);
       log.startTrace(systemName);
       systemResults[system] = system(this);
       log.endTrace(systemName, frame: frame);
@@ -211,7 +212,7 @@ class Realm extends Component with HasGameRef {
 
   // Traits and nodes
   /// Remove a node from a bucket
-  void removeNodeFromBuckets(ANode node) {
+  void removeNodeFromBuckets(ANode<T> node) {
     // Remove the trait from the existing archetype storage
     final currentBucket = node.bucket;
     if (currentBucket != null) {
@@ -232,7 +233,7 @@ class Realm extends Component with HasGameRef {
   }
 
   /// Push a node into an existing archetype
-  void putNodeIntoBucket(ANode node) {
+  void putNodeIntoBucket(ANode<T> node) {
     // Add the trait to the new archetype storage
     final archetype = node.archetype;
     if (archetype.length > 0) {
@@ -252,7 +253,7 @@ class Realm extends Component with HasGameRef {
   }
 
   /// Add a node to a Realm
-  void registerNode<N extends ANode>(N node) {
+  void registerNode<N extends ANode<T>>(N node) {
     assert(node.isBackboneMounted == true,
         'Add the node to the realm via add or addAll. Do not call registerNode');
     final type = node.runtimeType;
@@ -264,7 +265,7 @@ class Realm extends Component with HasGameRef {
   }
 
   /// Remove an existing node from the realm
-  void removeNode<N extends ANode>(N node) {
+  void removeNode<N extends ANode<T>>(N node) {
     final type = node.runtimeType;
     if (!nodesByType.containsKey(type)) {
       throw Exception('No nodes of type $type were ever added');
@@ -276,7 +277,8 @@ class Realm extends Component with HasGameRef {
   }
 
   /// Addd a trait to an existing node
-  void addTraitToNode<C extends ATrait, N extends ANode>(C trait, N node) {
+  void addTraitToNode<C extends ATrait<T>, N extends ANode<T>>(
+      C trait, N node) {
     if (node.realm != this) {
       throw Exception(
           'Node $node is not in this realm. It was added to another realm');
@@ -291,7 +293,8 @@ class Realm extends Component with HasGameRef {
   }
 
   /// Remove a trait from an existing node
-  void removeTraitFromNode<C extends ATrait, N extends ANode>(C trait, N node) {
+  void removeTraitFromNode<C extends ATrait<T>, N extends ANode<T>>(
+      C trait, N node) {
     if (node.realm != this) {
       throw Exception(
           'Node $node is not in this realm. It was added to another realm');
@@ -303,9 +306,10 @@ class Realm extends Component with HasGameRef {
 
   // Query
   /// Query the realm for a list of nodes
-  MultiIterableView<ANode> query<N extends ANode, F extends AFilter>(F filter,
+  MultiIterableView<ANode<T>> query<N extends ANode<T>, F extends AFilter>(
+      F filter,
       {bool onlyLoaded = false}) {
-    List<List<ANode>> result = [];
+    List<List<ANode<T>>> result = [];
     final length = nonEmptyBucketKeys.length;
     for (var i = 0; i < length; i++) {
       final archetype = nonEmptyBucketKeys[i];

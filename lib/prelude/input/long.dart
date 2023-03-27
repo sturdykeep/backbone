@@ -1,9 +1,10 @@
 import 'package:backbone/prelude/input/mod.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/widgets.dart';
 
-void longDownSystem(Realm realm) {
+void longDownSystem<T extends FlameGame>(Realm<T> realm) {
   final input = realm.getResource<Input>();
   final pointers = input.pointers();
   final downPointers =

@@ -5,20 +5,21 @@ import 'package:backbone/prelude/input/plugins/taps.dart';
 import 'package:backbone/prelude/input/pointer.dart';
 import 'package:backbone/realm.dart';
 import 'package:backbone/trait.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
 
 /// Resource that holds a reference to [SelectableTrait] nodes, which
 /// are currently selected.
-class Selection {
+class Selection<T extends FlameGame> {
   bool Function(Pointer pointer)? onGlobalDeslect;
 
   /// The currently selected nodes.
-  final List<ANode> nodes = [];
+  final List<ANode<T>> nodes = [];
 
   /// Adds a node to the selection.
   /// Returns true, if the node was successfuly selected.
-  bool add(ANode node, {Pointer? pointer}) {
-    final trait = node.tryGet<SelectableTrait>();
+  bool add(ANode<T> node, {Pointer? pointer}) {
+    final trait = node.tryGet<SelectableTrait<T>>();
     if (trait != null) {
       if (trait.selected == false) {
         final shouldGetSelected = trait.onSelected?.call(pointer);
@@ -36,7 +37,7 @@ class Selection {
   /// Returns true if the node was removed, false otherwise.
   /// If the node was not in the selection, it will return false.
   bool remove(ANode node, {Pointer? pointer}) {
-    final trait = node.tryGet<SelectableTrait>();
+    final trait = node.tryGet<SelectableTrait<T>>();
     if (trait != null) {
       if (trait.selected == true) {
         final shouldGetDeselected = trait.onDeselected?.call(pointer);
@@ -59,10 +60,10 @@ class Selection {
 
   /// Replace the current selection with a new selection.
   /// Returns true if the selection was successfuly replaced.
-  bool replace(List<ANode> newSelection, {Pointer? pointer}) {
-    final newSelectionResults = <ANode>[];
+  bool replace(List<ANode<T>> newSelection, {Pointer? pointer}) {
+    final newSelectionResults = <ANode<T>>[];
     for (final node in newSelection) {
-      final trait = node.tryGet<SelectableTrait>();
+      final trait = node.tryGet<SelectableTrait<T>>();
       if (trait != null) {
         if (trait.selected == false) {
           final shouldGetSelected = trait.onSelected?.call(pointer);
@@ -80,7 +81,7 @@ class Selection {
 
     // Select the new nodes.
     for (final node in newSelectionResults) {
-      final trait = node.tryGet<SelectableTrait>()!;
+      final trait = node.tryGet<SelectableTrait<T>>()!;
       trait.selected = true;
       nodes.add(node);
     }
@@ -89,7 +90,7 @@ class Selection {
   }
 }
 
-class SelectableTrait extends ATrait {
+class SelectableTrait<T extends FlameGame> extends ATrait<T> {
   /// Whether this node is currently selected.
   bool selected = false;
 
@@ -103,8 +104,8 @@ class SelectableTrait extends ATrait {
 }
 
 /// A system to ensure SelectableTrait nodes also have a TappableTrait.
-void ensureSelectableNodesAreTappable(Realm realm) {
-  final toChange = <ANode>[];
+void ensureSelectableNodesAreTappable<T extends FlameGame>(Realm<T> realm) {
+  final toChange = <ANode<T>>[];
   final query = realm.query(And([
     Has([SelectableTrait]),
     Without([TappableTrait])
@@ -119,9 +120,10 @@ void ensureSelectableNodesAreTappable(Realm realm) {
 }
 
 /// A system that handles selection of nodes.
-void selectableSystem(Realm realm) {
-  final selection = realm.getResource<Selection>();
-  final tappable = realm.checkOrRunSystem<TappableSystemResult>(tappableSystem);
+void selectableSystem<T extends FlameGame>(Realm<T> realm) {
+  final selection = realm.getResource<Selection<T>>();
+  final tappable =
+      realm.checkOrRunSystem<TappableSystemResult<T>>(tappableSystem);
   final input = realm.getResource<Input>();
   // When control is pressed, the selection is additive.
   // Otherwise, the selection is replaced.
@@ -132,7 +134,7 @@ void selectableSystem(Realm realm) {
   bool somethingGotSelected = false;
   for (final event in tappable.justReleased) {
     final node = event.node;
-    final trait = node.tryGet<SelectableTrait>();
+    final trait = node.tryGet<SelectableTrait<T>>();
     if (trait != null) {
       if (ctrlPressed) {
         if (trait.selected) {

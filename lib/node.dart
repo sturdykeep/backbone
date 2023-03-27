@@ -4,10 +4,11 @@ import 'package:backbone/archetype.dart';
 import 'package:backbone/trait.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 
 /// Nodes are a collection of game objects. Nodes can
 /// have traits. Nodes are processed by systems.
-mixin ANode on HasGameRef {
+mixin ANode<T extends FlameGame> on HasGameRef<T> {
   /// Realm of the node, null if not yet added to a realm
   Realm? realm;
   bool isBackboneMounted = false;

@@ -3,18 +3,19 @@ import 'package:backbone/prelude/sprite/trait.dart';
 import 'package:backbone/prelude/transform.dart';
 import 'package:backbone/realm.dart';
 import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 
 /// Render Sprite- and SpriteAnimationComponent
-void spriteSystem(Realm realm) {
-  final realmQuery = realm.query(Has([SpriteTrait]), onlyLoaded: true);
+void spriteSystem<T extends FlameGame>(Realm<T> realm) {
+  final realmQuery = realm.query(Has([SpriteTrait<T>]), onlyLoaded: true);
 
   for (final node in realmQuery) {
-    final spriteTrait = node.get<SpriteTrait>();
+    final spriteTrait = node.get<SpriteTrait<T>>();
     if (spriteTrait.dirty) {
       final sprite = spriteTrait.sprite;
       final animation = spriteTrait.animationData;
       if (sprite != null || animation != null) {
-        final transformTrait = node.tryGet<TransformTrait>();
+        final transformTrait = node.tryGet<TransformTrait<T>>();
         // Search for a SpriteComponent in the tree
         if (animation == null) {
           final spriteComponents = node.findChildren<SpriteComponent>();
