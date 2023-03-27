@@ -15,13 +15,14 @@ import 'package:backbone/message.dart';
 import 'package:backbone/system.dart';
 import 'package:collection/collection.dart';
 import 'package:flame/components.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/widgets.dart' show debugPrint, Canvas;
 
 typedef SlowMessageDebugCallback = void Function(AMessage slowMessage);
 
 /// Realm is the main entry point for all backbone systems.
 /// You can have multiple realm in your game.
-class Realm extends Component with HasGameRef {
+class Realm<TGame extends FlameGame> extends Component with HasGameRef<TGame> {
   int nextUniqueId = 0;
 
   /// Get a unique id for this world instance.
@@ -422,248 +423,249 @@ class Realm extends Component with HasGameRef {
   void onMount() {
     if (logPerformanceData) {
       Log.logPerformance('Running', 'true');
-    }
 
-    // Benchmark `tryGet` vs `tryGetMap`
-    final entity = Entity(this);
-    final transform = Transform();
-    final renderable = Renderable();
-    entity.add(transform);
-    entity.add(renderable);
+      // Benchmark `tryGet` vs `tryGetMap`
+      final entity = Entity(this);
+      final transform = Transform();
+      final renderable = Renderable();
+      entity.add(transform);
+      entity.add(renderable);
 
-    // Warm up the cache
-    for (var i = 0; i < 100000; i++) {
-      entity.tryGet<Transform>();
-    }
+      // Warm up the cache
+      for (var i = 0; i < 100000; i++) {
+        entity.tryGet<Transform>();
+      }
 
-    // Benchmark `tryGet`
-    final stopwatch = Stopwatch()..start();
-    for (var i = 0; i < 1000000; i++) {
-      entity.tryGet<Transform>();
-    }
-    stopwatch.stop();
-    debugPrint('tryGet: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `tryGet`
+      final stopwatch = Stopwatch()..start();
+      for (var i = 0; i < 1000000; i++) {
+        entity.tryGet<Transform>();
+      }
+      stopwatch.stop();
+      debugPrint('tryGet: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `hashCode` of `Type` vs `int` vs `String`
-    final Type type = Transform;
-    final intType = 0;
-    final stringType = 'Transform';
+      // Benchmark `hashCode` of `Type` vs `int` vs `String`
+      const Type type = Transform;
+      const intType = 0;
+      const stringType = 'Transform';
 
-    // Warm up the cache
-    for (var i = 0; i < 100000; i++) {
-      type.hashCode;
-      intType.hashCode;
-      stringType.hashCode;
-    }
+      // Warm up the cache
+      for (var i = 0; i < 100000; i++) {
+        type.hashCode;
+        intType.hashCode;
+        stringType.hashCode;
+      }
 
-    // Benchmark `hashCode` of `Type`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      type.hashCode;
-    }
-    stopwatch.stop();
-    debugPrint('hashCode of Type: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `hashCode` of `Type`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        type.hashCode;
+      }
+      stopwatch.stop();
+      debugPrint('hashCode of Type: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `hashCode` of `int`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      intType.hashCode;
-    }
-    stopwatch.stop();
-    debugPrint('hashCode of int: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `hashCode` of `int`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        intType.hashCode;
+      }
+      stopwatch.stop();
+      debugPrint('hashCode of int: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `hashCode` of `String`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      stringType.hashCode;
-    }
-    stopwatch.stop();
-    debugPrint('hashCode of String: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `hashCode` of `String`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        stringType.hashCode;
+      }
+      stopwatch.stop();
+      debugPrint('hashCode of String: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark a small `List` vs `Set` vs `Map` vs `HashMap` vs `LinkedHashMap`
-    final list = <int>[];
-    final set = <int>{};
-    final map = <int, int>{};
-    final hashMap = HashMap<int, int>();
-    final linkedHashMap = LinkedHashMap<int, int>();
+      // Benchmark a small `List` vs `Set` vs `Map` vs `HashMap` vs `LinkedHashMap`
+      final list = <int>[];
+      final set = <int>{};
+      final map = <int, int>{};
+      final hashMap = HashMap<int, int>();
+      final linkedHashMap = <int, int>{};
 
-    // Warm up the cache
-    for (var i = 0; i < 5; i++) {
-      list.add(i);
-      set.add(i);
-      map[i] = i;
-      hashMap[i] = i;
-      linkedHashMap[i] = i;
-    }
+      // Warm up the cache
+      for (var i = 0; i < 5; i++) {
+        list.add(i);
+        set.add(i);
+        map[i] = i;
+        hashMap[i] = i;
+        linkedHashMap[i] = i;
+      }
 
-    // Benchmark `List`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      list.contains(i);
-    }
-    stopwatch.stop();
-    debugPrint('List: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `List`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        list.contains(i);
+      }
+      stopwatch.stop();
+      debugPrint('List: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `Set`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      set.contains(i);
-    }
-    stopwatch.stop();
-    debugPrint('Set: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `Set`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        set.contains(i);
+      }
+      stopwatch.stop();
+      debugPrint('Set: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `Map`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      map.containsKey(i);
-    }
-    stopwatch.stop();
-    debugPrint('Map: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `Map`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        map.containsKey(i);
+      }
+      stopwatch.stop();
+      debugPrint('Map: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `HashMap`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      hashMap.containsKey(i);
-    }
-    stopwatch.stop();
-    debugPrint('HashMap: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `HashMap`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        hashMap.containsKey(i);
+      }
+      stopwatch.stop();
+      debugPrint('HashMap: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `LinkedHashMap`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      linkedHashMap.containsKey(i);
-    }
-    stopwatch.stop();
-    debugPrint('LinkedHashMap: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `LinkedHashMap`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        linkedHashMap.containsKey(i);
+      }
+      stopwatch.stop();
+      debugPrint('LinkedHashMap: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `List` of objects searching by `is T` vs `Set` of `Type` vs `Map` of `Type` vs `HashMap` of `Type` vs `LinkedHashMap` of `Type`
-    // vs direct variable access
-    final objectList = <Object>[];
-    final typeSet = <Type>{};
-    final typeMap = <Type, Object>{};
-    final typeHashMap = HashMap<Type, Object>();
-    final typeLinkedHashMap = LinkedHashMap<Type, Object>();
-    Object object = 0;
+      // Benchmark `List` of objects searching by `is T` vs `Set` of `Type` vs `Map` of `Type` vs `HashMap` of `Type` vs `LinkedHashMap` of `Type`
+      // vs direct variable access
+      final objectList = <Object>[];
+      final typeSet = <Type>{};
+      final typeMap = <Type, Object>{};
+      final typeHashMap = HashMap<Type, Object>();
+      final typeLinkedHashMap = <Type, Object>{};
+      Object object = 0;
 
-    // Warm up the cache
-    for (var i = 0; i < 5; i++) {
-      objectList.add(i);
-      typeSet.add(i.runtimeType);
-      typeMap[i.runtimeType] = i;
-      typeHashMap[i.runtimeType] = i;
-      typeLinkedHashMap[i.runtimeType] = i;
-      object is int;
-      object = i;
-    }
+      // Warm up the cache
+      for (var i = 0; i < 5; i++) {
+        objectList.add(i);
+        typeSet.add(i.runtimeType);
+        typeMap[i.runtimeType] = i;
+        typeHashMap[i.runtimeType] = i;
+        typeLinkedHashMap[i.runtimeType] = i;
+        object is int;
+        object = i;
+      }
 
-    // Benchmark `List` of objects searching by `is T`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      for (final object in objectList) {
-        if (object is int) {
-          break;
+      // Benchmark `List` of objects searching by `is T`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        for (final object in objectList) {
+          if (object is int) {
+            break;
+          }
         }
       }
-    }
-    stopwatch.stop();
-    debugPrint(
-        'List of objects searching by `is T`: ${stopwatch.elapsedMilliseconds} ms');
+      stopwatch.stop();
+      debugPrint(
+          'List of objects searching by `is T`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `Set` of `Type`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      typeSet.contains(int);
-    }
-    stopwatch.stop();
-    debugPrint('Set of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `Set` of `Type`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        typeSet.contains(int);
+      }
+      stopwatch.stop();
+      debugPrint('Set of `Type`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `Map` of `Type`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      typeMap.containsKey(int);
-    }
-    stopwatch.stop();
-    debugPrint('Map of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `Map` of `Type`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        typeMap.containsKey(int);
+      }
+      stopwatch.stop();
+      debugPrint('Map of `Type`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `HashMap` of `Type`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      typeHashMap.containsKey(int);
-    }
-    stopwatch.stop();
-    debugPrint('HashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `HashMap` of `Type`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        typeHashMap.containsKey(int);
+      }
+      stopwatch.stop();
+      debugPrint('HashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `LinkedHashMap` of `Type`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      typeLinkedHashMap.containsKey(int);
-    }
-    stopwatch.stop();
-    debugPrint('LinkedHashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `LinkedHashMap` of `Type`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        typeLinkedHashMap.containsKey(int);
+      }
+      stopwatch.stop();
+      debugPrint(
+          'LinkedHashMap of `Type`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark direct variable access
-    stopwatch.reset();
-    stopwatch.start();
-    var objectIsInt = false;
-    for (var i = 0; i < 1000000; i++) {
-      objectIsInt = object is int;
-    }
-    stopwatch.stop();
-    debugPrint(
-        'Direct variable access: ${stopwatch.elapsedMilliseconds} ms with result $objectIsInt');
+      // Benchmark direct variable access
+      stopwatch.reset();
+      stopwatch.start();
+      var objectIsInt = false;
+      for (var i = 0; i < 1000000; i++) {
+        objectIsInt = object is int;
+      }
+      stopwatch.stop();
+      debugPrint(
+          'Direct variable access: ${stopwatch.elapsedMilliseconds} ms with result $objectIsInt');
 
-    // Benchmark `is T` vs `.runtimeType == T` vs `.runtimeType.hashCode == T.hashCode`
-    final toTestObject = Object();
-    final toTestType = toTestObject.runtimeType;
-    final toTestHashCode = toTestType.hashCode;
+      // Benchmark `is T` vs `.runtimeType == T` vs `.runtimeType.hashCode == T.hashCode`
+      final toTestObject = Object();
+      final toTestType = toTestObject.runtimeType;
+      final toTestHashCode = toTestType.hashCode;
 
-    // Warm up the cache
-    for (var i = 0; i < 5; i++) {
-      toTestObject is Object;
-      toTestObject.runtimeType == Object;
-      toTestObject.runtimeType.hashCode == (Object).hashCode;
-    }
+      // Warm up the cache
+      for (var i = 0; i < 5; i++) {
+        toTestObject is Object;
+        toTestObject.runtimeType == Object;
+        toTestObject.runtimeType.hashCode == (Object).hashCode;
+      }
 
-    // Benchmark `is T`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      toTestObject is Object;
-    }
-    stopwatch.stop();
-    debugPrint('`is T`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `is T`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        toTestObject is Object;
+      }
+      stopwatch.stop();
+      debugPrint('`is T`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `.runtimeType == T`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      toTestObject.runtimeType == Object;
-    }
-    stopwatch.stop();
-    debugPrint('`.runtimeType == T`: ${stopwatch.elapsedMilliseconds} ms');
+      // Benchmark `.runtimeType == T`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        toTestObject.runtimeType == Object;
+      }
+      stopwatch.stop();
+      debugPrint('`.runtimeType == T`: ${stopwatch.elapsedMilliseconds} ms');
 
-    // Benchmark `.runtimeType.hashCode == T.hashCode`
-    stopwatch.reset();
-    stopwatch.start();
-    for (var i = 0; i < 1000000; i++) {
-      toTestObject.runtimeType.hashCode == (Object).hashCode;
+      // Benchmark `.runtimeType.hashCode == T.hashCode`
+      stopwatch.reset();
+      stopwatch.start();
+      for (var i = 0; i < 1000000; i++) {
+        toTestObject.runtimeType.hashCode == (Object).hashCode;
+      }
+      stopwatch.stop();
+      debugPrint(
+          '`.runtimeType.hashCode == T.hashCode`: ${stopwatch.elapsedMilliseconds} ms');
     }
-    stopwatch.stop();
-    debugPrint(
-        '`.runtimeType.hashCode == T.hashCode`: ${stopwatch.elapsedMilliseconds} ms');
   }
 
   @override

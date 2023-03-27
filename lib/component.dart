@@ -8,7 +8,7 @@ import 'package:flame/components.dart';
 
 /// EntityComponent are a collection of game objects. EntityComponent can
 /// have traits and their entities can be processed by systems.
-mixin HasEntity on HasGameRef {
+mixin HasEntity on Component {
   /// Realm of the node, null if not yet added to a realm.
   late Realm realm;
 
@@ -113,7 +113,7 @@ mixin HasEntity on HasGameRef {
 
 /// Default node that comes without any traits. This node is based on the
 /// component class of Flame.
-abstract class EntityComponent extends Component with HasGameRef, HasEntity {}
+abstract class EntityComponent extends Component with HasEntity {}
 
 /// A trait that allows to access a component through the entity.
 class ComponentTrait extends Trait {
