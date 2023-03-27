@@ -95,8 +95,8 @@ void main() {
     gameTester.testGameWidget('get all child components of the node',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -112,8 +112,8 @@ void main() {
         'get the parent of the node, it might return null',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -220,8 +220,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -257,8 +257,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -276,8 +276,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -299,8 +299,8 @@ void main() {
         findsOneWidget,
       );
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -345,8 +345,8 @@ void main() {
     gameTester.testGameWidget('add a node to the realm', setUp: basicSetup,
         verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       realm.add(node);
       game.update(0);
@@ -357,8 +357,8 @@ void main() {
     gameTester.testGameWidget('wrongly add a node to the realm',
         setUp: basicSetup, verify: (game, tester) async {
       expect(game.children.length, 1);
-      expect(game.children.first, isA<Realm>());
-      final realm = game.children.first as Realm;
+      expect(game.children.first, isA<Realm<TestGame>>());
+      final realm = game.children.first as Realm<TestGame>;
       var node = TestNode();
       expect(() => realm.registerNode(node), throwsA(isA<AssertionError>()));
     });

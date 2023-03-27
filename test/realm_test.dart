@@ -25,7 +25,7 @@ class SecondTestNode extends ComponentNode<TestGame> {}
 void main() {
   group('Realm', () {
     test('simple builder', () {
-      var realm = RealmBuilder()
+      var realm = RealmBuilder<TestGame>()
           .withTrait(String)
           .withTrait(int)
           .withMessageSystem((realm, message) => false)
@@ -53,13 +53,15 @@ void main() {
     });
     test('simple system', () {
       var success = false;
-      var realm = RealmBuilder().withSystem((realm) => success = true).build();
+      var realm = RealmBuilder<TestGame>()
+          .withSystem((realm) => success = true)
+          .build();
       realm.update(0.0);
       expect(success, true);
     });
 
     test('get unique ids', () {
-      var realm = RealmBuilder().build();
+      var realm = RealmBuilder<TestGame>().build();
       var a = realm.getNextUniqueId();
       var b = realm.getNextUniqueId();
       expect(a != b, true);
@@ -80,7 +82,7 @@ void main() {
 
     test('simple message system', () {
       var resultValue = 0;
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           resultValue = message.value;
           return true;
@@ -115,7 +117,7 @@ void main() {
     test('two message systems one matches', () {
       var resultValueOne = 0;
       var resultValueTwo = 0;
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           resultValueOne = message.value;
           return true;
@@ -136,7 +138,7 @@ void main() {
     test('two message systems both match', () {
       var resultValueOne = 0;
       var resultValueTwo = 0;
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           resultValueOne = message.value;
         }
@@ -155,7 +157,7 @@ void main() {
     });
     test('message only processed once and slow warning works', () {
       var resultValue = 0;
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           if (message.value == 1) {
             resultValue += message.value;
@@ -196,7 +198,7 @@ void main() {
       expect(slowMessageFound, true);
     });
     test('await a message', () async {
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           return realm.resolveMessage(message, message.value);
         }
@@ -207,7 +209,7 @@ void main() {
       expect(await returnedFuture, 1);
     });
     test('await multiple messages', () async {
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is RealmTestMessage) {
           return realm.resolveMessage(message, message.value);
         }
@@ -221,7 +223,7 @@ void main() {
     });
     test('void message', () async {
       var executed = false;
-      var realm = RealmBuilder().withMessageSystem((realm, message) {
+      var realm = RealmBuilder<TestGame>().withMessageSystem((realm, message) {
         if (message is VoidMessage) {
           executed = true;
           return true;

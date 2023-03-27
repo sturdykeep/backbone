@@ -18,31 +18,31 @@ import 'package:flutter/services.dart';
 // https://bevy-cheatbook.github.io/input.html
 
 void inputPlugin<T extends FlameGame>(RealmBuilder<T> builder) {
-  builder.withSystem(longDownSystem);
+  builder.withSystem(longDownSystem<T>);
 
   // Hover
   builder
-    ..withTrait(HoverableTrait)
-    ..withSystem(hoverableSystem);
+    ..withTrait(HoverableTrait<T>)
+    ..withSystem(hoverableSystem<T>);
 
   // Drag
   builder
-    ..withTrait(DraggableTrait)
-    ..withTrait(DragReceiverTrait)
-    ..withSystem(draggableSystem)
-    ..withSystem(dragReceiverSystem);
+    ..withTrait(DraggableTrait<T>)
+    ..withTrait(DragReceiverTrait<T>)
+    ..withSystem(draggableSystem<T>)
+    ..withSystem(dragReceiverSystem<T>);
 
   // Taps
   builder
-    ..withTrait(TappableTrait)
-    ..withSystem(tappableSystem);
+    ..withTrait(TappableTrait<T>)
+    ..withSystem(tappableSystem<T>);
 
   // Selection
   builder
-    ..withResource(Selection, Selection())
-    ..withTrait(SelectableTrait)
-    ..withSystem(ensureSelectableNodesAreTappable)
-    ..withSystem(selectableSystem);
+    ..withResource(Selection<T>, Selection<T>())
+    ..withTrait(SelectableTrait<T>)
+    ..withSystem(ensureSelectableNodesAreTappable<T>)
+    ..withSystem(selectableSystem<T>);
 }
 
 /// Resource which contains all the input data for the current frame.

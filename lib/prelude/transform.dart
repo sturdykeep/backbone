@@ -14,7 +14,7 @@ import 'package:flame/game.dart';
 /// - size
 /// - anchor
 void transformPlugin<T extends FlameGame>(RealmBuilder<T> builder) {
-  builder.withTrait(TransformTrait);
+  builder.withTrait(TransformTrait<T>);
 }
 
 class TransformTrait<T extends FlameGame> extends ATrait<T> {
