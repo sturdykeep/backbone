@@ -41,7 +41,7 @@ class RealmBuilder<T extends FlameGame> {
   }
 
   // Plugins
-  RealmBuilder<T> withPlugin(Plugin plugin) {
+  RealmBuilder<T> withPlugin(Plugin<T> plugin) {
     plugin(this);
     return this;
   }
