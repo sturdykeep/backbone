@@ -1,0 +1,36 @@
+name: flutter_backbone
+description: A new Flutter FFI plugin project.
+version: 0.0.1
+homepage: https://github.com/sturdykeep/backbone
+
+environment:
+  sdk: ">=3.1.0-163.1.beta <4.0.0"
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+  backbone: ^1.0.0
+
+dev_dependencies:
+  ffi: ^2.0.1
+  ffigen: ^6.1.2
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+# The following section is specific to Flutter packages.
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true
