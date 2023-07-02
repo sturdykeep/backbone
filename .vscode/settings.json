@@ -1,0 +1,12 @@
+{
+    "rust-analyzer.cargo.extraEnv": {
+        "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true",
+        "CPATH": "/usr/lib/clang/15.0.7/include",
+        "RUST_LOG": "debug"
+    },
+    "rust-analyzer.server.extraEnv": {
+        "CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG": "true",
+        "CPATH": "/usr/lib/clang/15.0.7/include",
+        "RUST_LOG": "debug"
+    }
+}
